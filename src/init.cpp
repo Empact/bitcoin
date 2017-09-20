@@ -1375,6 +1375,13 @@ bool AppInitMain(InitInterfaces& interfaces)
     fDiscover = gArgs.GetBoolArg("-discover", true);
     fRelayTxes = !gArgs.GetBoolArg("-blocksonly", DEFAULT_BLOCKSONLY);
 
+    int listen_port = chainparams.GetDefaultPort();
+    assert((0 < listen_port) && (listen_port <= 0xffff));
+    listen_port = gArgs.GetArg("-port", listen_port);
+    if ((listen_port <= 0) || (0xffff < listen_port)) {
+        return InitError(strprintf(_("Invalid port specified in -port: '%i'"), listen_port));
+    }
+
     for (const std::string& strAddr : gArgs.GetArgs("-externalip")) {
         CService addrLocal;
         if (Lookup(strAddr.c_str(), addrLocal, GetListenPort(), fNameLookup) && addrLocal.IsValid())
@@ -1681,7 +1688,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     LogPrintf("nBestHeight = %d\n", chain_active_height);
 
     if (gArgs.GetBoolArg("-listenonion", DEFAULT_LISTEN_ONION))
-        StartTorControl();
+        StartTorControl(gArgs.GetArg("-torcontrol", DEFAULT_TOR_CONTROL), listen_port);
 
     Discover();
 
