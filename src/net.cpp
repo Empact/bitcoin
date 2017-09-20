@@ -103,11 +103,6 @@ void CConnman::AddOneShot(const std::string& strDest)
     vOneShots.push_back(strDest);
 }
 
-unsigned short GetListenPort()
-{
-    return (unsigned short)(gArgs.GetArg("-port", Params().GetDefaultPort()));
-}
-
 // find 'best' local address for a particular peer
 bool GetLocal(CService& addr, const CNetAddr *paddrPeer)
 {
@@ -158,9 +153,9 @@ static std::vector<CAddress> convertSeed6(const std::vector<SeedSpec6> &vSeedsIn
 // Otherwise, return the unroutable 0.0.0.0 but filled in with
 // the normal parameters, since the IP may be changed to a useful
 // one by discovery.
-CAddress GetLocalAddress(const CNetAddr *paddrPeer, ServiceFlags nLocalServices)
+CAddress GetLocalAddress(const CNetAddr *paddrPeer, ServiceFlags nLocalServices, uint16_t default_listen_port)
 {
-    CAddress ret(CService(CNetAddr(),GetListenPort()), nLocalServices);
+    CAddress ret(CService(CNetAddr(), default_listen_port), nLocalServices);
     CService addr;
     if (GetLocal(addr, paddrPeer))
     {
@@ -187,14 +182,14 @@ bool IsPeerAddrLocalGood(CNode *pnode)
 }
 
 // pushes our own address to a peer
-void AdvertiseLocal(CNode *pnode)
+void AdvertiseLocal(CNode *pnode, uint16_t default_listen_port)
 {
     if (fListen && pnode->fSuccessfullyConnected)
     {
-        CAddress addrLocal = GetLocalAddress(&pnode->addr, pnode->GetLocalServices());
+        CAddress addrLocal = GetLocalAddress(&pnode->addr, pnode->GetLocalServices(), default_listen_port);
         if (gArgs.GetBoolArg("-addrmantest", false)) {
             // use IPv4 loopback during addrmantest
-            addrLocal = CAddress(CService(LookupNumeric("127.0.0.1", GetListenPort())), pnode->GetLocalServices());
+            addrLocal = CAddress(CService(LookupNumeric("127.0.0.1", default_listen_port)), pnode->GetLocalServices());
         }
         // If discovery is enabled, sometimes give our peer the address it
         // tells us that it sees us as in case it has a better idea of our
@@ -2357,8 +2352,8 @@ bool CConnman::InitBinds(const std::vector<CService>& binds, const std::vector<C
         struct in_addr inaddr_any;
         inaddr_any.s_addr = INADDR_ANY;
         struct in6_addr inaddr6_any = IN6ADDR_ANY_INIT;
-        fBound |= Bind(CService(inaddr6_any, GetListenPort()), BF_NONE);
-        fBound |= Bind(CService(inaddr_any, GetListenPort()), !fBound ? BF_REPORT_ERROR : BF_NONE);
+        fBound |= Bind(CService(inaddr6_any, m_default_listen_port), BF_NONE);
+        fBound |= Bind(CService(inaddr_any, m_default_listen_port), !fBound ? BF_REPORT_ERROR : BF_NONE);
     }
     return fBound;
 }
@@ -2786,6 +2781,11 @@ uint64_t CConnman::GetTotalBytesSent()
 ServiceFlags CConnman::GetLocalServices() const
 {
     return nLocalServices;
+}
+
+uint16_t CConnman::GetDefaultListenPort() const
+{
+    return m_default_listen_port;
 }
 
 void CConnman::SetBestHeight(int height)
