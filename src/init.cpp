@@ -1714,6 +1714,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     connOptions.nMaxOutboundLimit = nMaxOutboundLimit;
     connOptions.m_peer_connect_timeout = peer_connect_timeout;
     connOptions.m_default_listen_port = listen_port;
+    connOptions.m_default_outbound_port = chainparams.GetDefaultPort();
 
     for (const std::string& strBind : gArgs.GetArgs("-bind")) {
         CService addrBind;
