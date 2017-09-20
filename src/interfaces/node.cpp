@@ -78,10 +78,10 @@ public:
     }
     void startShutdown() override { StartShutdown(); }
     bool shutdownRequested() override { return ShutdownRequested(); }
-    void mapPort(bool use_upnp) override
+    void mapPort(bool use_upnp, uint16_t port) override
     {
         if (use_upnp) {
-            StartMapPort();
+            StartMapPort(port);
         } else {
             InterruptMapPort();
             StopMapPort();

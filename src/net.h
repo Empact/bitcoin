@@ -466,8 +466,8 @@ private:
     friend struct CConnmanTest;
 };
 extern std::unique_ptr<CConnman> g_connman;
-void Discover();
-void StartMapPort();
+void Discover(uint16_t port);
+void StartMapPort(uint16_t port);
 void InterruptMapPort();
 void StopMapPort();
 unsigned short GetListenPort();
@@ -524,7 +524,6 @@ void SetLimited(enum Network net, bool fLimited = true);
 bool IsLimited(enum Network net);
 bool IsLimited(const CNetAddr& addr);
 bool AddLocal(const CService& addr, int nScore = LOCAL_NONE);
-bool AddLocal(const CNetAddr& addr, int nScore = LOCAL_NONE);
 void RemoveLocal(const CService& addr);
 bool SeenLocal(const CService& addr);
 bool IsLocal(const CService& addr);
