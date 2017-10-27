@@ -22,6 +22,39 @@ static const unsigned char REJECT_NONSTANDARD = 0x40;
 static const unsigned char REJECT_INSUFFICIENTFEE = 0x42;
 static const unsigned char REJECT_CHECKPOINT = 0x43;
 
+/** A "reason" why something was invalid, suitable for (possibly) getting angry
+  * (and retaliating) at the provider of the object in question (ie banning
+  * peers).
+  * These are much more granular than the rejection codes, which may be more
+  * useful for some other use-cases.
+  */
+enum class ValidationInvalidReason {
+    // txn and blocks:
+    NONE,                    //!< not actually invalid
+    CONSENSUS,               //!< invalid by consensus rules (excluding any below reasons)
+    /**
+     * Invalid by a change to consensus rules more recent than SegWit.
+     * Currently unused as there are no such consensus rule changes, and any download
+     * sources realistically need to support SegWit in order to provide useful data,
+     * so differentiating between always-invalid and invalid-by-pre-SegWit-soft-fork
+     * is uninteresting.
+     */
+    RECENT_CONSENSUS_CHANGE,
+    UNKNOWN_INVALID,         //!< this object was cached as being invalid, but we don't know why
+    // Only blocks:
+    MUTATED,                 //!< the block's data didn't match the data committed to by the PoW
+    MISSING_PREV,            //!< We don't have the previous block the checked one is built on
+    INVALID_PREV,            //!< A block this one builds on is invalid
+    BAD_TIME,                //!< block timestamp was > 2 hours in the future (or our clock is bad)
+    CHECKPOINT,              //!< the block failed to meet one of our checkpoints
+    // Only loose txn:
+    NOT_STANDARD,            //!< didn't meet our local policy rules
+    MISSING_INPUTS,          //!< a transaction was missing some of its inputs (or its inputs were spent at < coinbase maturity height)
+    WITNESS_MUTATED,         //!< tx might be missing a witness or witness may have been malleated
+    CONFLICT,                //!< tx already in mempool or conflicts with an existing one (which is in chain or in mempool and RBF failed)
+    MEMPOOL_LIMIT,           //!< violated mempool's fee/size/descendant/etc limits
+};
+
 /** Capture information about block/transaction validation */
 class CValidationState {
 private:
@@ -30,15 +63,17 @@ private:
         MODE_INVALID, //!< network rule violation (DoS value may be set)
         MODE_ERROR,   //!< run-time error
     } mode;
+    ValidationInvalidReason reason;
     int nDoS;
     std::string strRejectReason;
     unsigned int chRejectCode;
     bool corruptionPossible;
     std::string strDebugMessage;
 public:
-    CValidationState() : mode(MODE_VALID), nDoS(0), chRejectCode(0), corruptionPossible(false) {}
-    bool DoS(int level, unsigned int chRejectCodeIn, const std::string &strRejectReasonIn,
+    CValidationState() : mode(MODE_VALID), reason(ValidationInvalidReason::NONE), nDoS(0), chRejectCode(0), corruptionPossible(false) {}
+    bool DoS(int level, ValidationInvalidReason reasonIn, unsigned int chRejectCodeIn, const std::string &strRejectReasonIn,
              const std::string &strDebugMessageIn="") {
+        reason = reasonIn;
         chRejectCode = chRejectCodeIn;
         strRejectReason = strRejectReasonIn;
         strDebugMessage = strDebugMessageIn;
@@ -48,9 +83,9 @@ public:
         }
         return false;
     }
-    bool Invalid(unsigned int _chRejectCode, const std::string &_strRejectReason,
+    bool Invalid(ValidationInvalidReason _reason, unsigned int _chRejectCode, const std::string &_strRejectReason,
                  const std::string &_strDebugMessage="") {
-        return DoS(0, _chRejectCode, _strRejectReason, _strDebugMessage);
+        return DoS(0, _reason, _chRejectCode, _strRejectReason, _strDebugMessage);
     }
     bool Error(const std::string& strRejectReasonIn) {
         if (mode == MODE_VALID)
@@ -80,6 +115,8 @@ public:
     void SetCorruptionPossible() {
         corruptionPossible = true;
     }
+    ValidationInvalidReason GetReason() const { return reason; }
+    int GetDoS() const { return nDoS; }
     unsigned int GetRejectCode() const { return chRejectCode; }
     std::string GetRejectReason() const { return strRejectReason; }
     std::string GetDebugMessage() const { return strDebugMessage; }
