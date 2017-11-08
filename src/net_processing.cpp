@@ -784,6 +784,75 @@ void Misbehaving(NodeId pnode, int howmuch, const std::string& message)
         LogPrint(BCLog::NET, "%s: %s peer=%d (%d -> %d)%s\n", __func__, state->name, pnode, state->nMisbehavior-howmuch, state->nMisbehavior, message_prefixed);
 }
 
+/**
+ * Returns true if the given validation state result may result in us banning/disconnecting a peer
+ * which provided such an object. This is used to determine whether to relay transactions to
+ * whitelisted peers, preventing us from relaying things which would result in them disconnecting
+ * us.
+ */
+static bool MayResultInDisconnect(const CValidationState& state, bool via_compact_block) {
+    switch (state.GetReason()) {
+    case ValidationInvalidReason::NONE:
+        return false;
+    // The node is mean:
+    case ValidationInvalidReason::CONSENSUS:
+    case ValidationInvalidReason::MUTATED:
+    case ValidationInvalidReason::UNKNOWN_INVALID: // Really "duplicate of invalid "
+        if (via_compact_block) return false;
+    case ValidationInvalidReason::CHECKPOINT:
+    case ValidationInvalidReason::INVALID_PREV:
+    case ValidationInvalidReason::MISSING_PREV:
+        return true;
+    // Speed-of-light or out-of-sync:
+    case ValidationInvalidReason::RECENT_CONSENSUS_CHANGE:
+    case ValidationInvalidReason::BAD_TIME:
+    case ValidationInvalidReason::NOT_STANDARD:
+    case ValidationInvalidReason::MISSING_INPUTS:
+    case ValidationInvalidReason::WITNESS_MUTATED:
+    case ValidationInvalidReason::CONFLICT:
+    case ValidationInvalidReason::MEMPOOL_LIMIT:
+        return false;
+    }
+    return false;
+}
+
+//! Returns true if the peer was punished (probably disconnected)
+static bool MaybePunishNode(NodeId nodeid, const CValidationState& state, bool via_compact_block, const std::string& message = "") {
+    switch (state.GetReason()) {
+    case ValidationInvalidReason::NONE:
+        break;
+    // The node is mean:
+    case ValidationInvalidReason::CONSENSUS:
+    case ValidationInvalidReason::MUTATED:
+    case ValidationInvalidReason::UNKNOWN_INVALID: // Really "duplicate of invalid"
+        if (via_compact_block) break;
+    case ValidationInvalidReason::CHECKPOINT:
+    case ValidationInvalidReason::INVALID_PREV:
+        {
+            LOCK(cs_main);
+            Misbehaving(nodeid, 100, message);
+        }
+        return true;
+    // Speed-of-light or out-of-sync:
+    case ValidationInvalidReason::MISSING_PREV:
+        {
+            // TODO: Handle this much more gracefully
+            LOCK(cs_main);
+            Misbehaving(nodeid, 10, message);
+        }
+        return true;
+    case ValidationInvalidReason::RECENT_CONSENSUS_CHANGE:
+    case ValidationInvalidReason::BAD_TIME:
+    case ValidationInvalidReason::NOT_STANDARD:
+    case ValidationInvalidReason::MISSING_INPUTS:
+    case ValidationInvalidReason::WITNESS_MUTATED:
+    case ValidationInvalidReason::CONFLICT:
+    case ValidationInvalidReason::MEMPOOL_LIMIT:
+        break;
+    }
+    return false;
+}
+
 
 
 
