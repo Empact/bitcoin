@@ -568,7 +568,6 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
         // We call this WITNESS_MUTATED because we don't bother to check if the witness was maybe garbage
         // and its important clients realize that they shouldn't assume the witness indicated the
         // transaction was non-standard or otherwise invalid.
-        state.SetCorruptionPossible();
         return state.Invalid(ValidationInvalidReason::WITNESS_MUTATED, REJECT_NONSTANDARD, "no-witness-yet");
     }
 
@@ -685,7 +684,6 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
 
         // Check for non-standard witness in P2WSH
         if (tx.HasWitness() && fRequireStandard && !IsWitnessStandard(tx, view)) {
-            state.SetCorruptionPossible();
             return state.Invalid(ValidationInvalidReason::WITNESS_MUTATED, REJECT_NONSTANDARD, "bad-witness-nonstandard");
         }
 
@@ -897,7 +895,6 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
             if (!tx.HasWitness() && CheckInputs(tx, stateDummy, view, true, scriptVerifyFlags & ~(SCRIPT_VERIFY_WITNESS | SCRIPT_VERIFY_CLEANSTACK), true, false, txdata) &&
                 !CheckInputs(tx, stateDummy, view, true, scriptVerifyFlags & ~SCRIPT_VERIFY_CLEANSTACK, true, false, txdata)) {
                 // Only the witness is missing, so the transaction itself may be fine.
-                state.SetCorruptionPossible();
                 state.Invalid(ValidationInvalidReason::WITNESS_MUTATED,
                           state.GetRejectCode(), state.GetRejectReason(), state.GetDebugMessage());
             }
@@ -1285,7 +1282,7 @@ void static InvalidChainFound(CBlockIndex* pindexNew)
 }
 
 void CChainState::InvalidBlockFound(CBlockIndex *pindex, const CValidationState &state) {
-    if (!state.CorruptionPossible()) {
+    if (state.GetReason() != ValidationInvalidReason::MUTATED) {
         pindex->nStatus |= BLOCK_FAILED_VALID;
         g_failed_blocks.insert(pindex);
         setDirtyBlockIndex.insert(pindex);
@@ -1800,7 +1797,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
     // re-enforce that rule here (at least until we make it impossible for
     // GetAdjustedTime() to go backward).
     if (!CheckBlock(block, state, chainparams.GetConsensus(), !fJustCheck, !fJustCheck)) {
-        if (state.CorruptionPossible()) {
+        if (state.GetReason() == ValidationInvalidReason::MUTATED) {
             // We don't write down blocks to disk if they may have been
             // corrupted, so this should be impossible unless we're having hardware
             // problems.
@@ -2585,7 +2582,7 @@ bool CChainState::ActivateBestChainStep(CValidationState& state, const CChainPar
             if (!ConnectTip(state, chainparams, pindexConnect, pindexConnect == pindexMostWork ? pblock : std::shared_ptr<const CBlock>(), connectTrace, disconnectpool)) {
                 if (state.IsInvalid()) {
                     // The block violates a consensus rule.
-                    if (!state.CorruptionPossible())
+                    if (state.GetReason() != ValidationInvalidReason::MUTATED)
                         InvalidChainFound(vpindexToConnect.back());
                     state = CValidationState();
                     fInvalidFound = true;
@@ -3073,7 +3070,6 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
         bool mutated;
         uint256 hashMerkleRoot2 = BlockMerkleRoot(block, &mutated);
         if (block.hashMerkleRoot != hashMerkleRoot2) {
-            state.SetCorruptionPossible();
             return state.Invalid(ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-txnmrklroot", "hashMerkleRoot mismatch");
         }
 
@@ -3081,7 +3077,6 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
         // of transactions in a block without affecting the merkle root of a block,
         // while still invalidating it.
         if (mutated) {
-            state.SetCorruptionPossible();
             return state.Invalid(ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-txns-duplicate", "duplicate transaction");
         }
     }
@@ -3292,12 +3287,10 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
             // already does not permit it, it is impossible to trigger in the
             // witness tree.
             if (block.vtx[0]->vin[0].scriptWitness.stack.size() != 1 || block.vtx[0]->vin[0].scriptWitness.stack[0].size() != 32) {
-                state.SetCorruptionPossible();
                 return state.Invalid(ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-witness-nonce-size", strprintf("%s : invalid witness reserved value size", __func__));
             }
             CHash256().Write(hashWitness.begin(), 32).Write(&block.vtx[0]->vin[0].scriptWitness.stack[0][0], 32).Finalize(hashWitness.begin());
             if (memcmp(hashWitness.begin(), &block.vtx[0]->vout[commitpos].scriptPubKey[6], 32)) {
-                state.SetCorruptionPossible();
                 return state.Invalid(ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-witness-merkle-match", strprintf("%s : witness merkle commitment mismatch", __func__));
             }
             fHaveWitness = true;
@@ -3308,7 +3301,6 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     if (!fHaveWitness) {
       for (const auto& tx : block.vtx) {
             if (tx->HasWitness()) {
-                state.SetCorruptionPossible();
                 return state.Invalid(ValidationInvalidReason::MUTATED, REJECT_INVALID, "unexpected-witness", strprintf("%s : unexpected witness data found", __func__));
             }
         }
@@ -3483,7 +3475,7 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
 
     if (!CheckBlock(block, state, chainparams.GetConsensus()) ||
         !ContextualCheckBlock(block, state, chainparams.GetConsensus(), pindex->pprev)) {
-        if (state.IsInvalid() && !state.CorruptionPossible()) {
+        if (state.IsInvalid() && state.GetReason() != ValidationInvalidReason::MUTATED) {
             pindex->nStatus |= BLOCK_FAILED_VALID;
             setDirtyBlockIndex.insert(pindex);
         }

@@ -64,28 +64,21 @@ private:
         MODE_ERROR,   //!< run-time error
     } mode;
     ValidationInvalidReason reason;
-    int nDoS;
     std::string strRejectReason;
     unsigned int chRejectCode;
-    bool corruptionPossible;
     std::string strDebugMessage;
 public:
-    CValidationState() : mode(MODE_VALID), reason(ValidationInvalidReason::NONE), nDoS(0), chRejectCode(0), corruptionPossible(false) {}
-    bool DoS(int level, ValidationInvalidReason reasonIn, unsigned int chRejectCodeIn, const std::string &strRejectReasonIn,
+    CValidationState() : mode(MODE_VALID), reason(ValidationInvalidReason::NONE), chRejectCode(0) {}
+    bool Invalid(ValidationInvalidReason reasonIn, unsigned int chRejectCodeIn, const std::string &strRejectReasonIn,
              const std::string &strDebugMessageIn="") {
         reason = reasonIn;
         chRejectCode = chRejectCodeIn;
         strRejectReason = strRejectReasonIn;
         strDebugMessage = strDebugMessageIn;
-        if (mode == MODE_ERROR) {
-            nDoS += level;
+        if (mode != MODE_ERROR) {
             mode = MODE_INVALID;
         }
         return false;
-    }
-    bool Invalid(ValidationInvalidReason _reason, unsigned int _chRejectCode, const std::string &_strRejectReason,
-                 const std::string &_strDebugMessage="") {
-        return DoS(0, _reason, _chRejectCode, _strRejectReason, _strDebugMessage);
     }
     bool Error(const std::string& strRejectReasonIn) {
         if (mode == MODE_VALID)
@@ -102,14 +95,7 @@ public:
     bool IsError() const {
         return mode == MODE_ERROR;
     }
-    bool CorruptionPossible() const {
-        return corruptionPossible;
-    }
-    void SetCorruptionPossible() {
-        corruptionPossible = true;
-    }
     ValidationInvalidReason GetReason() const { return reason; }
-    int GetDoS() const { return nDoS; }
     unsigned int GetRejectCode() const { return chRejectCode; }
     std::string GetRejectReason() const { return strRejectReason; }
     std::string GetDebugMessage() const { return strDebugMessage; }
