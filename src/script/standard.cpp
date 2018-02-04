@@ -132,7 +132,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, std::vector<std::v
             // Template matching opcodes:
             if (opcode2 == OP_PUBKEYS)
             {
-                while (CPubKey::ValidSize(vch1.size()))
+                while (CPubKey::ValidSize(vch1))
                 {
                     vSolutionsRet.push_back(vch1);
                     if (!script1.GetOp(pc1, opcode1, vch1))
@@ -146,7 +146,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, std::vector<std::v
 
             if (opcode2 == OP_PUBKEY)
             {
-                if (!CPubKey::ValidSize(vch1.size()))
+                if (!CPubKey::ValidSize(vch1))
                     break;
                 vSolutionsRet.push_back(vch1);
             }
