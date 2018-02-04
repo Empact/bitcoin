@@ -87,6 +87,17 @@ public:
       return vch.size() > 0 && GetLen(vch[0]) == vch.size();
     }
 
+    bool static IsCompressed(const std::vector<unsigned char> &vch) {
+        if (vch[0] != 0x02 && vch[0] != 0x03) {
+            //  Non-canonical public key: invalid prefix for compressed key
+            return false;
+        }
+        if (vch.size() != COMPRESSED_SIZE) {
+            //  Non-canonical public key: invalid length for compressed key
+            return false;
+        }
+        return true;
+    }
     //! Construct an invalid public key.
     CPubKey()
     {
