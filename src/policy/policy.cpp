@@ -143,6 +143,21 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason, const bool witnes
     return true;
 }
 
+static bool ExtractSubscript(const CScript& scriptSig, CScript& subscriptOut)
+{
+    // convert the scriptSig into a stack, so we can inspect the redeemScript
+    std::vector<std::vector<unsigned char>> stack;
+    if (!EvalScript(stack, scriptSig, SCRIPT_VERIFY_NONE, BaseSignatureChecker(), SigVersion::BASE)) {
+        return false;
+    }
+    if (stack.empty()) {
+        return false;
+    }
+
+    subscriptOut = CScript(stack.back().begin(), stack.back().end());
+    return true;
+}
+
 /**
  * Check transaction inputs to mitigate two
  * potential denial-of-service attacks:
@@ -177,14 +192,11 @@ bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
 
         if (whichType == TX_SCRIPTHASH)
         {
-            std::vector<std::vector<unsigned char> > stack;
-            // convert the scriptSig into a stack, so we can inspect the redeemScript
-            if (!EvalScript(stack, tx.vin[i].scriptSig, SCRIPT_VERIFY_NONE, BaseSignatureChecker(), SigVersion::BASE))
+            CScript redeemScript;
+            if (!ExtractSubscript(tx.vin[i].scriptSig, redeemScript)) {
                 return false;
-            if (stack.empty())
-                return false;
-            CScript subscript(stack.back().begin(), stack.back().end());
-            if (subscript.GetSigOpCount(true) > MAX_P2SH_SIGOPS) {
+            }
+            if (redeemScript.GetSigOpCount(true) > MAX_P2SH_SIGOPS) {
                 return false;
             }
         }
@@ -210,16 +222,11 @@ bool IsWitnessStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
         // get the scriptPubKey corresponding to this input:
         CScript prevScript = prev.scriptPubKey;
 
-        if (prevScript.IsPayToScriptHash()) {
-            std::vector <std::vector<unsigned char> > stack;
-            // If the scriptPubKey is P2SH, we try to extract the redeemScript casually by converting the scriptSig
-            // into a stack. We do not check IsPushOnly nor compare the hash as these will be done later anyway.
-            // If the check fails at this stage, we know that this txid must be a bad one.
-            if (!EvalScript(stack, tx.vin[i].scriptSig, SCRIPT_VERIFY_NONE, BaseSignatureChecker(), SigVersion::BASE))
-                return false;
-            if (stack.empty())
-                return false;
-            prevScript = CScript(stack.back().begin(), stack.back().end());
+        // If the scriptPubKey is P2SH, we try to extract the redeemScript casually by converting the scriptSig
+        // into a stack. We do not check IsPushOnly nor compare the hash as these will be done later anyway.
+        // If the check fails at this stage, we know that this txid must be a bad one.
+        if (prevScript.IsPayToScriptHash() && !ExtractSubscript(tx.vin[i].scriptSig, prevScript)) {
+            return false;
         }
 
         int witnessversion = 0;
