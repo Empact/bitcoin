@@ -92,19 +92,19 @@ bool CheckTxScriptsSanity(const CMutableTransaction& tx)
 {
     // Check input scripts for non-coinbase txs
     if (!CTransaction(tx).IsCoinBase()) {
-        for (unsigned int i = 0; i < tx.vin.size(); i++) {
-            if (!tx.vin[i].scriptSig.HasValidOps() || tx.vin[i].scriptSig.size() > MAX_SCRIPT_SIZE) {
+        for (const CTxIn& txin : tx.vin) {
+            if (!txin.scriptSig.HasValidOps() || txin.scriptSig.size() > MAX_SCRIPT_SIZE) {
                 return false;
             }
         }
     }
     // Check output scripts
-    for (unsigned int i = 0; i < tx.vout.size(); i++) {
-        if (!tx.vout[i].scriptPubKey.HasValidOps() || tx.vout[i].scriptPubKey.size() > MAX_SCRIPT_SIZE) {
+    for (const CTxOut& txout : tx.vout) {
+        if (!txout.scriptPubKey.HasValidOps() || txout.scriptPubKey.size() > MAX_SCRIPT_SIZE) {
             return false;
         }
     }
-    
+
     return true;
 }
 
@@ -139,7 +139,7 @@ bool DecodeHexTx(CMutableTransaction& tx, const std::string& hex_tx, bool try_no
             // Fall through.
         }
     }
-    
+
     return false;
 }
 

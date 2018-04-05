@@ -217,8 +217,8 @@ inline void UnserializeTransaction(TxType& tx, Stream& s) {
     if ((flags & 1) && fAllowWitness) {
         /* The witness flag is present, and we support witnesses. */
         flags ^= 1;
-        for (size_t i = 0; i < tx.vin.size(); i++) {
-            s >> tx.vin[i].scriptWitness.stack;
+        for (CTxIn& txin : tx.vin) {
+            s >> txin.scriptWitness.stack;
         }
     }
     if (flags) {
@@ -250,8 +250,8 @@ inline void SerializeTransaction(const TxType& tx, Stream& s) {
     s << tx.vin;
     s << tx.vout;
     if (flags & 1) {
-        for (size_t i = 0; i < tx.vin.size(); i++) {
-            s << tx.vin[i].scriptWitness.stack;
+        for (const CTxIn& txin : tx.vin) {
+            s << txin.scriptWitness.stack;
         }
     }
     s << tx.nLockTime;

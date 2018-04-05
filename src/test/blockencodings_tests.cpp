@@ -38,9 +38,9 @@ static CBlock BuildBlockTestCase() {
     block.vtx[1] = MakeTransactionRef(tx);
 
     tx.vin.resize(10);
-    for (size_t i = 0; i < tx.vin.size(); i++) {
-        tx.vin[i].prevout.hash = InsecureRand256();
-        tx.vin[i].prevout.n = 0;
+    for (CTxIn& txin : tx.vin) {
+        txin.prevout.hash = InsecureRand256();
+        txin.prevout.n = 0;
     }
     block.vtx[2] = MakeTransactionRef(tx);
 

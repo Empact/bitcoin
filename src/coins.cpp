@@ -226,8 +226,8 @@ CAmount CCoinsViewCache::GetValueIn(const CTransaction& tx) const
         return 0;
 
     CAmount nResult = 0;
-    for (unsigned int i = 0; i < tx.vin.size(); i++)
-        nResult += AccessCoin(tx.vin[i].prevout).out.nValue;
+    for (const CTxIn& txin : tx.vin)
+        nResult += AccessCoin(txin.prevout).out.nValue;
 
     return nResult;
 }
@@ -235,8 +235,8 @@ CAmount CCoinsViewCache::GetValueIn(const CTransaction& tx) const
 bool CCoinsViewCache::HaveInputs(const CTransaction& tx) const
 {
     if (!tx.IsCoinBase()) {
-        for (unsigned int i = 0; i < tx.vin.size(); i++) {
-            if (!HaveCoin(tx.vin[i].prevout)) {
+        for (const CTxIn& txin : tx.vin) {
+            if (!HaveCoin(txin.prevout)) {
                 return false;
             }
         }
