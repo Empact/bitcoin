@@ -42,10 +42,10 @@ public:
         chRejectCode = chRejectCodeIn;
         strRejectReason = strRejectReasonIn;
         strDebugMessage = strDebugMessageIn;
-        if (mode == MODE_ERROR)
-            return ret;
-        nDoS += level;
-        mode = MODE_INVALID;
+        if (mode == MODE_ERROR) {
+            nDoS += level;
+            mode = MODE_INVALID;
+        }
         return ret;
     }
     bool Invalid(bool ret, unsigned int _chRejectCode, const std::string &_strRejectReason,

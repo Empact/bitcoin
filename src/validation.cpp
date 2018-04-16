@@ -727,8 +727,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
         }
 
         if (nAbsurdFee && nFees > nAbsurdFee)
-            return state.Invalid(false,
-                REJECT_HIGHFEE, "absurdly-high-fee",
+            return state.Invalid(false, REJECT_HIGHFEE, "absurdly-high-fee",
                 strprintf("%d > %d", nFees, nAbsurdFee));
 
         // Calculate in-mempool ancestors, up to a limit.
