@@ -560,7 +560,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
 
     // Coinbase is only valid in a block, not as a loose transaction
     if (tx.IsCoinBase())
-        return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "coinbase");
+        return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "coinbase");
 
     // Reject transactions with witness before segregated witness activates (override with -prematurewitness)
     bool witnessEnabled = IsWitnessEnabled(chainActive.Tip(), chainparams.GetConsensus());
@@ -753,7 +753,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
             const uint256 &hashAncestor = ancestorIt->GetTx().GetHash();
             if (setConflicts.count(hashAncestor))
             {
-                return state.DoS(10, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-txns-spends-conflicting-tx",
+                return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-txns-spends-conflicting-tx",
                                  strprintf("%s spends conflicting transaction %s",
                                            hash.ToString(),
                                            hashAncestor.ToString()));
@@ -898,7 +898,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
                 !CheckInputs(tx, stateDummy, view, true, scriptVerifyFlags & ~SCRIPT_VERIFY_CLEANSTACK, true, false, txdata)) {
                 // Only the witness is missing, so the transaction itself may be fine.
                 state.SetCorruptionPossible();
-                state.DoS(state.GetDoS(), ValidationInvalidReason::WITNESS_MUTATED,
+                state.Invalid(ValidationInvalidReason::WITNESS_MUTATED,
                           state.GetRejectCode(), state.GetRejectReason(), state.GetDebugMessage());
             }
             return false; // state filled in by CheckInputs
@@ -1426,7 +1426,7 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
                     // as to the correct behavior - we may want to continue
                     // peering with non-upgraded nodes even after soft-fork
                     // super-majority signaling has occurred.
-                    return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, strprintf("mandatory-script-verify-flag-failed (%s)", ScriptErrorString(check.GetScriptError())));
+                    return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, strprintf("mandatory-script-verify-flag-failed (%s)", ScriptErrorString(check.GetScriptError())));
                 }
             }
 
@@ -1936,7 +1936,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
             for (size_t o = 0; o < tx->vout.size(); o++) {
                 if (view.HaveCoin(COutPoint(tx->GetHash(), o))) {
                     error("ConnectBlock(): tried to overwrite transaction");
-                    return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-txns-BIP30");
+                    return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-txns-BIP30");
                 }
             }
         }
@@ -1978,7 +1978,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
                 if (state.GetReason() == ValidationInvalidReason::MISSING_INPUTS) {
                     // CheckTxInputs may return MISSING_INPUTS but we can't return that, as
                     // its nonsense for a block, so we reset the reason flag to CONSENSUS here.
-                    state.DoS(state.GetDoS(), ValidationInvalidReason::CONSENSUS,
+                    state.Invalid(ValidationInvalidReason::CONSENSUS,
                               state.GetRejectCode(), state.GetRejectReason(), state.GetDebugMessage());
                 }
                 return error("%s: Consensus::CheckTxInputs: %s, %s", __func__, tx.GetHash().ToString(), FormatStateMessage(state));
@@ -1986,7 +1986,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
             nFees += txfee;
             if (!MoneyRange(nFees)) {
                 error("%s: accumulated fee in the block out of range.", __func__);
-                return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-txns-accumulated-fee-outofrange");
+                return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-txns-accumulated-fee-outofrange");
             }
 
             // Check that transaction is BIP68 final
@@ -1999,7 +1999,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
 
             if (!SequenceLocks(tx, nLockTimeFlags, &prevheights, *pindex)) {
                 error("%s: contains a non-BIP68-final transaction", __func__);
-                return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-txns-nonfinal");
+                return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-txns-nonfinal");
             }
         }
 
@@ -2010,7 +2010,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
         nSigOpsCost += GetTransactionSigOpCost(tx, view, flags);
         if (nSigOpsCost > MAX_BLOCK_SIGOPS_COST) {
             error("ConnectBlock(): too many sigops");
-            return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-blk-sigops");
+            return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-blk-sigops");
         }
 
         txdata.emplace_back(tx);
@@ -2023,7 +2023,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
                     // CheckInputs may return NOT_STANDARD for extra flags we passed,
                     // but we can't return that, as its nonsense, so we reset the
                     // reason flag to SOFT_FORK here.
-                    state.DoS(state.GetDoS(), ValidationInvalidReason::CONSENSUS,
+                    state.Invalid(ValidationInvalidReason::CONSENSUS,
                               state.GetRejectCode(), state.GetRejectReason(), state.GetDebugMessage());
                 }
                 return error("ConnectBlock(): CheckInputs on %s failed with %s",
@@ -2045,7 +2045,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
     if (block.vtx[0]->GetValueOut() > blockReward) {
         error("ConnectBlock(): coinbase pays too much (actual=%d vs limit=%d)",
               block.vtx[0]->GetValueOut(), blockReward);
-        return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-cb-amount");
+        return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-cb-amount");
     }
 
     // TODO: We should be able to ban peers that send us completely bogus scripts,
@@ -2054,7 +2054,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
     // CScriptCheck re-run just the failing script and inform us.
     if (!control.Wait()) {
         error("%s: CheckQueue failed", __func__);
-        return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "block-validation-failed");
+        return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "block-validation-failed");
     }
     int64_t nTime4 = GetTimeMicros(); nTimeVerify += nTime4 - nTime2;
     LogPrint(BCLog::BENCH, "    - Verify %u txins: %.2fms (%.3fms/txin) [%.2fs (%.2fms/blk)]\n", nInputs - 1, MILLI * (nTime4 - nTime2), nInputs <= 1 ? 0 : MILLI * (nTime4 - nTime2) / (nInputs-1), nTimeVerify * MICRO, nTimeVerify * MILLI / nBlocksTotal);
@@ -3051,7 +3051,7 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
 {
     // Check proof of work matches claimed amount
     if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
-        return state.DoS(50, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "high-hash", "proof of work failed");
+        return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "high-hash", "proof of work failed");
 
     return true;
 }
@@ -3074,7 +3074,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
         uint256 hashMerkleRoot2 = BlockMerkleRoot(block, &mutated);
         if (block.hashMerkleRoot != hashMerkleRoot2) {
             state.SetCorruptionPossible();
-            return state.DoS(100, ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-txnmrklroot", "hashMerkleRoot mismatch");
+            return state.Invalid(ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-txnmrklroot", "hashMerkleRoot mismatch");
         }
 
         // Check for merkle tree malleability (CVE-2012-2459): repeating sequences
@@ -3082,7 +3082,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
         // while still invalidating it.
         if (mutated) {
             state.SetCorruptionPossible();
-            return state.DoS(100, ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-txns-duplicate", "duplicate transaction");
+            return state.Invalid(ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-txns-duplicate", "duplicate transaction");
         }
     }
 
@@ -3094,14 +3094,14 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
 
     // Size limits
     if (block.vtx.empty() || block.vtx.size() * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT || ::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT)
-        return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-blk-length", "size limits failed");
+        return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-blk-length", "size limits failed");
 
     // First transaction must be coinbase, the rest must not be
     if (block.vtx.empty() || !block.vtx[0]->IsCoinBase())
-        return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-cb-missing", "first tx is not coinbase");
+        return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-cb-missing", "first tx is not coinbase");
     for (unsigned int i = 1; i < block.vtx.size(); i++)
         if (block.vtx[i]->IsCoinBase())
-            return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-cb-multiple", "more than one coinbase");
+            return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-cb-multiple", "more than one coinbase");
 
     // Check transactions
     for (const auto& tx : block.vtx) {
@@ -3117,7 +3117,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
         nSigOps += GetLegacySigOpCount(*tx);
     }
     if (nSigOps * WITNESS_SCALE_FACTOR > MAX_BLOCK_SIGOPS_COST)
-        return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-blk-sigops", "out-of-bounds SigOpCount");
+        return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-blk-sigops", "out-of-bounds SigOpCount");
 
     if (fCheckPOW && fCheckMerkleRoot)
         block.fChecked = true;
@@ -3204,7 +3204,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     // Check proof of work
     const Consensus::Params& consensusParams = params.GetConsensus();
     if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
-        return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-diffbits", "incorrect proof of work");
+        return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-diffbits", "incorrect proof of work");
 
     // Check against checkpoints
     if (fCheckpointsEnabled) {
@@ -3214,7 +3214,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
         CBlockIndex* pcheckpoint = Checkpoints::GetLastCheckpoint(params.Checkpoints());
         if (pcheckpoint && nHeight < pcheckpoint->nHeight) {
             error("%s: forked chain older than last checkpoint (height %d)", __func__, nHeight);
-            return state.DoS(100, ValidationInvalidReason::CHECKPOINT, REJECT_CHECKPOINT, "bad-fork-prior-to-checkpoint");
+            return state.Invalid(ValidationInvalidReason::CHECKPOINT, REJECT_CHECKPOINT, "bad-fork-prior-to-checkpoint");
         }
     }
 
@@ -3260,7 +3260,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     // Check that all transactions are finalized
     for (const auto& tx : block.vtx) {
         if (!IsFinalTx(*tx, nHeight, nLockTimeCutoff)) {
-            return state.DoS(10, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-txns-nonfinal", "non-final transaction");
+            return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-txns-nonfinal", "non-final transaction");
         }
     }
 
@@ -3270,7 +3270,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
         CScript expect = CScript() << nHeight;
         if (block.vtx[0]->vin[0].scriptSig.size() < expect.size() ||
             !std::equal(expect.begin(), expect.end(), block.vtx[0]->vin[0].scriptSig.begin())) {
-            return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-cb-height", "block height mismatch in coinbase");
+            return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-cb-height", "block height mismatch in coinbase");
         }
     }
 
@@ -3293,12 +3293,12 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
             // witness tree.
             if (block.vtx[0]->vin[0].scriptWitness.stack.size() != 1 || block.vtx[0]->vin[0].scriptWitness.stack[0].size() != 32) {
                 state.SetCorruptionPossible();
-                return state.DoS(100, ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-witness-nonce-size", strprintf("%s : invalid witness reserved value size", __func__));
+                return state.Invalid(ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-witness-nonce-size", strprintf("%s : invalid witness reserved value size", __func__));
             }
             CHash256().Write(hashWitness.begin(), 32).Write(&block.vtx[0]->vin[0].scriptWitness.stack[0][0], 32).Finalize(hashWitness.begin());
             if (memcmp(hashWitness.begin(), &block.vtx[0]->vout[commitpos].scriptPubKey[6], 32)) {
                 state.SetCorruptionPossible();
-                return state.DoS(100, ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-witness-merkle-match", strprintf("%s : witness merkle commitment mismatch", __func__));
+                return state.Invalid(ValidationInvalidReason::MUTATED, REJECT_INVALID, "bad-witness-merkle-match", strprintf("%s : witness merkle commitment mismatch", __func__));
             }
             fHaveWitness = true;
         }
@@ -3309,7 +3309,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
       for (const auto& tx : block.vtx) {
             if (tx->HasWitness()) {
                 state.SetCorruptionPossible();
-                return state.DoS(100, ValidationInvalidReason::MUTATED, REJECT_INVALID, "unexpected-witness", strprintf("%s : unexpected witness data found", __func__));
+                return state.Invalid(ValidationInvalidReason::MUTATED, REJECT_INVALID, "unexpected-witness", strprintf("%s : unexpected witness data found", __func__));
             }
         }
     }
@@ -3323,7 +3323,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     if (GetBlockWeight(block) > MAX_BLOCK_WEIGHT) {
         // We can call this a consensus failure as any data-providers who provided
         // us with witness data can be expected to support SegWit validation.
-        return state.DoS(100, ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-blk-weight", strprintf("%s : weight limit failed", __func__));
+        return state.Invalid(ValidationInvalidReason::CONSENSUS, REJECT_INVALID, "bad-blk-weight", strprintf("%s : weight limit failed", __func__));
     }
 
     return true;
@@ -3357,12 +3357,12 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
         BlockMap::iterator mi = mapBlockIndex.find(block.hashPrevBlock);
         if (mi == mapBlockIndex.end()) {
             error("%s: prev block not found", __func__);
-            return state.DoS(10, ValidationInvalidReason::MISSING_PREV, 0, "prev-blk-not-found");
+            return state.Invalid(ValidationInvalidReason::MISSING_PREV, 0, "prev-blk-not-found");
         }
         pindexPrev = (*mi).second;
         if (pindexPrev->nStatus & BLOCK_FAILED_MASK) {
             error("%s: prev block invalid", __func__);
-            return state.DoS(100, ValidationInvalidReason::INVALID_PREV, REJECT_INVALID, "bad-prevblk");
+            return state.Invalid(ValidationInvalidReason::INVALID_PREV, REJECT_INVALID, "bad-prevblk");
         }
         if (!ContextualCheckBlockHeader(block, state, chainparams, pindexPrev, GetAdjustedTime()))
             return error("%s: Consensus::ContextualCheckBlockHeader: %s, %s", __func__, hash.ToString(), FormatStateMessage(state));
@@ -3378,7 +3378,7 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
                         invalid_walk = invalid_walk->pprev;
                     }
                     error("%s: prev block invalid", __func__);
-                    return state.DoS(100, ValidationInvalidReason::INVALID_PREV, REJECT_INVALID, "bad-prevblk");
+                    return state.Invalid(ValidationInvalidReason::INVALID_PREV, REJECT_INVALID, "bad-prevblk");
                 }
             }
         }
