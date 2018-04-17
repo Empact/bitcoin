@@ -792,25 +792,25 @@ void Misbehaving(NodeId pnode, int howmuch, const std::string& message)
  */
 static bool MayResultInDisconnect(const CValidationState& state, bool via_compact_block) {
     switch (state.GetReason()) {
-    case ValidationInvalidReason::NONE:
+    case InvalidReason::NONE:
         return false;
     // The node is mean:
-    case ValidationInvalidReason::CONSENSUS:
-    case ValidationInvalidReason::MUTATED:
-    case ValidationInvalidReason::UNKNOWN_INVALID: // Really "duplicate of invalid "
+    case InvalidReason::CONSENSUS:
+    case InvalidReason::MUTATED:
+    case InvalidReason::UNKNOWN_INVALID: // Really "duplicate of invalid "
         if (via_compact_block) return false;
-    case ValidationInvalidReason::CHECKPOINT:
-    case ValidationInvalidReason::INVALID_PREV:
-    case ValidationInvalidReason::MISSING_PREV:
+    case InvalidReason::CHECKPOINT:
+    case InvalidReason::INVALID_PREV:
+    case InvalidReason::MISSING_PREV:
         return true;
     // Speed-of-light or out-of-sync:
-    case ValidationInvalidReason::RECENT_CONSENSUS_CHANGE:
-    case ValidationInvalidReason::BAD_TIME:
-    case ValidationInvalidReason::NOT_STANDARD:
-    case ValidationInvalidReason::MISSING_INPUTS:
-    case ValidationInvalidReason::WITNESS_MUTATED:
-    case ValidationInvalidReason::CONFLICT:
-    case ValidationInvalidReason::MEMPOOL_LIMIT:
+    case InvalidReason::RECENT_CONSENSUS_CHANGE:
+    case InvalidReason::BAD_TIME:
+    case InvalidReason::NOT_STANDARD:
+    case InvalidReason::MISSING_INPUTS:
+    case InvalidReason::WITNESS_MUTATED:
+    case InvalidReason::CONFLICT:
+    case InvalidReason::MEMPOOL_LIMIT:
         return false;
     }
     return false;
@@ -819,35 +819,35 @@ static bool MayResultInDisconnect(const CValidationState& state, bool via_compac
 //! Returns true if the peer was punished (probably disconnected)
 static bool MaybePunishNode(NodeId nodeid, const CValidationState& state, bool via_compact_block, const std::string& message = "") {
     switch (state.GetReason()) {
-    case ValidationInvalidReason::NONE:
+    case InvalidReason::NONE:
         break;
     // The node is mean:
-    case ValidationInvalidReason::CONSENSUS:
-    case ValidationInvalidReason::MUTATED:
-    case ValidationInvalidReason::UNKNOWN_INVALID: // Really "duplicate of invalid"
+    case InvalidReason::CONSENSUS:
+    case InvalidReason::MUTATED:
+    case InvalidReason::UNKNOWN_INVALID: // Really "duplicate of invalid"
         if (via_compact_block) break;
-    case ValidationInvalidReason::CHECKPOINT:
-    case ValidationInvalidReason::INVALID_PREV:
+    case InvalidReason::CHECKPOINT:
+    case InvalidReason::INVALID_PREV:
         {
             LOCK(cs_main);
             Misbehaving(nodeid, 100, message);
         }
         return true;
     // Speed-of-light or out-of-sync:
-    case ValidationInvalidReason::MISSING_PREV:
+    case InvalidReason::MISSING_PREV:
         {
             // TODO: Handle this much more gracefully
             LOCK(cs_main);
             Misbehaving(nodeid, 10, message);
         }
         return true;
-    case ValidationInvalidReason::RECENT_CONSENSUS_CHANGE:
-    case ValidationInvalidReason::BAD_TIME:
-    case ValidationInvalidReason::NOT_STANDARD:
-    case ValidationInvalidReason::MISSING_INPUTS:
-    case ValidationInvalidReason::WITNESS_MUTATED:
-    case ValidationInvalidReason::CONFLICT:
-    case ValidationInvalidReason::MEMPOOL_LIMIT:
+    case InvalidReason::RECENT_CONSENSUS_CHANGE:
+    case InvalidReason::BAD_TIME:
+    case InvalidReason::NOT_STANDARD:
+    case InvalidReason::MISSING_INPUTS:
+    case InvalidReason::WITNESS_MUTATED:
+    case InvalidReason::CONFLICT:
+    case InvalidReason::MEMPOOL_LIMIT:
         break;
     }
     return false;
@@ -1432,7 +1432,7 @@ bool static ProcessHeadersMessage(CNode *pfrom, CConnman *connman, const std::ve
     CBlockHeader first_invalid_header;
     if (!ProcessNewBlockHeaders(headers, state, chainparams, &pindexLast, &first_invalid_header)) {
         if (state.IsInvalid()) {
-            if (punish_duplicate_invalid && state.GetReason() == ValidationInvalidReason::UNKNOWN_INVALID) {
+            if (punish_duplicate_invalid && state.GetReason() == InvalidReason::UNKNOWN_INVALID) {
                 // Goal: don't allow outbound peers to use up our outbound
                 // connection slots if they are on incompatible chains.
                 //
@@ -2298,7 +2298,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                         // Probably non-standard or insufficient fee
                         LogPrint(BCLog::MEMPOOL, "   removed orphan tx %s\n", orphanHash.ToString());
                         vEraseQueue.push_back(orphanHash);
-                        if (!orphanTx.HasWitness() && state.GetReason() != ValidationInvalidReason::WITNESS_MUTATED) {
+                        if (!orphanTx.HasWitness() && state.GetReason() != InvalidReason::WITNESS_MUTATED) {
                             // Do not use rejection cache for witness transactions or
                             // witness-stripped transactions, as they can have been malleated.
                             // See https://github.com/bitcoin/bitcoin/issues/8279 for details.
@@ -2344,7 +2344,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 recentRejects->insert(tx.GetHash());
             }
         } else {
-            if (!tx.HasWitness() && state.GetReason() != ValidationInvalidReason::WITNESS_MUTATED) {
+            if (!tx.HasWitness() && state.GetReason() != InvalidReason::WITNESS_MUTATED) {
                 // Do not use rejection cache for witness transactions or
                 // witness-stripped transactions, as they can have been malleated.
                 // See https://github.com/bitcoin/bitcoin/issues/8279 for details.

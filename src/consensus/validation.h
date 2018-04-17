@@ -28,7 +28,7 @@ static const unsigned char REJECT_CHECKPOINT = 0x43;
   * These are much more granular than the rejection codes, which may be more
   * useful for some other use-cases.
   */
-enum class ValidationInvalidReason {
+enum class InvalidReason {
     // txn and blocks:
     NONE,                    //!< not actually invalid
     CONSENSUS,               //!< invalid by consensus rules (excluding any below reasons)
@@ -63,13 +63,13 @@ private:
         MODE_INVALID, //!< network rule violation (DoS value may be set)
         MODE_ERROR,   //!< run-time error
     } mode;
-    ValidationInvalidReason reason;
+    InvalidReason reason;
     std::string strRejectReason;
     unsigned int chRejectCode;
     std::string strDebugMessage;
 public:
-    CValidationState() : mode(MODE_VALID), reason(ValidationInvalidReason::NONE), chRejectCode(0) {}
-    bool Invalid(ValidationInvalidReason reasonIn, unsigned int chRejectCodeIn, const std::string &strRejectReasonIn,
+    CValidationState() : mode(MODE_VALID), reason(InvalidReason::NONE), chRejectCode(0) {}
+    bool Invalid(InvalidReason reasonIn, unsigned int chRejectCodeIn, const std::string &strRejectReasonIn,
              const std::string &strDebugMessageIn="") {
         reason = reasonIn;
         chRejectCode = chRejectCodeIn;
@@ -95,7 +95,7 @@ public:
     bool IsError() const {
         return mode == MODE_ERROR;
     }
-    ValidationInvalidReason GetReason() const { return reason; }
+    InvalidReason GetReason() const { return reason; }
     unsigned int GetRejectCode() const { return chRejectCode; }
     std::string GetRejectReason() const { return strRejectReason; }
     std::string GetDebugMessage() const { return strDebugMessage; }

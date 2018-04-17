@@ -202,7 +202,7 @@ ReadStatus PartiallyDownloadedBlock::FillBlock(CBlock& block, const std::vector<
         // but that is expensive, and CheckBlock caches a block's
         // "checked-status" (in the CBlock?). CBlock should be able to
         // check its own merkle root and cache that check.
-        if (state.GetReason() == ValidationInvalidReason::MUTATED)
+        if (state.GetReason() == InvalidReason::MUTATED)
             return READ_STATUS_FAILED; // Possible Short ID collision
         return READ_STATUS_CHECKBLOCK_FAILED;
     }

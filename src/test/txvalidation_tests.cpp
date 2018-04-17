@@ -54,7 +54,7 @@ BOOST_FIXTURE_TEST_CASE(tx_mempool_reject_coinbase, TestChain100Setup)
     BOOST_CHECK_EQUAL(state.GetRejectReason(), "coinbase");
 
     BOOST_CHECK_EQUAL(state.IsInvalid(), true);
-    BOOST_CHECK(state.GetReason() == ValidationInvalidReason::CONSENSUS);
+    BOOST_CHECK(state.GetReason() == InvalidReason::CONSENSUS);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
