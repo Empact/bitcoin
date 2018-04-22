@@ -13,6 +13,7 @@
 
 #include <vector>
 #include <map>
+#include <tuple>
 
 #include <boost/test/unit_test.hpp>
 

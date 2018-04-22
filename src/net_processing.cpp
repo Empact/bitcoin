@@ -31,6 +31,7 @@
 #include <utilstrencodings.h>
 
 #include <memory>
+#include <tuple>
 
 #if defined(NDEBUG)
 # error "Bitcoin cannot be compiled without assertions."

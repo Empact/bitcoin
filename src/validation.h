@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <string>
 #include <utility>
+#include <unordered_map>
 #include <vector>
 
 #include <atomic>

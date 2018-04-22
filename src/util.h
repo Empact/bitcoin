@@ -28,7 +28,6 @@
 #include <set>
 #include <stdint.h>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include <boost/signals2/signal.hpp>
