@@ -19,6 +19,7 @@
 #include <script/sign.h>
 #include <univalue.h>
 #include <util.h>
+#include <utilexception.h>
 #include <utilmoneystr.h>
 #include <utilstrencodings.h>
 

@@ -20,6 +20,7 @@
 #include <sync.h>
 #include <tinyformat.h>
 #include <utiltime.h>
+#include <utilexception.h>
 
 #include <atomic>
 #include <exception>
@@ -61,14 +62,6 @@ inline std::string _(const char* psz)
 void SetupEnvironment();
 bool SetupNetworking();
 
-template<typename... Args>
-bool error(const char* fmt, const Args&... args)
-{
-    LogPrintf("ERROR: %s\n", tfm::format(fmt, args...));
-    return false;
-}
-
-void PrintExceptionContinue(const std::exception *pex, const char* pszThread);
 bool FileCommit(FILE *file);
 bool TruncateFile(FILE *file, unsigned int length);
 int RaiseFileDescriptorLimit(int nMinFD);

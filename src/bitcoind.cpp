@@ -17,6 +17,7 @@
 #include <util.h>
 #include <httpserver.h>
 #include <httprpc.h>
+#include <utilexception.h>
 #include <utilstrencodings.h>
 #include <walletinitinterface.h>
 

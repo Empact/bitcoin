@@ -13,6 +13,7 @@
 #include <streams.h>
 #include <tinyformat.h>
 #include <util.h>
+#include <utilerror.h>
 
 namespace {
 

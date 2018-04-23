@@ -18,6 +18,7 @@
 #include <netbase.h>
 #include <scheduler.h>
 #include <ui_interface.h>
+#include <utilerror.h>
 #include <utilmemory.h>
 #include <utilstrencodings.h>
 

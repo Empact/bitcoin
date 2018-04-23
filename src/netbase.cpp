@@ -11,6 +11,7 @@
 #include <random.h>
 #include <tinyformat.h>
 #include <util.h>
+#include <utilerror.h>
 #include <utilstrencodings.h>
 
 #include <atomic>

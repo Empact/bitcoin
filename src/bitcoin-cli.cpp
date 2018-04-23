@@ -13,6 +13,7 @@
 #include <rpc/client.h>
 #include <rpc/protocol.h>
 #include <util.h>
+#include <utilexception.h>
 #include <utilstrencodings.h>
 
 #include <memory>

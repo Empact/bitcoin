@@ -33,6 +33,7 @@
 #include <ui_interface.h>
 #include <uint256.h>
 #include <util.h>
+#include <utilexception.h>
 #include <warnings.h>
 
 #include <walletinitinterface.h>
