@@ -141,6 +141,23 @@ bool ShutdownRequested()
     return fRequestShutdown;
 }
 
+#ifndef WIN32
+fs::path GetPidFile()
+{
+    return AbsPathForConfigVal(fs::path(gArgs.GetArg("-pid", BITCOIN_PID_FILENAME)));
+}
+
+void CreatePidFile(const fs::path &path, pid_t pid)
+{
+    FILE* file = fsbridge::fopen(path, "w");
+    if (file)
+    {
+        fprintf(file, "%d\n", pid);
+        fclose(file);
+    }
+}
+#endif
+
 /**
  * This is a minimally invasive approach to shutdown on LevelDB read errors from the
  * chainstate, while keeping user interface out of the common library, which is shared
