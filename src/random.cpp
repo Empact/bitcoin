@@ -14,6 +14,7 @@
 #include <util.h>             // for LogPrint()
 #include <utilstrencodings.h> // for GetTime()
 
+#include <errno.h>
 #include <stdlib.h>
 #include <chrono>
 #include <thread>

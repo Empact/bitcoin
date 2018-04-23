@@ -20,10 +20,8 @@
 #include <sync.h>
 #include <tinyformat.h>
 #include <utiltime.h>
-#include <utilexception.h>
 
 #include <atomic>
-#include <exception>
 #include <map>
 #include <set>
 #include <stdint.h>
@@ -31,7 +29,6 @@
 #include <vector>
 
 #include <boost/signals2/signal.hpp>
-#include <boost/thread/condition_variable.hpp> // for boost::thread_interrupted
 
 // Application startup time (used for uptime calculation)
 int64_t GetStartupTime();
@@ -84,7 +81,6 @@ fs::path GetConfigFile(const std::string& confPath);
 #ifdef WIN32
 fs::path GetSpecialFolderPath(int nFolder, bool fCreate = true);
 #endif
-void runCommand(const std::string& strCommand);
 
 /**
  * Most paths passed as configuration arguments are treated as relative to
@@ -276,45 +272,6 @@ std::string HelpMessageOpt(const std::string& option, const std::string& message
  */
 int GetNumCores();
 
-void RenameThread(const char* name);
-
-/**
- * .. and a wrapper that just calls func once
- */
-template <typename Callable> void TraceThread(const char* name,  Callable func)
-{
-    std::string s = strprintf("bitcoin-%s", name);
-    RenameThread(s.c_str());
-    try
-    {
-        LogPrintf("%s thread start\n", name);
-        func();
-        LogPrintf("%s thread exit\n", name);
-    }
-    catch (const boost::thread_interrupted&)
-    {
-        LogPrintf("%s thread interrupt\n", name);
-        throw;
-    }
-    catch (const std::exception& e) {
-        PrintExceptionContinue(&e, name);
-        throw;
-    }
-    catch (...) {
-        PrintExceptionContinue(nullptr, name);
-        throw;
-    }
-}
-
 std::string CopyrightHolders(const std::string& strPrefix);
-
-/**
- * On platforms that support it, tell the kernel the calling thread is
- * CPU-intensive and non-interactive. See SCHED_BATCH in sched(7) for details.
- *
- * @return The return value of sched_setschedule(), or 1 on systems without
- * sched_setchedule().
- */
-int ScheduleBatchPriority(void);
 
 #endif // BITCOIN_UTIL_H

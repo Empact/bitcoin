@@ -19,6 +19,7 @@
 #include <atomic>
 
 #include <boost/thread.hpp>
+#include <boost/thread/condition_variable.hpp> // for boost::thread_interrupted
 
 //
 // WalletBatch

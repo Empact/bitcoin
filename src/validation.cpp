@@ -39,6 +39,7 @@
 #include <utilerror.h>
 #include <utilmoneystr.h>
 #include <utilstrencodings.h>
+#include <utilthread.h>
 #include <validationinterface.h>
 #include <warnings.h>
 

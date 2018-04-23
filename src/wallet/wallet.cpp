@@ -27,6 +27,7 @@
 #include <txmempool.h>
 #include <utilmemory.h>
 #include <utilmoneystr.h>
+#include <utilthread.h>
 #include <wallet/fees.h>
 #include <wallet/walletutil.h>
 

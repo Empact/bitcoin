@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/thread/condition_variable.hpp> // for boost::thread_interrupted
 
 static bool fCreateBlank;
 static std::map<std::string,UniValue> registers;
