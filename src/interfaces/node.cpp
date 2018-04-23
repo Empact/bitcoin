@@ -25,6 +25,7 @@
 #include <txmempool.h>
 #include <ui_interface.h>
 #include <util.h>
+#include <utilmemory.h>
 #include <validation.h>
 #include <warnings.h>
 

@@ -24,7 +24,6 @@
 #include <atomic>
 #include <exception>
 #include <map>
-#include <memory>
 #include <set>
 #include <stdint.h>
 #include <string>
@@ -315,13 +314,6 @@ template <typename Callable> void TraceThread(const char* name,  Callable func)
 }
 
 std::string CopyrightHolders(const std::string& strPrefix);
-
-//! Substitute for C++14 std::make_unique.
-template <typename T, typename... Args>
-std::unique_ptr<T> MakeUnique(Args&&... args)
-{
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
 
 /**
  * On platforms that support it, tell the kernel the calling thread is

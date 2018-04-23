@@ -5,9 +5,10 @@
 #include <interfaces/handler.h>
 
 #include <util.h>
+#include <utilmemory.h>
 
 #include <boost/signals2/connection.hpp>
-#include <utility>
+#include <utility> // std::move
 
 namespace interfaces {
 namespace {

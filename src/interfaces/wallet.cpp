@@ -20,6 +20,7 @@
 #include <timedata.h>
 #include <ui_interface.h>
 #include <uint256.h>
+#include <utilmemory.h>
 #include <validation.h>
 #include <wallet/feebumper.h>
 #include <wallet/fees.h>

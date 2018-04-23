@@ -25,6 +25,7 @@
 #include <script/script.h>
 #include <timedata.h>
 #include <txmempool.h>
+#include <utilmemory.h>
 #include <utilmoneystr.h>
 #include <wallet/fees.h>
 #include <wallet/walletutil.h>

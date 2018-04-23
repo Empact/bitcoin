@@ -12,6 +12,7 @@
 #include <streams.h>
 #include <sync.h>
 #include <util.h>
+#include <utilmemory.h>
 #include <version.h>
 
 #include <atomic>

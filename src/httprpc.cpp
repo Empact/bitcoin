@@ -12,6 +12,7 @@
 #include <random.h>
 #include <sync.h>
 #include <util.h>
+#include <utilmemory.h>
 #include <utilstrencodings.h>
 #include <ui_interface.h>
 #include <crypto/hmac_sha256.h>
