@@ -20,6 +20,7 @@
 #include <rpc/blockchain.h>
 #include <rpc/mining.h>
 #include <rpc/server.h>
+#include <tinyformat.h>
 #include <txmempool.h>
 #include <util.h>
 #include <utilstrencodings.h>

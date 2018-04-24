@@ -18,7 +18,6 @@
 #include <fs.h>
 #include <logging.h>
 #include <sync.h>
-#include <tinyformat.h>
 #include <utiltime.h>
 
 #include <atomic>

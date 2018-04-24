@@ -21,6 +21,7 @@
 #include <init.h>
 #include <interfaces/node.h>
 #include <util.h>
+#include <tinyformat.h>
 
 #include <stdio.h>
 

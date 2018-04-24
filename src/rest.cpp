@@ -15,6 +15,7 @@
 #include <rpc/server.h>
 #include <streams.h>
 #include <sync.h>
+#include <tinyformat.h>
 #include <txmempool.h>
 #include <utilstrencodings.h>
 #include <version.h>

@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <logging.h>
+#include <tinyformat.h>
 #include <utiltime.h>
 
 const char * const DEFAULT_DEBUGLOGFILE = "debug.log";

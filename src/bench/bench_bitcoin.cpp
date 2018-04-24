@@ -9,6 +9,7 @@
 #include <validation.h>
 #include <util.h>
 #include <random.h>
+#include <tinyformat.h>
 
 #include <boost/lexical_cast.hpp>
 

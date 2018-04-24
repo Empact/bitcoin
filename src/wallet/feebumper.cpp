@@ -11,6 +11,7 @@
 #include <policy/policy.h>
 #include <policy/rbf.h>
 #include <validation.h> //for mempool access
+#include <tinyformat.h>
 #include <txmempool.h>
 #include <utilmoneystr.h>
 #include <util.h>

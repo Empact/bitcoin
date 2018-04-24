@@ -14,6 +14,7 @@
 #include <rpc/server.h>
 #include <init.h>
 #include <noui.h>
+#include <tinyformat.h>
 #include <util.h>
 #include <httpserver.h>
 #include <httprpc.h>

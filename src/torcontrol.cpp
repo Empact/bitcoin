@@ -8,6 +8,7 @@
 #include <netbase.h>
 #include <net.h>
 #include <util.h>
+#include <tinyformat.h>
 #include <utilthread.h>
 #include <crypto/hmac_sha256.h>
 

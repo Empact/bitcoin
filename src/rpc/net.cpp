@@ -15,6 +15,7 @@
 #include <rpc/protocol.h>
 #include <sync.h>
 #include <timedata.h>
+#include <tinyformat.h>
 #include <ui_interface.h>
 #include <util.h>
 #include <utilstrencodings.h>

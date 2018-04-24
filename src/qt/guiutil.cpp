@@ -18,6 +18,7 @@
 #include <protocol.h>
 #include <script/script.h>
 #include <script/standard.h>
+#include <tinyformat.h>
 #include <util.h>
 
 #ifdef WIN32

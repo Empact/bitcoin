@@ -8,6 +8,7 @@
 #include <addrman.h>
 #include <hash.h>
 #include <protocol.h>
+#include <tinyformat.h>
 #include <utilmemory.h>
 #include <utilstrencodings.h>
 #include <wallet/walletutil.h>

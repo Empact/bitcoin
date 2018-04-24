@@ -13,6 +13,7 @@
 #include <consensus/validation.h>
 #include <rpc/server.h>
 #include <test/test_bitcoin.h>
+#include <tinyformat.h>
 #include <utilmemory.h>
 #include <validation.h>
 #include <wallet/coincontrol.h>

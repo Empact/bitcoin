@@ -7,6 +7,7 @@
 #include <clientversion.h>
 #include <primitives/transaction.h>
 #include <sync.h>
+#include <tinyformat.h>
 #include <utilstrencodings.h>
 #include <utilmoneystr.h>
 #include <test/test_bitcoin.h>

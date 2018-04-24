@@ -17,6 +17,7 @@
 #include <primitives/transaction.h>
 #include <script/script.h>
 #include <script/sign.h>
+#include <tinyformat.h>
 #include <univalue.h>
 #include <util.h>
 #include <utilexception.h>

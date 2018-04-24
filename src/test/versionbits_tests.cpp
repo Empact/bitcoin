@@ -6,6 +6,7 @@
 #include <versionbits.h>
 #include <test/test_bitcoin.h>
 #include <chainparams.h>
+#include <tinyformat.h>
 #include <validation.h>
 #include <consensus/params.h>
 

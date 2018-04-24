@@ -9,6 +9,7 @@
 #include <hash.h>
 #include <netbase.h>
 #include <random.h>
+#include <tinyformat.h>
 
 class CAddrManTest : public CAddrMan
 {

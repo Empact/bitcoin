@@ -17,6 +17,7 @@
 #include <primitives/transaction.h>
 #include <netbase.h>
 #include <scheduler.h>
+#include <tinyformat.h>
 #include <ui_interface.h>
 #include <utilerror.h>
 #include <utilmemory.h>

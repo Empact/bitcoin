@@ -36,6 +36,7 @@
 #include <script/sigcache.h>
 #include <scheduler.h>
 #include <timedata.h>
+#include <tinyformat.h>
 #include <txdb.h>
 #include <txmempool.h>
 #include <torcontrol.h>

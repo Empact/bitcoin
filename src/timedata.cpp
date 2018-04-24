@@ -12,6 +12,7 @@
 #include <sync.h>
 #include <ui_interface.h>
 #include <util.h>
+#include <tinyformat.h>
 #include <utilstrencodings.h>
 #include <warnings.h>
 

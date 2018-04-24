@@ -8,6 +8,7 @@
 
 #include <chainparams.h>
 #include <qt/test/rpcnestedtests.h>
+#include <tinyformat.h>
 #include <util.h>
 #include <qt/test/uritests.h>
 #include <qt/test/compattests.h>

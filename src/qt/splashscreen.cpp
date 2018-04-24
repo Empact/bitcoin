@@ -15,6 +15,7 @@
 #include <interfaces/handler.h>
 #include <interfaces/node.h>
 #include <interfaces/wallet.h>
+#include <tinyformat.h>
 #include <util.h>
 #include <ui_interface.h>
 #include <version.h>

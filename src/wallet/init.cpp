@@ -8,6 +8,7 @@
 #include <net.h>
 #include <scheduler.h>
 #include <util.h>
+#include <tinyformat.h>
 #include <utilmoneystr.h>
 #include <validation.h>
 #include <walletinitinterface.h>

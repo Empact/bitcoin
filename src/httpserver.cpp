@@ -12,6 +12,7 @@
 #include <netbase.h>
 #include <rpc/protocol.h> // For HTTP status codes
 #include <sync.h>
+#include <tinyformat.h>
 #include <ui_interface.h>
 
 #include <memory>

@@ -9,6 +9,7 @@
 #include <script/script.h>
 #include <script/standard.h>
 #include <sync.h>
+#include <tinyformat.h>
 #include <util.h>
 #include <utiltime.h>
 #include <wallet/wallet.h>

@@ -24,6 +24,7 @@
 #include <primitives/transaction.h>
 #include <script/script.h>
 #include <timedata.h>
+#include <tinyformat.h>
 #include <txmempool.h>
 #include <utilmemory.h>
 #include <utilmoneystr.h>

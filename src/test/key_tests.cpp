@@ -6,6 +6,7 @@
 
 #include <key_io.h>
 #include <script/script.h>
+#include <tinyformat.h>
 #include <uint256.h>
 #include <util.h>
 #include <utilstrencodings.h>

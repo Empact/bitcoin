@@ -15,6 +15,7 @@
 #include <streams.h>
 #include <timedata.h>
 #include <util.h>
+#include <tinyformat.h>
 #include <utilmoneystr.h>
 #include <utiltime.h>
 
