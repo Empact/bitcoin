@@ -16,7 +16,6 @@
 
 #include <compat.h>
 #include <fs.h>
-#include <logging.h>
 #include <sync.h>
 
 #include <atomic>

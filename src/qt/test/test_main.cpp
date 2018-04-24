@@ -10,6 +10,7 @@
 #include <qt/test/rpcnestedtests.h>
 #include <tinyformat.h>
 #include <util.h>
+#include <utiltime.h>
 #include <qt/test/uritests.h>
 #include <qt/test/compattests.h>
 

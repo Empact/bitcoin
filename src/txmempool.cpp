@@ -9,6 +9,7 @@
 #include <consensus/tx_verify.h>
 #include <consensus/validation.h>
 #include <validation.h>
+#include <logging.h>
 #include <policy/policy.h>
 #include <policy/fees.h>
 #include <reverse_iterator.h>
@@ -285,7 +286,7 @@ void CTxMemPool::UpdateForRemoveFromMempool(const setEntries &entriesToRemove, b
         // should be a bit faster.
         // However, if we happen to be in the middle of processing a reorg, then
         // the mempool can be in an inconsistent state.  In this case, the set
-        // of ancestors reachable via mapLinks will be the same as the set of 
+        // of ancestors reachable via mapLinks will be the same as the set of
         // ancestors whose packages include this transaction, because when we
         // add a new transaction to the mempool in addUnchecked(), we assume it
         // has no children, and in the case of a reorg where that assumption is

@@ -8,6 +8,7 @@
 #include <version.h>
 #include <validation.h>
 #include <streams.h>
+#include <logging.h>
 #include <util.h>
 
 void zmqError(const char *str)

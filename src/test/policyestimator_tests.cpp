@@ -7,6 +7,7 @@
 #include <txmempool.h>
 #include <uint256.h>
 #include <util.h>
+#include <utiltime.h>
 
 #include <test/test_bitcoin.h>
 

@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <wallet/coinselection.h>
+#include <logging.h>
 #include <util.h>
 #include <utilmoneystr.h>
 

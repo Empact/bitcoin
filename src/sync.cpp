@@ -4,11 +4,12 @@
 
 #include <sync.h>
 
-#include <memory>
-#include <set>
+#include <logging.h>
 #include <util.h>
 #include <utilstrencodings.h>
 
+#include <memory>
+#include <set>
 #include <stdio.h>
 
 #ifdef DEBUG_LOCKCONTENTION

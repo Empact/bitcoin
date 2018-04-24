@@ -6,6 +6,7 @@
 #include <rpc/protocol.h>
 
 #include <random.h>
+#include <logging.h>
 #include <tinyformat.h>
 #include <util.h>
 #include <utilstrencodings.h>

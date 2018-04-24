@@ -11,6 +11,7 @@
 #include <key_io.h>
 #include <validation.h>
 #include <httpserver.h>
+#include <logging.h>
 #include <net.h>
 #include <netbase.h>
 #include <rpc/blockchain.h>

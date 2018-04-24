@@ -9,6 +9,7 @@
 #include <util.h>
 #include <utilstrencodings.h>
 #include <utilthread.h>
+#include <logging.h>
 #include <netbase.h>
 #include <rpc/protocol.h> // For HTTP status codes
 #include <sync.h>

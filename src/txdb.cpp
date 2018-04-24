@@ -7,8 +7,9 @@
 
 #include <chainparams.h>
 #include <hash.h>
-#include <random.h>
+#include <logging.h>
 #include <pow.h>
+#include <random.h>
 #include <uint256.h>
 #include <util.h>
 #include <utilerror.h>
@@ -56,7 +57,7 @@ struct CoinEntry {
 
 }
 
-CCoinsViewDB::CCoinsViewDB(size_t nCacheSize, bool fMemory, bool fWipe) : db(GetDataDir() / "chainstate", nCacheSize, fMemory, fWipe, true) 
+CCoinsViewDB::CCoinsViewDB(size_t nCacheSize, bool fMemory, bool fWipe) : db(GetDataDir() / "chainstate", nCacheSize, fMemory, fWipe, true)
 {
 }
 

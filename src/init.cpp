@@ -22,6 +22,7 @@
 #include <index/txindex.h>
 #include <key.h>
 #include <validation.h>
+#include <logging.h>
 #include <miner.h>
 #include <netbase.h>
 #include <net.h>
@@ -42,6 +43,7 @@
 #include <torcontrol.h>
 #include <ui_interface.h>
 #include <util.h>
+#include <utilmemory.h>
 #include <utilmoneystr.h>
 #include <utilthread.h>
 #include <utiltime.h>

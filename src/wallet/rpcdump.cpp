@@ -5,6 +5,7 @@
 #include <chain.h>
 #include <key_io.h>
 #include <rpc/server.h>
+#include <logging.h>
 #include <validation.h>
 #include <script/script.h>
 #include <script/standard.h>

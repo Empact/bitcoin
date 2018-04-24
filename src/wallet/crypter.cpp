@@ -8,6 +8,7 @@
 #include <crypto/sha512.h>
 #include <script/script.h>
 #include <script/standard.h>
+#include <logging.h>
 #include <util.h>
 
 #include <string>

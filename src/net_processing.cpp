@@ -13,6 +13,7 @@
 #include <hash.h>
 #include <init.h>
 #include <validation.h>
+#include <logging.h>
 #include <merkleblock.h>
 #include <netmessagemaker.h>
 #include <netbase.h>
@@ -28,6 +29,7 @@
 #include <ui_interface.h>
 #include <util.h>
 #include <utilexception.h>
+#include <utiltime.h>
 #include <utilmoneystr.h>
 #include <utilstrencodings.h>
 #include <utiltime.h>

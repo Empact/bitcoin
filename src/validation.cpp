@@ -18,6 +18,7 @@
 #include <hash.h>
 #include <index/txindex.h>
 #include <init.h>
+#include <logging.h>
 #include <policy/fees.h>
 #include <policy/policy.h>
 #include <policy/rbf.h>

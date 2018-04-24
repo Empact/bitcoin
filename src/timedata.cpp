@@ -8,11 +8,12 @@
 
 #include <timedata.h>
 
+#include <logging.h>
 #include <netaddress.h>
 #include <sync.h>
+#include <tinyformat.h>
 #include <ui_interface.h>
 #include <util.h>
-#include <tinyformat.h>
 #include <utilstrencodings.h>
 #include <utiltime.h>
 #include <warnings.h>

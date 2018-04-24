@@ -8,6 +8,7 @@
 #include <hash.h>
 #include <sync.h>
 #include <uint256.h>
+#include <logging.h>
 #include <random.h>
 #include <tinyformat.h>
 #include <util.h>

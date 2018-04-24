@@ -5,6 +5,7 @@
 
 #include <noui.h>
 
+#include <logging.h>
 #include <ui_interface.h>
 #include <util.h>
 

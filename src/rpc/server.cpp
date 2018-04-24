@@ -8,12 +8,14 @@
 #include <fs.h>
 #include <init.h>
 #include <key_io.h>
+#include <logging.h>
 #include <random.h>
 #include <sync.h>
 #include <tinyformat.h>
 #include <ui_interface.h>
 #include <util.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 
 #include <boost/bind.hpp>
 #include <boost/signals2/signal.hpp>

@@ -7,6 +7,7 @@
 #include <streams.h>
 #include <zmq/zmqpublishnotifier.h>
 #include <validation.h>
+#include <logging.h>
 #include <util.h>
 #include <rpc/server.h>
 

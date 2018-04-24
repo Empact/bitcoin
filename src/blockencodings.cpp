@@ -7,6 +7,7 @@
 #include <consensus/validation.h>
 #include <chainparams.h>
 #include <hash.h>
+#include <logging.h>
 #include <random.h>
 #include <streams.h>
 #include <txmempool.h>

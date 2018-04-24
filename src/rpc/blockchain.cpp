@@ -13,6 +13,7 @@
 #include <consensus/validation.h>
 #include <validation.h>
 #include <core_io.h>
+#include <logging.h>
 #include <policy/feerate.h>
 #include <policy/policy.h>
 #include <primitives/transaction.h>
@@ -25,6 +26,7 @@
 #include <util.h>
 #include <utilerror.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 #include <hash.h>
 #include <validationinterface.h>
 #include <warnings.h>

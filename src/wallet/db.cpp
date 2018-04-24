@@ -7,6 +7,7 @@
 
 #include <addrman.h>
 #include <hash.h>
+#include <logging.h>
 #include <protocol.h>
 #include <tinyformat.h>
 #include <utilmemory.h>

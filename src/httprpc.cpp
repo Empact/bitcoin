@@ -7,6 +7,7 @@
 #include <chainparams.h>
 #include <httpserver.h>
 #include <key_io.h>
+#include <logging.h>
 #include <rpc/protocol.h>
 #include <rpc/server.h>
 #include <random.h>
@@ -88,7 +89,7 @@ static void JSONErrorReply(HTTPRequest* req, const UniValue& objError, const Uni
 //This function checks username and password against -rpcauth
 //entries from config file.
 static bool multiUserAuthorized(std::string strUserPass)
-{    
+{
     if (strUserPass.find(':') == std::string::npos) {
         return false;
     }

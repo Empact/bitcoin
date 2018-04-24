@@ -15,6 +15,7 @@
 #include <crypto/common.h>
 #include <crypto/sha256.h>
 #include <primitives/transaction.h>
+#include <logging.h>
 #include <netbase.h>
 #include <scheduler.h>
 #include <tinyformat.h>

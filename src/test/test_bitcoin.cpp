@@ -13,6 +13,7 @@
 #include <net_processing.h>
 #include <pow.h>
 #include <ui_interface.h>
+#include <utiltime.h>
 #include <streams.h>
 #include <tinyformat.h>
 #include <utiltime.h>
