@@ -5,6 +5,7 @@
 #include <bench/bench.h>
 
 #include <crypto/sha256.h>
+#include <help.h>
 #include <key.h>
 #include <validation.h>
 #include <util.h>

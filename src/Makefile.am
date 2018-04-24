@@ -113,6 +113,7 @@ BITCOIN_CORE_H = \
   key_io.h \
   keystore.h \
   dbwrapper.h \
+	help.h \
   limitedmap.h \
   logging.h \
   memusage.h \
@@ -367,6 +368,7 @@ libbitcoin_util_a_SOURCES = \
   compat/glibcxx_sanity.cpp \
   compat/strnlen.cpp \
   fs.cpp \
+	help.cpp \
   interfaces/handler.cpp \
   interfaces/node.cpp \
   logging.cpp \

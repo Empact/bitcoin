@@ -17,6 +17,7 @@
 #include <compat/sanity.h>
 #include <consensus/validation.h>
 #include <fs.h>
+#include <help.h>
 #include <httpserver.h>
 #include <httprpc.h>
 #include <index/txindex.h>

@@ -26,6 +26,7 @@
 #include <boost/thread.hpp>
 
 #include <errno.h>
+#include <help.h>
 #include <stdio.h>
 
 /* Introduction text for doxygen: */

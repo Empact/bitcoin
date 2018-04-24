@@ -10,6 +10,7 @@
 #include <coins.h>
 #include <consensus/consensus.h>
 #include <core_io.h>
+#include <help.h>
 #include <key_io.h>
 #include <keystore.h>
 #include <policy/policy.h>

@@ -18,6 +18,7 @@
 #include <qt/guiutil.h>
 
 #include <clientversion.h>
+#include <help.h>
 #include <init.h>
 #include <interfaces/node.h>
 #include <util.h>

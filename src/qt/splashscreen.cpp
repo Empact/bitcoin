@@ -11,6 +11,7 @@
 #include <qt/networkstyle.h>
 
 #include <clientversion.h>
+#include <help.h>
 #include <init.h>
 #include <interfaces/handler.h>
 #include <interfaces/node.h>

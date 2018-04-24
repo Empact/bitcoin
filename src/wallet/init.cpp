@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <chainparams.h>
+#include <help.h>
 #include <init.h>
 #include <net.h>
 #include <scheduler.h>
