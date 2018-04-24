@@ -15,6 +15,7 @@
 #include <test/test_bitcoin.h>
 #include <tinyformat.h>
 #include <utilmemory.h>
+#include <utiltime.h>
 #include <validation.h>
 #include <wallet/coincontrol.h>
 #include <wallet/test/wallet_test_fixture.h>

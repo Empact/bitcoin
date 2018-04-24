@@ -13,6 +13,7 @@
 #include <util.h>
 #include <utilerror.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 
 #include <atomic>
 

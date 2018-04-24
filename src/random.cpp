@@ -11,8 +11,8 @@
 #include <compat.h> // for Windows API
 #include <wincrypt.h>
 #endif
-#include <util.h>             // for LogPrint()
-#include <utilstrencodings.h> // for GetTime()
+#include <logging.h>  // for LogPrint()
+#include <utiltime.h> // for GetTime()
 
 #include <errno.h>
 #include <stdlib.h>

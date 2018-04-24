@@ -24,6 +24,7 @@
 #include <txmempool.h>
 #include <util.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 #include <validationinterface.h>
 #include <warnings.h>
 

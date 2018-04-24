@@ -11,6 +11,7 @@
 #include <tinyformat.h>
 #include <utilmemory.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 #include <wallet/walletutil.h>
 
 #include <stdint.h>

@@ -30,6 +30,7 @@
 #include <utilexception.h>
 #include <utilmoneystr.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 
 #include <memory>
 #include <tuple>

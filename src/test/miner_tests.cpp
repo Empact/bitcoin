@@ -17,6 +17,7 @@
 #include <uint256.h>
 #include <util.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 
 #include <test/test_bitcoin.h>
 

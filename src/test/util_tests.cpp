@@ -8,8 +8,9 @@
 #include <primitives/transaction.h>
 #include <sync.h>
 #include <tinyformat.h>
-#include <utilstrencodings.h>
 #include <utilmoneystr.h>
+#include <utilstrencodings.h>
+#include <utiltime.h>
 #include <test/test_bitcoin.h>
 
 #include <stdint.h>

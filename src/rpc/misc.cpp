@@ -17,9 +17,10 @@
 #include <rpc/server.h>
 #include <rpc/util.h>
 #include <timedata.h>
-#include <util.h>
 #include <tinyformat.h>
+#include <util.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 #ifdef ENABLE_WALLET
 #include <wallet/rpcwallet.h>
 #include <wallet/wallet.h>

@@ -12,6 +12,7 @@
 #include <script/sign.h>
 #include <serialize.h>
 #include <util.h>
+#include <utiltime.h>
 #include <validation.h>
 
 #include <test/test_bitcoin.h>

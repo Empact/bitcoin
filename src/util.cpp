@@ -11,6 +11,7 @@
 #include <utilerror.h>
 #include <utilmemory.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 
 #include <stdarg.h>
 

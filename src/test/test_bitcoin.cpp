@@ -15,6 +15,7 @@
 #include <ui_interface.h>
 #include <streams.h>
 #include <tinyformat.h>
+#include <utiltime.h>
 #include <rpc/server.h>
 #include <rpc/register.h>
 #include <script/sigcache.h>

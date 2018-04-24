@@ -21,6 +21,7 @@
 #include <txmempool.h>
 #include <ui_interface.h>
 #include <util.h>
+#include <utiltime.h>
 #include <warnings.h>
 
 #include <stdint.h>

@@ -15,11 +15,12 @@
 #include <init.h>
 #include <noui.h>
 #include <tinyformat.h>
-#include <util.h>
 #include <httpserver.h>
 #include <httprpc.h>
+#include <util.h>
 #include <utilexception.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 #include <walletinitinterface.h>
 
 #include <boost/thread.hpp>

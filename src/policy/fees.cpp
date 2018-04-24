@@ -12,6 +12,7 @@
 #include <txmempool.h>
 #include <util.h>
 #include <utilerror.h>
+#include <utiltime.h>
 
 static constexpr double INF_FEERATE = 1e99;
 

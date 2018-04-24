@@ -14,6 +14,7 @@
 #include <util.h>
 #include <tinyformat.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 #include <warnings.h>
 
 

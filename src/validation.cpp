@@ -40,6 +40,7 @@
 #include <utilmoneystr.h>
 #include <utilstrencodings.h>
 #include <utilthread.h>
+#include <utiltime.h>
 #include <validationinterface.h>
 #include <warnings.h>
 

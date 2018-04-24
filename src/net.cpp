@@ -23,6 +23,7 @@
 #include <utilmemory.h>
 #include <utilstrencodings.h>
 #include <utilthread.h>
+#include <utiltime.h>
 
 #ifdef WIN32
 #include <string.h>

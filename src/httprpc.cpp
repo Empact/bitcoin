@@ -14,6 +14,7 @@
 #include <util.h>
 #include <utilmemory.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
 #include <ui_interface.h>
 #include <crypto/hmac_sha256.h>
 #include <stdio.h>
