@@ -15,6 +15,7 @@
 #include <rpc/protocol.h>
 #include <tinyformat.h>
 #include <util.h>
+#include <utilpath.h>
 #include <utiltime.h>
 #include <utilexception.h>
 #include <utilstrencodings.h>

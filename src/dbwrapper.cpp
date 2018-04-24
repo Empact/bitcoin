@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <random.h>
+#include <utilpath.h>
 
 #include <leveldb/cache.h>
 #include <leveldb/env.h>

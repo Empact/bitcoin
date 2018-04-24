@@ -14,6 +14,7 @@
 #include <tinyformat.h>
 #include <util.h>
 #include <utilerror.h>
+#include <utilpath.h>
 
 namespace {
 

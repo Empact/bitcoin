@@ -20,6 +20,7 @@
 #include <script/standard.h>
 #include <tinyformat.h>
 #include <util.h>
+#include <utilpath.h>
 
 #ifdef WIN32
 #ifdef _WIN32_WINNT

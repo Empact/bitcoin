@@ -60,6 +60,7 @@ class NodeImpl : public Node
     std::string getNetwork() override { return Params().NetworkIDString(); }
     void initLogging() override { InitLogging(); }
     void initParameterInteraction() override { InitParameterInteraction(); }
+    void initDirs() override { InitDirs(); }
     std::string getWarnings(const std::string& type) override { return GetWarnings(type); }
     uint32_t getLogCategories() override { return g_logger->GetCategoryMask(); }
     bool baseInitialize() override

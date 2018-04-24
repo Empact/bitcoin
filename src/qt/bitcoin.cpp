@@ -29,12 +29,14 @@
 #include <init.h>
 #include <interfaces/handler.h>
 #include <interfaces/node.h>
+#include <help.h>
 #include <logging.h>
 #include <rpc/server.h>
 #include <ui_interface.h>
 #include <uint256.h>
 #include <util.h>
 #include <utilexception.h>
+#include <utilpath.h>
 #include <warnings.h>
 
 #include <walletinitinterface.h>
@@ -411,6 +413,7 @@ void BitcoinApplication::parameterSetup()
 
     m_node.initLogging();
     m_node.initParameterInteraction();
+    m_node.initDirs();
 }
 
 void BitcoinApplication::requestInitialize()

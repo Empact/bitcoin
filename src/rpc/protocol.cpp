@@ -9,6 +9,7 @@
 #include <logging.h>
 #include <tinyformat.h>
 #include <util.h>
+#include <utilpath.h>
 #include <utilstrencodings.h>
 #include <utiltime.h>
 #include <version.h>

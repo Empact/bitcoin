@@ -14,6 +14,7 @@
 #include <key_io.h>
 #include <ui_interface.h>
 #include <util.h>
+#include <utilpath.h>
 #include <utiltime.h>
 #include <wallet/wallet.h>
 

@@ -46,6 +46,7 @@
 #include <util.h>
 #include <utilmemory.h>
 #include <utilmoneystr.h>
+#include <utilpath.h>
 #include <utilthread.h>
 #include <utiltime.h>
 #include <validationinterface.h>
@@ -846,6 +847,22 @@ void InitLogging()
     version_string += " (release build)";
 #endif
     LogPrintf(PACKAGE_NAME " version %s\n", version_string);
+}
+
+/**
+ * Initialize system directories.
+ *
+ * Note that this is called very early in the process lifetime, so you should be
+ * careful about what global state you rely on here.
+ */
+void InitDirs()
+{
+    if (gArgs.IsArgSet("-blocksdir")) {
+        SetBlocksDir(gArgs.GetArg("-blocksdir", ""));
+    }
+    if (gArgs.IsArgSet("-datadir")) {
+        SetBlocksDir(gArgs.GetArg("-datadir", ""));
+    }
 }
 
 namespace { // Variables internal to initialization process only

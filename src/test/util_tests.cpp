@@ -9,6 +9,7 @@
 #include <sync.h>
 #include <tinyformat.h>
 #include <utilmoneystr.h>
+#include <utilpath.h>
 #include <utilstrencodings.h>
 #include <utiltime.h>
 #include <test/test_bitcoin.h>

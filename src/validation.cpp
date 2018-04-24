@@ -39,6 +39,7 @@
 #include <util.h>
 #include <utilerror.h>
 #include <utilmoneystr.h>
+#include <utilpath.h>
 #include <utilstrencodings.h>
 #include <utilthread.h>
 #include <utiltime.h>

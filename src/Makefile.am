@@ -167,6 +167,7 @@ BITCOIN_CORE_H = \
   utilexception.h \
   utilmemory.h \
   utilmoneystr.h \
+  utilpath.h \
   utilthread.h \
   utiltime.h \
   validation.h \
@@ -381,6 +382,7 @@ libbitcoin_util_a_SOURCES = \
   util.cpp \
   utilexception.cpp \
   utilmoneystr.cpp \
+  utilpath.cpp \
   utilstrencodings.cpp \
   utilthread.cpp \
   utiltime.cpp \

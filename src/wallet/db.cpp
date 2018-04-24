@@ -11,6 +11,7 @@
 #include <protocol.h>
 #include <tinyformat.h>
 #include <utilmemory.h>
+#include <utilpath.h>
 #include <utilstrencodings.h>
 #include <utiltime.h>
 #include <wallet/walletutil.h>

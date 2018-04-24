@@ -19,6 +19,7 @@
 #include <httprpc.h>
 #include <util.h>
 #include <utilexception.h>
+#include <utilpath.h>
 #include <utilstrencodings.h>
 #include <utiltime.h>
 #include <walletinitinterface.h>
@@ -127,6 +128,7 @@ static bool AppInit(int argc, char* argv[])
         // Set this early so that parameter interactions go to console
         InitLogging();
         InitParameterInteraction();
+        InitDirs();
         if (!AppInitBasicSetup())
         {
             // InitError will have been called with detailed error, which ends up on console

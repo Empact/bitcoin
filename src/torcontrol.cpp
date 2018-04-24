@@ -11,6 +11,7 @@
 #include <tinyformat.h>
 #include <utilstrencodings.h>
 #include <utilthread.h>
+#include <utilpath.h>
 #include <crypto/hmac_sha256.h>
 
 #include <vector>

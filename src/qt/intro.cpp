@@ -14,6 +14,7 @@
 
 #include <interfaces/node.h>
 #include <util.h>
+#include <utilpath.h>
 
 #include <QFileDialog>
 #include <QSettings>

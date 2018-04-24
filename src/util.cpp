@@ -6,10 +6,12 @@
 #include <util.h>
 
 #include <chainparamsbase.h>
+#include <help.h>
 #include <random.h>
 #include <serialize.h>
 #include <utilerror.h>
 #include <utilmemory.h>
+#include <utilpath.h>
 #include <utilstrencodings.h>
 #include <utiltime.h>
 

@@ -30,6 +30,8 @@ void Shutdown();
 void InitLogging();
 //!Parameter interaction: change current parameters depending on various rules
 void InitParameterInteraction();
+//!Initialize system directories
+void InitDirs();
 
 /** Initialize bitcoin core: Basic context setup.
  *  @note This can be done before daemonization. Do not call Shutdown() if this function fails.

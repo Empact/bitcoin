@@ -8,6 +8,7 @@
 #include <logging.h>
 #include <tinyformat.h>
 #include <util.h>
+#include <utilpath.h>
 #include <utilstrencodings.h>
 
 #ifndef WIN32

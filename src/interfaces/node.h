@@ -61,6 +61,9 @@ public:
     //! Init parameter interaction.
     virtual void initParameterInteraction() = 0;
 
+    //! Init system dirs.
+    virtual void initDirs() = 0;
+
     //! Get warnings.
     virtual std::string getWarnings(const std::string& type) = 0;
 
