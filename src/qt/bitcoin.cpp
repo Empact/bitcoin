@@ -26,6 +26,7 @@
 #include <qt/walletmodel.h>
 #endif
 
+#include <help.h>
 #include <init.h>
 #include <interfaces/handler.h>
 #include <interfaces/node.h>

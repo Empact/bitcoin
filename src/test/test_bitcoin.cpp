@@ -17,6 +17,7 @@
 #include <utiltime.h>
 #include <streams.h>
 #include <tinyformat.h>
+#include <utilpath.h>
 #include <utiltime.h>
 #include <rpc/server.h>
 #include <rpc/register.h>

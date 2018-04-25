@@ -15,6 +15,7 @@
 #include <utiltime.h> // for GetTime()
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <chrono>
 #include <thread>

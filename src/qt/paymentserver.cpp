@@ -16,6 +16,7 @@
 #include <util.h>
 #include <utilpath.h>
 #include <utiltime.h>
+#include <utilpath.h>
 #include <wallet/wallet.h>
 
 #include <cstdlib>
