@@ -12,7 +12,7 @@
 #include <uint256.h>
 #include <util.h>
 #include <ui_interface.h>
-#include <init.h>
+#include <shutdown.h>
 
 #include <stdint.h>
 

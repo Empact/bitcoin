@@ -17,7 +17,6 @@
 #include <cuckoocache.h>
 #include <hash.h>
 #include <index/txindex.h>
-#include <init.h>
 #include <policy/fees.h>
 #include <policy/policy.h>
 #include <policy/rbf.h>
@@ -29,6 +28,7 @@
 #include <script/script.h>
 #include <script/sigcache.h>
 #include <script/standard.h>
+#include <shutdown.h>
 #include <timedata.h>
 #include <tinyformat.h>
 #include <txdb.h>

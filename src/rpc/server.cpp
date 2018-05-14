@@ -6,9 +6,9 @@
 #include <rpc/server.h>
 
 #include <fs.h>
-#include <init.h>
 #include <key_io.h>
 #include <random.h>
+#include <shutdown.h>
 #include <sync.h>
 #include <ui_interface.h>
 #include <util.h>
