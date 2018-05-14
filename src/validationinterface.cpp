@@ -10,13 +10,14 @@
 #include <sync.h>
 #include <txmempool.h>
 #include <util.h>
-#include <validation.h>
 
 #include <list>
 #include <atomic>
 #include <future>
 
 #include <boost/signals2/signal.hpp>
+
+extern CCriticalSection cs_main;
 
 struct MainSignalsInstance {
     boost::signals2::signal<void (const CBlockIndex *, const CBlockIndex *, bool fInitialDownload)> UpdatedBlockTip;
