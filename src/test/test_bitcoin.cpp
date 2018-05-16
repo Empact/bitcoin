@@ -18,6 +18,7 @@
 #include <rpc/register.h>
 #include <script/sigcache.h>
 #include <util.h>
+#include <utilstrencodings.h>
 
 void CConnmanTest::AddNode(CNode& node)
 {

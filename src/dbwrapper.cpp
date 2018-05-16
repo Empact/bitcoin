@@ -6,6 +6,7 @@
 
 #include <random.h>
 #include <util.h>
+#include <utilstrencodings.h>
 
 #include <leveldb/cache.h>
 #include <leveldb/env.h>
