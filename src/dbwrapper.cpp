@@ -4,15 +4,17 @@
 
 #include <dbwrapper.h>
 
-#include <memory>
 #include <random.h>
+#include <util.h>
 
 #include <leveldb/cache.h>
 #include <leveldb/env.h>
 #include <leveldb/filter_policy.h>
+
 #include <memenv.h>
 #include <stdint.h>
 #include <algorithm>
+#include <memory>
 
 class CBitcoinLevelDBLogger : public leveldb::Logger {
 public:

@@ -7,9 +7,9 @@
 
 #include <clientversion.h>
 #include <fs.h>
+#include <logging.h>
 #include <serialize.h>
 #include <streams.h>
-#include <util.h>
 #include <utilstrencodings.h>
 #include <version.h>
 

@@ -4,6 +4,7 @@
 
 #include <dbwrapper.h>
 #include <uint256.h>
+#include <util.h>
 #include <random.h>
 #include <test/test_bitcoin.h>
 
