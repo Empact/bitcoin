@@ -16,6 +16,7 @@
 #include <net.h>
 #include <netbase.h>
 #include <txdb.h> // for -dbcache defaults
+#include <util.h>
 #include <qt/intro.h>
 
 #include <QNetworkProxy>

@@ -18,6 +18,7 @@
 #include <netbase.h>
 #include <scheduler.h>
 #include <ui_interface.h>
+#include <util.h>
 #include <utilstrencodings.h>
 
 #ifdef WIN32
