@@ -8,6 +8,8 @@
 #include <addrman.h>
 #include <hash.h>
 #include <protocol.h>
+#include <util.h>
+#include <utiltime.h>
 #include <utilstrencodings.h>
 #include <wallet/walletutil.h>
 
@@ -533,6 +535,21 @@ void BerkeleyBatch::Flush()
         nMinutes = 1;
 
     env->dbenv->txn_checkpoint(nMinutes ? gArgs.GetArg("-dblogsize", DEFAULT_WALLET_DBLOGSIZE) * 1024 : 0, nMinutes, 0);
+}
+
+std::unique_ptr<BerkeleyDatabase> BerkeleyDatabase::Create(const fs::path& path)
+{
+    return MakeUnique<BerkeleyDatabase>(path);
+}
+
+std::unique_ptr<BerkeleyDatabase> BerkeleyDatabase::CreateDummy()
+{
+    return MakeUnique<BerkeleyDatabase>();
+}
+
+std::unique_ptr<BerkeleyDatabase> BerkeleyDatabase::CreateMock()
+{
+    return MakeUnique<BerkeleyDatabase>("", true /* mock */);
 }
 
 void BerkeleyDatabase::IncrementUpdateCounter()

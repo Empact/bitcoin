@@ -11,7 +11,6 @@
 #include <serialize.h>
 #include <streams.h>
 #include <sync.h>
-#include <util.h>
 #include <version.h>
 
 #include <atomic>
@@ -114,22 +113,13 @@ public:
     }
 
     /** Return object for accessing database at specified path. */
-    static std::unique_ptr<BerkeleyDatabase> Create(const fs::path& path)
-    {
-        return MakeUnique<BerkeleyDatabase>(path);
-    }
+    static std::unique_ptr<BerkeleyDatabase> Create(const fs::path& path);
 
     /** Return object for accessing dummy database with no read/write capabilities. */
-    static std::unique_ptr<BerkeleyDatabase> CreateDummy()
-    {
-        return MakeUnique<BerkeleyDatabase>();
-    }
+    static std::unique_ptr<BerkeleyDatabase> CreateDummy();
 
     /** Return object for accessing temporary in-memory database. */
-    static std::unique_ptr<BerkeleyDatabase> CreateMock()
-    {
-        return MakeUnique<BerkeleyDatabase>("", true /* mock */);
-    }
+    static std::unique_ptr<BerkeleyDatabase> CreateMock();
 
     /** Rewrite the entire database on disk, with the exception of key pszSkip if non-zero
      */
