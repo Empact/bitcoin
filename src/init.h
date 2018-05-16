@@ -8,7 +8,6 @@
 
 #include <memory>
 #include <string>
-#include <util.h>
 
 class CScheduler;
 class CWallet;
