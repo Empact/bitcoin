@@ -1329,9 +1329,9 @@ CAmount CWallet::GetDebit(const CTxIn &txin, const isminefilter& filter) const
         if (mi != mapWallet.end())
         {
             const CWalletTx& prev = (*mi).second;
-            if (txin.prevout.n < prev.tx->vout.size())
-                if (IsMine(prev.tx->vout[txin.prevout.n]) & filter)
-                    return prev.tx->vout[txin.prevout.n].nValue;
+            const CTxOut& prewout = prev.tx->vout.at(txin.prevout.n);
+            if (IsMine(prewout) & filter)
+                return prewout.nValue;
         }
     }
     return 0;
