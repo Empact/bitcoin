@@ -4170,7 +4170,7 @@ bool CChainState::RewindBlockIndex(const CChainParams& params)
             // Reduce validity
             pindexIter->nStatus = std::min<unsigned int>(pindexIter->nStatus & BLOCK_VALID_MASK, BLOCK_VALID_TREE) | (pindexIter->nStatus & ~BLOCK_VALID_MASK);
             // Remove have-data flags.
-            pindexIter->nStatus &= ~(BLOCK_HAVE_DATA | BLOCK_HAVE_UNDO);
+            pindexIter->nStatus &= ~BLOCK_HAVE_MASK;
             // Remove storage location.
             pindexIter->nFile = 0;
             pindexIter->nDataPos = 0;
