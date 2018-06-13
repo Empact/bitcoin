@@ -106,6 +106,8 @@ private:
     const int nVersion;
 public:
 
+    CHashWriter() : CHashWriter(SER_GETHASH, 0) {}
+    CHashWriter(int nVersionIn) : CHashWriter(SER_GETHASH, nVersionIn) {}
     CHashWriter(int nTypeIn, int nVersionIn) : nType(nTypeIn), nVersion(nVersionIn) {}
 
     int GetType() const { return nType; }
