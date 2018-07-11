@@ -100,7 +100,6 @@ WalletTxStatus MakeWalletTxStatus(const CWalletTx& wtx)
     result.is_trusted = wtx.IsTrusted();
     result.is_abandoned = wtx.isAbandoned();
     result.is_coinbase = wtx.IsCoinBase();
-    result.is_in_main_chain = wtx.IsInMainChain();
     return result;
 }
 

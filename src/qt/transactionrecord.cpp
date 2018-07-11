@@ -192,7 +192,7 @@ void TransactionRecord::updateStatus(const interfaces::WalletTxStatus& wtx, int 
         {
             status.status = TransactionStatus::Immature;
 
-            if (wtx.is_in_main_chain)
+            if (wtx.depth_in_main_chain > 0)
             {
                 status.matures_in = wtx.blocks_to_maturity;
 
