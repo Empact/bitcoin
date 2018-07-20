@@ -13,9 +13,9 @@
 # ignored
 
 export LC_ALL=C
-UNTERMINATED_LOGS=$(git grep --extended-regexp "LogPrintf?\(" -- "*.cpp" | \
+UNTERMINATED_LOGS=$(git grep --extended-regexp "LogPrintf?\\(" -- "*.cpp" | \
     grep -v '\\n"' | \
-    grep -v "/\* Continued \*/" | \
+    grep -v "/\\* Continued \\*/" | \
     grep -v "LogPrint()" | \
     grep -v "LogPrintf()")
 if [[ ${UNTERMINATED_LOGS} != "" ]]; then

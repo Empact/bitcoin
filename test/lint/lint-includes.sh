@@ -12,7 +12,7 @@ export LC_ALL=C
 IGNORE_REGEXP="/(leveldb|secp256k1|univalue)/"
 
 filter_suffix() {
-    git ls-files | grep -E "^src/.*\.${1}"'$' | grep -Ev "${IGNORE_REGEXP}"
+    git ls-files | grep -E "^src/.*\\.${1}"'$' | grep -Ev "${IGNORE_REGEXP}"
 }
 
 EXIT_CODE=0
@@ -37,7 +37,7 @@ for CPP_FILE in $(filter_suffix cpp); do
     fi
 done
 
-INCLUDED_CPP_FILES=$(git grep -E "^#include [<\"][^>\"]+\.cpp[>\"]" -- "*.cpp" "*.h")
+INCLUDED_CPP_FILES=$(git grep -E "^#include [<\"][^>\"]+\\.cpp[>\"]" -- "*.cpp" "*.h")
 if [[ ${INCLUDED_CPP_FILES} != "" ]]; then
     echo "The following files #include .cpp files:"
     echo "${INCLUDED_CPP_FILES}"
