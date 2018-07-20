@@ -173,6 +173,6 @@ else
    clean_up $TMPFILE
 fi
 
-echo -e "Verified hashes of \n$FILES"
+echo -e "Verified hashes of \\n$FILES"
 
 exit 0

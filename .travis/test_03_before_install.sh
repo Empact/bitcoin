@@ -6,7 +6,7 @@
 
 export LC_ALL=C.UTF-8
 
-PATH=$(echo $PATH | tr ':' "\n" | sed '/\/opt\/python/d' | tr "\n" ":" | sed "s|::|:|g")
+PATH=$(echo $PATH | tr ':' "\\n" | sed '/\/opt\/python/d' | tr "\\n" ":" | sed "s|::|:|g")
 export PATH
 
 BEGIN_FOLD () {
@@ -22,4 +22,3 @@ END_FOLD () {
     echo "${CURRENT_FOLD_NAME} failed with status code ${RET}"
   fi
 }
-
