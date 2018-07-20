@@ -1,6 +1,8 @@
 sudo: required
 dist: trusty
-os: linux
+os:
+  - linux
+  - osx
 language: minimal
 cache:
   ccache: true
@@ -11,6 +13,7 @@ cache:
 stages:
   - lint
   - test
+  - lint macOS
 env:
   global:
     - MAKEJOBS=-j3
@@ -79,6 +82,8 @@ after_script:
     - echo $TRAVIS_COMMIT_LOG
 
 jobs:
+  exclude:
+    - os: osx
   include:
     - stage: lint
       env:
@@ -88,6 +93,43 @@ jobs:
       python: '3.6'
       install:
         - travis_retry pip install flake8
+      before_script:
+        - git fetch --unshallow
+      script:
+        - if [ "$TRAVIS_EVENT_TYPE" = "pull_request" ]; then test/lint/commit-script-check.sh $TRAVIS_COMMIT_RANGE; fi
+        - test/lint/git-subtree-check.sh src/crypto/ctaes
+        - test/lint/git-subtree-check.sh src/secp256k1
+        - test/lint/git-subtree-check.sh src/univalue
+        - test/lint/git-subtree-check.sh src/leveldb
+        - test/lint/check-doc.py
+        - test/lint/check-rpc-mappings.py .
+        - test/lint/lint-all.sh
+        - if [ "$TRAVIS_REPO_SLUG" = "bitcoin/bitcoin" -a "$TRAVIS_EVENT_TYPE" = "cron" ]; then
+              while read LINE; do travis_retry gpg --keyserver hkp://subset.pool.sks-keyservers.net --recv-keys $LINE; done < contrib/verify-commits/trusted-keys &&
+              travis_wait 50 contrib/verify-commits/verify-commits.py;
+          fi
+    - stage: lint macOS
+      os: osx
+      # Use the earliest macOS that can build our lint dependencies:
+      # Xcode 7.3.1, macOS 10.11, JDK 1.8.0_92-b14
+      # Earlier versions failed to make and install ghc for shellcheck
+      # https://docs.travis-ci.com/user/reference/osx/#OS-X-Version
+      osx_image: xcode7.3
+      # TODO: if you're updating osx_image, try using rvm: to supply the version of ruby
+      # required by homebrew. Could not get this working with xcode7.3 but believe it should
+      # work on newer images.
+      # rvm: 2.3.7
+      env:
+      sudo: false
+      cache: false
+      install:
+        # update first to install required ruby dependency
+        - travis_retry brew update
+        - travis_retry brew install shellcheck
+        # git --perl-regexp is used in test/lint/check-doc.py
+        - travis_retry brew reinstall --with-pcre2 git
+        - travis_retry brew upgrade python
+        - travis_retry pip3 install flake8 --user
       before_script:
         - git fetch --unshallow
       script:
