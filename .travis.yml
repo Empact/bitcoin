@@ -9,8 +9,7 @@ cache:
   - depends/sdk-sources
   - $HOME/.ccache
 stages:
-  - lint
-  - test
+  - coverage
 env:
   global:
     - MAKEJOBS=-j3
@@ -105,3 +104,20 @@ jobs:
               while read LINE; do travis_retry gpg --keyserver hkp://subset.pool.sks-keyservers.net --recv-keys $LINE; done < contrib/verify-commits/trusted-keys &&
               travis_wait 50 contrib/verify-commits/verify-commits.py;
           fi
+    - stage: coverage
+      env:
+      install:
+        - travis_retry sudo apt-get update
+        # lcov plus packages from "x86_64 Linux (Qt5 & system libs)"
+        - travis_retry sudo apt-get install -y lcov python3-zmq qtbase5-dev qttools5-dev-tools libssl-dev libevent-dev bsdmainutils libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev libdb5.3++-dev libminiupnpc-dev libzmq3-dev libprotobuf-dev protobuf-compiler libqrencode-dev
+        - travis_retry gem install coveralls-lcov
+      before_script:
+        - ./autogen.sh
+        # lcov plus config from "x86_64 Linux (Qt5 & system libs)"
+        - ./configure --enable-lcov --enable-zmq --with-incompatible-bdb --enable-glibc-back-compat --enable-reduce-exports --with-gui=qt5
+      script:
+        - make $MAKEJOBS
+        - make $MAKEJOBS cov
+      after_success:
+        - lcov --compat-libtool --directory . --capture --output-file coverage.info
+        - coveralls-lcov --repo-token "${COVERALLS_REPO_TOKEN}" coverage.info
