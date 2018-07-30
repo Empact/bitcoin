@@ -112,10 +112,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
 // return the numerical statistics of blocks signalling the specified BIP9 condition in this current period
 BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params) const
 {
-    BIP9Stats stats = {};
-
-    stats.period = Period(params);
-    stats.threshold = Threshold(params);
+    BIP9Stats stats{ Period(params), Threshold(params), 0 /* elapsed */, 0 /* count */, false /* possible */ };
 
     if (pindex == nullptr)
         return stats;
