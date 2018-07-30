@@ -341,6 +341,8 @@ struct WalletTx
     int64_t time;
     std::map<std::string, std::string> value_map;
     bool is_coinbase;
+
+    static const Wallet nullTx{ nullptr, {}, {}, {}, {}, 0, 0, 0, 0, {}, false };
 };
 
 //! Updated transaction status.

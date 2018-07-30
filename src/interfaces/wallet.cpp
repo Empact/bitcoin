@@ -277,7 +277,7 @@ public:
         if (mi != m_wallet.mapWallet.end()) {
             return MakeWalletTx(m_wallet, mi->second);
         }
-        return {};
+        return WalletTx::nullTx;
     }
     std::vector<WalletTx> getWalletTxs() override
     {
@@ -328,7 +328,7 @@ public:
             tx_status = MakeWalletTxStatus(mi->second);
             return MakeWalletTx(m_wallet, mi->second);
         }
-        return {};
+        return WalletTx::nullTx;
     }
     WalletBalances getBalances() override
     {
