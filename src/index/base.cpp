@@ -19,7 +19,7 @@ constexpr int64_t SYNC_LOCATOR_WRITE_INTERVAL = 30; // seconds
 template<typename... Args>
 static void FatalError(const char* fmt, const Args&... args)
 {
-    std::string strMessage = tfm::format(fmt, args...);
+    std::string strMessage = strprintf(fmt, args...);
     SetMiscWarning(strMessage);
     LogPrintf("*** %s\n", strMessage);
     uiInterface.ThreadSafeMessageBox(

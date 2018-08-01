@@ -147,7 +147,7 @@ template<typename T, typename... Args> static inline void MarkUsed(const T& t, c
     if (g_logger->Enabled()) { \
         std::string _log_msg_; /* Unlikely name to avoid shadowing variables */ \
         try { \
-            _log_msg_ = tfm::format(__VA_ARGS__); \
+            _log_msg_ = strprintf(__VA_ARGS__); \
         } catch (tinyformat::format_error &fmterr) { \
             /* Original format string will have newline so don't add one here */ \
             _log_msg_ = "Error \"" + std::string(fmterr.what()) + "\" while formatting log message: " + FormatStringFromLogArgs(__VA_ARGS__); \

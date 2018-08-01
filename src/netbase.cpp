@@ -473,7 +473,7 @@ SOCKET CreateSocket(const CService &addrConnect)
 
 template<typename... Args>
 static void LogConnectFailure(bool manual_connection, const char* fmt, const Args&... args) {
-    std::string error_message = tfm::format(fmt, args...);
+    std::string error_message = strprintf(fmt, args...);
     if (manual_connection) {
         LogPrintf("%s\n", error_message);
     } else {
