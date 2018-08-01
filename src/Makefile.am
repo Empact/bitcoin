@@ -362,11 +362,12 @@ libbitcoin_consensus_a_SOURCES = \
   script/script_error.h \
   serialize.h \
   span.h \
-  tinyformat.h \
+  tinyformat/tinyformat.h \
   uint256.cpp \
   uint256.h \
   utilstrencodings.cpp \
   utilstrencodings.h \
+  utilstrprintf.h \
   version.h
 
 # common: shared between bitcoind, and bitcoin-qt and non-server tools
