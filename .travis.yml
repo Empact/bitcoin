@@ -39,6 +39,19 @@ after_script:
     - echo $TRAVIS_COMMIT_LOG
 jobs:
   include:
+# lint stage
+    - stage: lint
+      env:
+      sudo: false
+      cache: false
+      language: python
+      python: '3.6'
+      install:
+        - travis_retry pip install flake8
+      before_script:
+        - git fetch --unshallow
+      script:
+        - source .travis/lint.sh
 # ARM
     - stage: test
       env: >-
@@ -112,15 +125,3 @@ jobs:
         OSX_SDK=10.11
         GOAL="all deploy"
         BITCOIN_CONFIG="--enable-gui --enable-reduce-exports --enable-werror"
-    - stage: lint
-      env:
-      sudo: false
-      cache: false
-      language: python
-      python: '3.6'
-      install:
-        - travis_retry pip install flake8
-      before_script:
-        - git fetch --unshallow
-      script:
-        - source .travis/lint.sh
