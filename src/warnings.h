@@ -13,12 +13,18 @@ void SetMiscWarning(const std::string& strWarning);
 void SetfLargeWorkForkFound(bool flag);
 bool GetfLargeWorkForkFound();
 void SetfLargeWorkInvalidChainFound(bool flag);
+
+enum class WarningContext {
+    GUI,
+    STATUS_BAR
+}
+
 /** Format a string that describes several potential problems detected by the core.
- * strFor can have three values:
- * - "statusbar": get all warnings
- * - "gui": get all warnings, translated (where possible) for GUI
+ * @param[in] context can have the following values:
+ * - STATUS_BAR: get the highest priority warning
+ * - GUI: get all warnings, translated (where possible) for GUI
  * This function only returns the highest priority warning of the set selected by strFor.
  */
-std::string GetWarnings(const std::string& strFor);
+std::string GetWarnings(const WarningContext context);
 
 #endif //  BITCOIN_WARNINGS_H

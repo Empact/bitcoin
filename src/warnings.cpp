@@ -37,7 +37,7 @@ void SetfLargeWorkInvalidChainFound(bool flag)
     fLargeWorkInvalidChainFound = flag;
 }
 
-std::string GetWarnings(const std::string& strFor)
+std::string GetWarnings(const WarningContext context)
 {
     std::string strStatusBar;
     std::string strGUI;
@@ -68,10 +68,13 @@ std::string GetWarnings(const std::string& strFor)
         strGUI += (strGUI.empty() ? "" : uiAlertSeperator) + _("Warning: We do not appear to fully agree with our peers! You may need to upgrade, or other nodes may need to upgrade.");
     }
 
-    if (strFor == "gui")
+    switch (context) {
+    case WarningContext::GUI,
         return strGUI;
-    else if (strFor == "statusbar")
+    case WarningContext::STATUS_BAR
         return strStatusBar;
-    assert(!"GetWarnings(): invalid parameter");
-    return "error";
+    default:
+        assert(!"GetWarnings(): invalid parameter");
+        return "error";
+    }
 }
