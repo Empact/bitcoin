@@ -446,24 +446,12 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
     if (!lpval.isNull())
     {
         // Wait to respond until either the best block changes, OR a minute has passed and there are more transactions
-        uint256 hashWatchedChain;
         std::chrono::steady_clock::time_point checktxtime;
-        unsigned int nTransactionsUpdatedLastLP;
 
-        if (lpval.isStr())
-        {
-            // Format: <hashBestChain><nTransactionsUpdatedLast>
-            std::string lpstr = lpval.get_str();
-
-            hashWatchedChain.SetHex(lpstr.substr(0, 64));
-            nTransactionsUpdatedLastLP = atoi64(lpstr.substr(64));
-        }
-        else
-        {
-            // NOTE: Spec does not specify behaviour for non-string longpollid, but this makes testing easier
-            hashWatchedChain = chainActive.Tip()->GetBlockHash();
-            nTransactionsUpdatedLastLP = nTransactionsUpdatedLast;
-        }
+        // Format: <hashBestChain><nTransactionsUpdatedLast>
+        std::string lpstr = lpval.get_str();
+        uint256 hashWatchedChain(uint256S(lpstr.substr(0, 64)));
+        unsigned int nTransactionsUpdatedLastLP = atoi64(lpstr.substr(64));
 
         // Release the wallet and main lock while waiting
         LEAVE_CRITICAL_SECTION(cs_main);
