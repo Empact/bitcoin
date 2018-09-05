@@ -49,6 +49,7 @@ enum opcodetype
 {
     // push value
     OP_0 = 0x00,
+    MIN_OPCODE = OP_0,
     OP_FALSE = OP_0,
     OP_PUSHDATA1 = 0x4c,
     OP_PUSHDATA2 = 0x4d,
@@ -181,11 +182,11 @@ enum opcodetype
     OP_NOP9 = 0xb8,
     OP_NOP10 = 0xb9,
 
+    // Maximum value that an opcode can be
+    MAX_OPCODE = OP_NOP10,
+
     OP_INVALIDOPCODE = 0xff,
 };
-
-// Maximum value that an opcode can be
-static const unsigned int MAX_OPCODE = OP_NOP10;
 
 const char* GetOpName(opcodetype opcode);
 

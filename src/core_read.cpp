@@ -29,20 +29,20 @@ CScript ParseScript(const std::string& s)
 
     if (mapOpNames.empty())
     {
-        for (unsigned int op = 0; op <= MAX_OPCODE; op++)
+        for (opcodetype op = MIN_OPCODE; op <= MAX_OPCODE; op++)
         {
             // Allow OP_RESERVED to get into mapOpNames
             if (op < OP_NOP && op != OP_RESERVED)
                 continue;
 
-            const char* name = GetOpName(static_cast<opcodetype>(op));
+            const char* name = GetOpName(op);
             if (strcmp(name, "OP_UNKNOWN") == 0)
                 continue;
             std::string strName(name);
-            mapOpNames[strName] = static_cast<opcodetype>(op);
+            mapOpNames[strName] = op;
             // Convenience: OP_ADD and just ADD are both recognized:
             boost::algorithm::replace_first(strName, "OP_", "");
-            mapOpNames[strName] = static_cast<opcodetype>(op);
+            mapOpNames[strName] = op;
         }
     }
 
