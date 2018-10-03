@@ -168,6 +168,9 @@ class PSBTTest(BitcoinTestFramework):
             assert tx_in["sequence"] > MAX_BIP125_RBF_SEQUENCE
         assert_equal(decoded_psbt["tx"]["locktime"], 0)
 
+        # Make sure change address wallet does not have P2SH innerscript access to results in success
+        # when attempting BnB coin selection
+        self.nodes[0].walletcreatefundedpsbt([], [{self.nodes[2].getnewaddress():unspent["amount"]+1}], block_height+2, {"changeAddress":self.nodes[1].getnewaddress()}, False)
 
         # BIP 174 Test Vectors
 

@@ -384,4 +384,11 @@ BOOST_FIXTURE_TEST_CASE(wallet_disableprivkeys, TestChain100Setup)
     BOOST_CHECK(!wallet->GetKeyFromPool(pubkey, false));
 }
 
+BOOST_FIXTURE_TEST_CASE(dummy_input_size_test, TestChain100Setup)
+{
+    BOOST_CHECK_EQUAL(CalculateNestedKeyhashInputSize(false), 91);
+    // Same virtual size due to rounding
+    BOOST_CHECK_EQUAL(CalculateNestedKeyhashInputSize(true), 91);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

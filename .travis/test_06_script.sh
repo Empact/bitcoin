@@ -44,6 +44,10 @@ BEGIN_FOLD build
 DOCKER_EXEC make $MAKEJOBS $GOAL || ( echo "Build failure. Verbose build follows." && DOCKER_EXEC make $GOAL V=1 ; false )
 END_FOLD
 
+BEGIN_FOLD soundness-tests
+DOCKER_EXEC $TRAVIS_BUILD_DIR/.travis/commit-tested-change-check.sh $TRAVIS_COMMIT_RANGE
+END_FOLD
+
 if [ "$RUN_UNIT_TESTS" = "true" ]; then
   BEGIN_FOLD unit-tests
   DOCKER_EXEC LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/depends/$HOST/lib make $MAKEJOBS check VERBOSE=1

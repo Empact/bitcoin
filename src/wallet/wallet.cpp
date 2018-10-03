@@ -1514,6 +1514,41 @@ int64_t CalculateMaximumSignedTxSize(const CTransaction &tx, const CWallet *wall
     return GetVirtualTransactionSize(txNew);
 }
 
+size_t CalculateNestedKeyhashInputSize(bool use_max_sig)
+{
+    // Generate ephemeral valid pubkey
+    CKey key;
+    key.MakeNewKey(true);
+    CPubKey pubkey = key.GetPubKey();
+
+    // Generate pubkey hash
+    uint160 key_hash(Hash160(pubkey.begin(), pubkey.end()));
+
+    // Create inner-script to enter into keystore. Key hash can't be 0...
+    CScript inner_script = CScript() << OP_0 << std::vector<unsigned char>(key_hash.begin(), key_hash.end());
+
+    // Create outer P2SH script for the output
+    uint160 script_id(Hash160(inner_script.begin(), inner_script.end()));
+    CScript script_pubkey = CScript() << OP_HASH160 << std::vector<unsigned char>(script_id.begin(), script_id.end()) << OP_EQUAL;
+
+    // Add inner-script to key store and key to watchonly
+    CBasicKeyStore keystore;
+    keystore.AddCScript(inner_script);
+    keystore.AddKeyPubKey(key, pubkey);
+
+    // Fill in dummy signatures for fee calculation.
+    SignatureData sig_data;
+
+    if (!ProduceSignature(keystore, use_max_sig ? DUMMY_MAXIMUM_SIGNATURE_CREATOR : DUMMY_SIGNATURE_CREATOR, script_pubkey, sig_data)) {
+        // We're hand-feeding it correct arguments; shouldn't happen
+        assert(false);
+    }
+
+    CTxIn tx_in;
+    UpdateInput(tx_in, sig_data);
+    return (size_t)GetVirtualTransactionInputSize(tx_in);
+}
+
 int CalculateMaximumSignedInputSize(const CTxOut& txout, const CWallet* wallet, bool use_max_sig)
 {
     CMutableTransaction txn;
@@ -2727,7 +2762,14 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CTransac
                 if (pick_new_inputs) {
                     nValueIn = 0;
                     setCoins.clear();
-                    coin_selection_params.change_spend_size = CalculateMaximumSignedInputSize(change_prototype_txout, this);
+                    int change_spend_size = CalculateMaximumSignedInputSize(change_prototype_txout, this);
+                    // If the wallet doesn't know how to sign change output, assume p2sh-p2wpkh
+                    // as lower-bound to allow BnB to do it's thing
+                    if (change_spend_size == -1) {
+                        coin_selection_params.change_spend_size = CalculateNestedKeyhashInputSize(false);
+                    } else {
+                        coin_selection_params.change_spend_size = (size_t)change_spend_size;
+                    }
                     coin_selection_params.effective_fee = nFeeRateNeeded;
                     if (!SelectCoins(vAvailableCoins, nValueToSelect, setCoins, nValueIn, coin_control, coin_selection_params, bnb_used))
                     {

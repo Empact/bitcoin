@@ -1200,4 +1200,7 @@ public:
 // be IsAllFromMe).
 int64_t CalculateMaximumSignedTxSize(const CTransaction &tx, const CWallet *wallet, bool use_max_sig = false);
 int64_t CalculateMaximumSignedTxSize(const CTransaction &tx, const CWallet *wallet, const std::vector<CTxOut>& txouts, bool use_max_sig = false);
+
+// Calculate the size of a single input of type P2SH-P2WPKH
+size_t CalculateNestedKeyhashInputSize(bool use_max_sig = false);
 #endif // BITCOIN_WALLET_WALLET_H
