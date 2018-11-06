@@ -195,7 +195,7 @@ BITCOIN_CORE_H = \
   walletinitinterface.h \
   wallet/coincontrol.h \
   wallet/crypter.h \
-  wallet/db.h \
+  wallet/bdb.h \
   wallet/feebumper.h \
   wallet/fees.h \
   wallet/rpcwallet.h \
@@ -290,7 +290,7 @@ libbitcoin_wallet_a_SOURCES = \
   interfaces/wallet.cpp \
   wallet/coincontrol.cpp \
   wallet/crypter.cpp \
-  wallet/db.cpp \
+  wallet/bdb.cpp \
   wallet/feebumper.cpp \
   wallet/fees.cpp \
   wallet/init.cpp \

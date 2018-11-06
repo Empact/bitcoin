@@ -8,7 +8,7 @@
 
 #include <amount.h>
 #include <primitives/transaction.h>
-#include <wallet/db.h>
+#include <wallet/bdb.h>
 #include <key.h>
 
 #include <list>
