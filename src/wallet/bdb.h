@@ -194,7 +194,11 @@ public:
 
     void Flush();
     void Close();
+
+    /* Try to (very carefully!) recover wallet database (with a possible key type filter) */
     static bool Recover(const fs::path& file_path, void *callbackDataIn, bool (*recoverKVcallback)(void* callbackData, CDataStream ssKey, CDataStream ssValue), std::string& out_backup_filename);
+    /* Recover convenience-function to bypass the key filter callback, called when verify fails, recovers everything */
+    static bool Recover(const fs::path& wallet_path, std::string& out_backup_filename);
 
     /* flush the wallet passively (TRY_LOCK)
        ideal to be called periodically */

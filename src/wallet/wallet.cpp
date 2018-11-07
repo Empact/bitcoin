@@ -3856,7 +3856,7 @@ bool CWallet::Verify(const WalletLocation& location, bool salvage_wallet, std::s
     }
 
     try {
-        if (!WalletBatch::VerifyEnvironment(wallet_path, error_string)) {
+        if (!BerkeleyBatch::VerifyEnvironment(wallet_path, error_string)) {
             return false;
         }
     } catch (const fs::filesystem_error& e) {
@@ -3868,12 +3868,12 @@ bool CWallet::Verify(const WalletLocation& location, bool salvage_wallet, std::s
         // Recover readable keypairs:
         CWallet dummyWallet(WalletLocation(), WalletDatabase::CreateDummy());
         std::string backup_filename;
-        if (!WalletBatch::Recover(wallet_path, (void *)&dummyWallet, WalletBatch::RecoverKeysOnlyFilter, backup_filename)) {
+        if (!BerkeleyBatch::Recover(wallet_path, (void *)&dummyWallet, WalletBatch::RecoverKeysOnlyFilter, backup_filename)) {
             return false;
         }
     }
 
-    return WalletBatch::VerifyDatabaseFile(wallet_path, warning_string, error_string);
+    return BerkeleyBatch::VerifyDatabaseFile(wallet_path, warning_string, error_string, BerkeleyBatch::Recover);
 }
 
 std::shared_ptr<CWallet> CWallet::CreateWalletFromFile(const WalletLocation& location, uint64_t wallet_creation_flags)

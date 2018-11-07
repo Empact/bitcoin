@@ -316,6 +316,11 @@ bool BerkeleyBatch::Recover(const fs::path& file_path, void *callbackDataIn, boo
     return fSuccess;
 }
 
+bool BerkeleyBatch::Recover(const fs::path& wallet_path, std::string& out_backup_filename)
+{
+    return BerkeleyBatch::Recover(wallet_path, nullptr, nullptr, out_backup_filename);
+}
+
 bool BerkeleyBatch::VerifyEnvironment(const fs::path& file_path, std::string& errorStr)
 {
     std::string walletFile;
