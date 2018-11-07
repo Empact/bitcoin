@@ -40,9 +40,6 @@ class CWalletTx;
 class uint160;
 class uint256;
 
-/** Backend-agnostic database type. */
-using WalletDatabase = BerkeleyDatabase;
-
 /** Error statuses for the wallet database */
 enum class DBErrors
 {
@@ -160,7 +157,7 @@ private:
     }
 
 public:
-    explicit WalletBatch(WalletDatabase& database, const char* pszMode = "r+", bool _fFlushOnClose = true) :
+    explicit WalletBatch(BerkeleyDatabase& database, const char* pszMode = "r+", bool _fFlushOnClose = true) :
         m_batch(database, pszMode, _fFlushOnClose),
         m_database(database)
     {
@@ -227,7 +224,7 @@ public:
     bool WriteVersion(int nVersion);
 private:
     BerkeleyBatch m_batch;
-    WalletDatabase& m_database;
+    BerkeleyDatabase& m_database;
 };
 
 //! Compacts BDB state so that wallet.dat is self-contained (if there are changes)
