@@ -741,10 +741,11 @@ bool WalletBatch::TxnAbort()
 
 bool WalletBatch::ReadVersion(int& nVersion)
 {
-    return m_batch.ReadVersion(nVersion);
+    nVersion = 0;
+    return m_batch.Read(std::string("version"), nVersion);
 }
 
 bool WalletBatch::WriteVersion(int nVersion)
 {
-    return m_batch.WriteVersion(nVersion);
+    return m_batch.Write(std::string("version"), nVersion);
 }
