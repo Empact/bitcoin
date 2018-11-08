@@ -7,6 +7,7 @@
 #define BITCOIN_WALLET_WALLETDB_H
 
 #include <amount.h>
+#include <interfaces/wallet_database.h>
 #include <primitives/transaction.h>
 #include <wallet/bdb.h>
 #include <key.h>
@@ -39,17 +40,6 @@ class CWallet;
 class CWalletTx;
 class uint160;
 class uint256;
-
-/** Error statuses for the wallet database */
-enum class DBErrors
-{
-    LOAD_OK,
-    CORRUPT,
-    NONCRITICAL_ERROR,
-    TOO_NEW,
-    LOAD_FAIL,
-    NEED_REWRITE
-};
 
 /* simple HD chain data model */
 class CHDChain
@@ -157,8 +147,8 @@ private:
     }
 
 public:
-    explicit WalletBatch(BerkeleyDatabase& database, const char* pszMode = "r+", bool _fFlushOnClose = true) :
-        m_batch(database, pszMode, _fFlushOnClose),
+    explicit WalletBatch(interfaces::WalletDatabase& database, const char* pszMode = "r+", bool _fFlushOnClose = true) :
+        m_batch(database.Batch(pszMode, _fFlushOnClose)),
         m_database(database)
     {
     }
@@ -203,8 +193,6 @@ public:
     DBErrors FindWalletTx(std::vector<uint256>& vTxHash, std::vector<CWalletTx>& vWtx);
     DBErrors ZapWalletTx(std::vector<CWalletTx>& vWtx);
     DBErrors ZapSelectTx(std::vector<uint256>& vHashIn, std::vector<uint256>& vHashOut);
-    /* Recover filter (used as callback), will only let keys (cryptographical keys) as KV/key-type pass through */
-    static bool RecoverKeysOnlyFilter(void *callbackData, CDataStream ssKey, CDataStream ssValue);
     /* Function to determine if a certain KV/key-type is a key (cryptographical key) type */
     static bool IsKeyType(const std::string& strType);
 
@@ -223,8 +211,8 @@ public:
     //! Write wallet version
     bool WriteVersion(int nVersion);
 private:
-    BerkeleyBatch m_batch;
-    BerkeleyDatabase& m_database;
+    interfaces::WalletDatabaseBatch m_batch;
+    interfaces::WalletDatabase& m_database;
 };
 
 //! Compacts BDB state so that wallet.dat is self-contained (if there are changes)

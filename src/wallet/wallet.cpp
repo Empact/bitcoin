@@ -3862,7 +3862,7 @@ bool CWallet::Verify(const WalletLocation& location, bool salvage_wallet, std::s
         // Recover readable keypairs:
         CWallet dummyWallet(WalletLocation(), BerkeleyDatabase::CreateDummy());
         std::string backup_filename;
-        if (!BerkeleyBatch::Recover(wallet_path, (void *)&dummyWallet, WalletBatch::RecoverKeysOnlyFilter, backup_filename)) {
+        if (!BerkeleyBatch::Recover(wallet_path, (void *)&dummyWallet, BerkeleyBatch::RecoverKeysOnlyFilter, backup_filename)) {
             return false;
         }
     }

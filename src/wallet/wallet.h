@@ -7,6 +7,7 @@
 #define BITCOIN_WALLET_WALLET_H
 
 #include <amount.h>
+#include <interfaces/wallet_database.h>
 #include <outputtype.h>
 #include <policy/feerate.h>
 #include <streams.h>
@@ -680,7 +681,7 @@ private:
     WalletLocation m_location;
 
     /** Internal database handle. */
-    std::unique_ptr<BerkeleyDatabase> database;
+    std::unique_ptr<interfaces::WalletDatabase> database;
 
     /**
      * The following is used to keep track of how far behind the wallet is
@@ -704,7 +705,7 @@ public:
     /** Get database handle used by this wallet. Ideally this function would
      * not be necessary.
      */
-    BerkeleyDatabase& GetDBHandle()
+    interfaces::WalletDatabase& GetDBHandle()
     {
         return *database;
     }
@@ -737,7 +738,7 @@ public:
     unsigned int nMasterKeyMaxID = 0;
 
     /** Construct wallet with specified name and database implementation. */
-    CWallet(const WalletLocation& location, std::unique_ptr<BerkeleyDatabase> database) : m_location(location), database(std::move(database))
+    CWallet(const WalletLocation& location, std::unique_ptr<interfaces::WalletDatabase> database) : m_location(location), database(std::move(database))
     {
     }
 

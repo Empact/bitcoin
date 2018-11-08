@@ -8,6 +8,7 @@
 
 #include <clientversion.h>
 #include <fs.h>
+#include <interfaces/wallet_database.h>
 #include <serialize.h>
 #include <streams.h>
 #include <sync.h>
@@ -98,82 +99,10 @@ public:
 /** Get BerkeleyEnvironment and database filename given a wallet path. */
 BerkeleyEnvironment* GetWalletEnv(const fs::path& wallet_path, std::string& database_filename);
 
-/** An instance of this class represents one database.
- * For BerkeleyDB this is just a (env, strFile) tuple.
- **/
-class BerkeleyDatabase
-{
-    friend class BerkeleyBatch;
-public:
-    /** Create dummy DB handle */
-    BerkeleyDatabase() : nUpdateCounter(0), nLastSeen(0), nLastFlushed(0), nLastWalletUpdate(0), env(nullptr)
-    {
-    }
-
-    /** Create DB handle to real database */
-    BerkeleyDatabase(const fs::path& wallet_path, bool mock = false) :
-        nUpdateCounter(0), nLastSeen(0), nLastFlushed(0), nLastWalletUpdate(0)
-    {
-        env = GetWalletEnv(wallet_path, strFile);
-        if (mock) {
-            env->Close();
-            env->Reset();
-            env->MakeMock();
-        }
-    }
-
-    /** Return object for accessing database at specified path. */
-    static std::unique_ptr<BerkeleyDatabase> Create(const fs::path& path)
-    {
-        return MakeUnique<BerkeleyDatabase>(path);
-    }
-
-    /** Return object for accessing dummy database with no read/write capabilities. */
-    static std::unique_ptr<BerkeleyDatabase> CreateDummy()
-    {
-        return MakeUnique<BerkeleyDatabase>();
-    }
-
-    /** Return object for accessing temporary in-memory database. */
-    static std::unique_ptr<BerkeleyDatabase> CreateMock()
-    {
-        return MakeUnique<BerkeleyDatabase>("", true /* mock */);
-    }
-
-    /** Rewrite the entire database on disk, with the exception of key pszSkip if non-zero
-     */
-    bool Rewrite(const char* pszSkip=nullptr);
-
-    /** Back up the entire database to a file.
-     */
-    bool Backup(const std::string& strDest);
-
-    /** Make sure all changes are flushed to disk.
-     */
-    void Flush(bool shutdown);
-
-    void IncrementUpdateCounter();
-
-    std::atomic<unsigned int> nUpdateCounter;
-    unsigned int nLastSeen;
-    unsigned int nLastFlushed;
-    int64_t nLastWalletUpdate;
-
-private:
-    /** BerkeleyDB specific */
-    BerkeleyEnvironment *env;
-    std::string strFile;
-
-    /** Return whether this database handle is a dummy for testing.
-     * Only to be used at a low level, application should ideally not care
-     * about this.
-     */
-    bool IsDummy() { return env == nullptr; }
-};
-
+class BerkeleyDatabase;
 
 /** RAII class that provides access to a Berkeley database */
-class BerkeleyBatch
+class BerkeleyBatch : public interfaces::WalletDatabaseBatch
 {
 protected:
     Db* pdb;
@@ -231,6 +160,9 @@ private:
         memory_cleanse(datValue.get_data(), datValue.get_size());
         return (ret == 0);
     }
+
+    Dbc* GetCursor() const;
+    int ReadAtCursor(Dbc* pcursor, CDataStream& ssKey, CDataStream& ssValue, bool setRange = false);
 
 public:
     template <typename K, typename T>
@@ -309,51 +241,11 @@ public:
         return (ret == 0);
     }
 
-    Dbc* GetCursor()
-    {
-        if (!pdb)
-            return nullptr;
-        Dbc* pcursor = nullptr;
-        int ret = pdb->cursor(nullptr, &pcursor, 0);
-        if (ret != 0)
-            return nullptr;
-        return pcursor;
-    }
+    DBErrors FindWalletTx(std::vector<uint256>& vTxHash, std::vector<CWalletTx>& vWtx);
+    DBErrors LoadWallet(CWallet* pwallet);
 
-    int ReadAtCursor(Dbc* pcursor, CDataStream& ssKey, CDataStream& ssValue, bool setRange = false)
-    {
-        // Read at cursor
-        Dbt datKey;
-        unsigned int fFlags = DB_NEXT;
-        if (setRange) {
-            datKey.set_data(ssKey.data());
-            datKey.set_size(ssKey.size());
-            fFlags = DB_SET_RANGE;
-        }
-        Dbt datValue;
-        datKey.set_flags(DB_DBT_MALLOC);
-        datValue.set_flags(DB_DBT_MALLOC);
-        int ret = pcursor->get(&datKey, &datValue, fFlags);
-        if (ret != 0)
-            return ret;
-        else if (datKey.get_data() == nullptr || datValue.get_data() == nullptr)
-            return 99999;
-
-        // Convert to streams
-        ssKey.SetType(SER_DISK);
-        ssKey.clear();
-        ssKey.write((char*)datKey.get_data(), datKey.get_size());
-        ssValue.SetType(SER_DISK);
-        ssValue.clear();
-        ssValue.write((char*)datValue.get_data(), datValue.get_size());
-
-        // Clear and free memory
-        memory_cleanse(datKey.get_data(), datKey.get_size());
-        memory_cleanse(datValue.get_data(), datValue.get_size());
-        free(datKey.get_data());
-        free(datValue.get_data());
-        return 0;
-    }
+    /* Recover filter (used as callback), will only let keys (cryptographical keys) as KV/key-type pass through */
+    static bool RecoverKeysOnlyFilter(void *callbackData, CDataStream ssKey, CDataStream ssValue);
 
 public:
     bool TxnBegin()
@@ -386,6 +278,88 @@ public:
     }
 
     bool static Rewrite(BerkeleyDatabase& database, const char* pszSkip = nullptr);
+};
+
+/** An instance of this class represents one database.
+ * For BerkeleyDB this is just a (env, strFile) tuple.
+ **/
+class BerkeleyDatabase : public interfaces::WalletDatabase
+{
+    friend class BerkeleyBatch;
+public:
+    /** Create dummy DB handle */
+    BerkeleyDatabase() : nUpdateCounter(0), nLastSeen(0), nLastFlushed(0), nLastWalletUpdate(0), env(nullptr)
+    {
+    }
+
+    /** Create DB handle to real database */
+    BerkeleyDatabase(const fs::path& wallet_path, bool mock = false) :
+        nUpdateCounter(0), nLastSeen(0), nLastFlushed(0), nLastWalletUpdate(0)
+    {
+        env = GetWalletEnv(wallet_path, strFile);
+        if (mock) {
+            env->Close();
+            env->Reset();
+            env->MakeMock();
+        }
+    }
+
+    /** Return object for accessing database at specified path. */
+    static std::unique_ptr<BerkeleyDatabase> Create(const fs::path& path)
+    {
+        return MakeUnique<BerkeleyDatabase>(path);
+    }
+
+    /** Return object for accessing dummy database with no read/write capabilities. */
+    static std::unique_ptr<BerkeleyDatabase> CreateDummy()
+    {
+        return MakeUnique<BerkeleyDatabase>();
+    }
+
+    /** Return object for accessing temporary in-memory database. */
+    static std::unique_ptr<BerkeleyDatabase> CreateMock()
+    {
+        return MakeUnique<BerkeleyDatabase>("", true /* mock */);
+    }
+
+    interfaces::WalletDatabaseBatch Batch(const char* pszMode, bool fFlushOnCloseIn) override
+    {
+        return BerkeleyBatch(*this, pszMode, fFlushOnCloseIn);
+    }
+
+    void PeriodicallyCompact() override;
+
+    /** Rewrite the entire database on disk, with the exception of key pszSkip if non-zero
+     */
+    bool Rewrite(const char* pszSkip=nullptr) override;
+
+    /** Back up the entire database to a file.
+     */
+    bool Backup(const std::string& strDest) override;
+
+    /** Make sure all changes are flushed to disk.
+     */
+    void Flush(bool shutdown) override;
+
+    void IncrementUpdateCounter() override;
+
+    void ReloadDbEnv();
+
+    std::atomic<unsigned int> nUpdateCounter;
+    unsigned int nLastSeen;
+    unsigned int nLastFlushed;
+    int64_t nLastWalletUpdate;
+
+private:
+    /** BerkeleyDB specific */
+    BerkeleyEnvironment *env;
+    std::string strFile;
+
+    /** Return whether this database handle is a dummy for testing.
+     * Only to be used at a low level, application should ideally not care
+     * about this.
+     */
+    bool IsDummy() { return env == nullptr; }
 };
 
 #endif // BITCOIN_WALLET_DB_H
