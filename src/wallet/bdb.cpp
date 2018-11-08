@@ -685,6 +685,14 @@ bool BerkeleyBatch::Rewrite(BerkeleyDatabase& database, const char* pszSkip)
                 }
                 if (!fSuccess)
                     LogPrintf("BerkeleyBatch::Rewrite: Failed to rewrite database file %s\n", strFileRes);
+
+                if (pszSkip == nullptr) {
+                    // BDB seems to have a bad habit of writing old data into
+                    // slack space in .dat files; that is bad if the old data is
+                    // unencrypted private keys. So:
+                    env->ReloadDbEnv();
+                }
+
                 return fSuccess;
             }
         }
@@ -839,12 +847,5 @@ void BerkeleyDatabase::Flush(bool shutdown)
             // environments can be shut down after databases.
             env->m_fileids.erase(strFile);
         }
-    }
-}
-
-void BerkeleyDatabase::ReloadDbEnv()
-{
-    if (!IsDummy()) {
-        env->ReloadDbEnv();
     }
 }
