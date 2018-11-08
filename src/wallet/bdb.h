@@ -85,10 +85,10 @@ public:
     void CloseDb(const std::string& strFile);
     void ReloadDbEnv();
 
-    DbTxn* TxnBegin(int flags = DB_TXN_WRITE_NOSYNC)
+    DbTxn* TxnBegin()
     {
         DbTxn* ptxn = nullptr;
-        int ret = dbenv->txn_begin(nullptr, &ptxn, flags);
+        int ret = dbenv->txn_begin(nullptr, &ptxn, DB_TXN_WRITE_NOSYNC);
         if (!ptxn || ret != 0)
             return nullptr;
         return ptxn;
