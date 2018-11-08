@@ -207,21 +207,21 @@ public:
     static bool VerifyDatabaseFile(const fs::path& file_path, std::string& warningStr, std::string& errorStr, BerkeleyEnvironment::recoverFunc_type recoverFunc);
 
 private:
+    template <typename K>
+    Dbt DbtFor(const K& key)
+    {
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(1000);
+        ssKey << key;
+        return Dbt(ssKey.data(), ssKey.size());
+    }
+
     // Write regardless of fReadOnly
     template <typename K, typename T>
     bool ForceWrite(const K& key, const T& value, bool fOverwrite = true)
     {
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        Dbt datKey(ssKey.data(), ssKey.size());
-
-        // Value
-        CDataStream ssValue(SER_DISK, CLIENT_VERSION);
-        ssValue.reserve(10000);
-        ssValue << value;
-        Dbt datValue(ssValue.data(), ssValue.size());
+        Dbt datKey(DbtFor(key));
+        Dbt datValue(DbtFor(value));
 
         // Write
         int ret = pdb->put(activeTxn, &datKey, &datValue, (fOverwrite ? 0 : DB_NOOVERWRITE));
@@ -239,11 +239,7 @@ public:
         if (!pdb)
             return false;
 
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        Dbt datKey(ssKey.data(), ssKey.size());
+        Dbt datKey(DbtFor(key));
 
         // Read
         Dbt datValue;
@@ -287,11 +283,7 @@ public:
         if (fReadOnly)
             assert(!"Erase called on database in read-only mode");
 
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        Dbt datKey(ssKey.data(), ssKey.size());
+        Dbt datKey(DbtFor(key));
 
         // Erase
         int ret = pdb->del(activeTxn, &datKey, 0);
@@ -307,11 +299,7 @@ public:
         if (!pdb)
             return false;
 
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        Dbt datKey(ssKey.data(), ssKey.size());
+        Dbt datKey(DbtFor(key));
 
         // Exists
         int ret = pdb->exists(activeTxn, &datKey, 0);
