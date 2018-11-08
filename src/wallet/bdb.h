@@ -206,6 +206,32 @@ public:
     /* verifies the database file */
     static bool VerifyDatabaseFile(const fs::path& file_path, std::string& warningStr, std::string& errorStr, BerkeleyEnvironment::recoverFunc_type recoverFunc);
 
+private:
+    // Write regardless of fReadOnly
+    template <typename K, typename T>
+    bool ForceWrite(const K& key, const T& value, bool fOverwrite = true)
+    {
+        // Key
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(1000);
+        ssKey << key;
+        Dbt datKey(ssKey.data(), ssKey.size());
+
+        // Value
+        CDataStream ssValue(SER_DISK, CLIENT_VERSION);
+        ssValue.reserve(10000);
+        ssValue << value;
+        Dbt datValue(ssValue.data(), ssValue.size());
+
+        // Write
+        int ret = pdb->put(activeTxn, &datKey, &datValue, (fOverwrite ? 0 : DB_NOOVERWRITE));
+
+        // Clear memory in case it was a private key
+        memory_cleanse(datKey.get_data(), datKey.get_size());
+        memory_cleanse(datValue.get_data(), datValue.get_size());
+        return (ret == 0);
+    }
+
 public:
     template <typename K, typename T>
     bool Read(const K& key, T& value)
@@ -250,25 +276,7 @@ public:
         if (fReadOnly)
             assert(!"Write called on database in read-only mode");
 
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        Dbt datKey(ssKey.data(), ssKey.size());
-
-        // Value
-        CDataStream ssValue(SER_DISK, CLIENT_VERSION);
-        ssValue.reserve(10000);
-        ssValue << value;
-        Dbt datValue(ssValue.data(), ssValue.size());
-
-        // Write
-        int ret = pdb->put(activeTxn, &datKey, &datValue, (fOverwrite ? 0 : DB_NOOVERWRITE));
-
-        // Clear memory in case it was a private key
-        memory_cleanse(datKey.get_data(), datKey.get_size());
-        memory_cleanse(datValue.get_data(), datValue.get_size());
-        return (ret == 0);
+        return ForceWrite(key, value, fOverwrite);
     }
 
     template <typename K>

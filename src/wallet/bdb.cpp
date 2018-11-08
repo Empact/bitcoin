@@ -516,10 +516,7 @@ BerkeleyBatch::BerkeleyBatch(BerkeleyDatabase& database, const char* pszMode, bo
             env->mapDb[strFilename] = pdb;
 
             if (fCreate && !Exists(std::string("version"))) {
-                bool fTmp = fReadOnly;
-                fReadOnly = false;
-                Write(std::string("version"), CLIENT_VERSION);
-                fReadOnly = fTmp;
+                ForceWrite(std::string("version"), CLIENT_VERSION);
             }
         }
         ++env->mapFileUseCount[strFilename];
