@@ -90,10 +90,13 @@ static const int64_t TIMESTAMP_MIN = 0;
 
 static void RescanWallet(CWallet& wallet, const WalletRescanReserver& reserver, int64_t time_begin = TIMESTAMP_MIN, bool update = true)
 {
-    int64_t scanned_time = wallet.RescanFromTime(time_begin, reserver, update);
-    if (wallet.IsAbortingRescan()) {
+    const CBlockIndex* failed_block;
+    switch (wallet.RescanFromTime(time_begin, reserver, failed_block, update)) {
+    case CWallet::ScanWallet::SUCCESS:
+        break;
+    case CWallet::ScanResult::USER_ABORT:
         throw JSONRPCError(RPC_MISC_ERROR, "Rescan aborted by user.");
-    } else if (scanned_time > time_begin) {
+    case CWallet::ScanResult::FAILURE:
         throw JSONRPCError(RPC_WALLET_ERROR, "Rescan was unable to fully rescan the blockchain. Some transactions may be missing.");
     }
 }
@@ -211,7 +214,7 @@ UniValue abortrescan(const JSONRPCRequest& request)
             + HelpExampleRpc("abortrescan", "")
         );
 
-    if (!pwallet->IsScanning() || pwallet->IsAbortingRescan()) return false;
+    if (!pwallet->CanAbortRescan()) return false;
     pwallet->AbortRescan();
     return true;
 }
@@ -1182,17 +1185,21 @@ UniValue importmulti(const JSONRPCRequest& mainRequest)
         }
     }
     if (fRescan && fRunScan && requests.size()) {
-        int64_t scannedTime = pwallet->RescanFromTime(nLowestTimestamp, reserver, true /* update */);
+        const CBlockIndex* failed_block;
+        CWallet::ScanResult result = pwallet->RescanFromTime(nLowestTimestamp, reserver, failed_block, true /* update */);
         pwallet->ReacceptWalletTransactions();
 
-        if (pwallet->IsAbortingRescan()) {
+        switch (result) {
+        case CWallet::ScanResult::SUCCESS:
+            break;
+        case CWallet::ScanResult::USER_ABORT:
             throw JSONRPCError(RPC_MISC_ERROR, "Rescan aborted by user.");
-        }
-        if (scannedTime > nLowestTimestamp) {
+        case CWallet::ScanResult::FAILURE: {
             std::vector<UniValue> results = response.getValues();
             response.clear();
             response.setArray();
             size_t i = 0;
+            int64_t scannedTime = failed_block->GetBlockTimeMax() + TIMESTAMP_WINDOW + 1;
             for (const UniValue& request : requests.getValues()) {
                 // If key creation date is within the successfully scanned
                 // range, or if the import result already has an error set, let
@@ -1214,11 +1221,12 @@ UniValue importmulti(const JSONRPCRequest& mainRequest)
                                       "caused by pruning or data corruption (see bitcoind log for details) and could "
                                       "be dealt with by downloading and rescanning the relevant blocks (see -reindex "
                                       "and -rescan options).",
-                                GetImportTimestamp(request, now), scannedTime - TIMESTAMP_WINDOW - 1, TIMESTAMP_WINDOW)));
+                                GetImportTimestamp(request, now), failed_block->GetBlockTimeMax(), TIMESTAMP_WINDOW)));
                     response.push_back(std::move(result));
                 }
                 ++i;
             }
+        }
         }
     }
 

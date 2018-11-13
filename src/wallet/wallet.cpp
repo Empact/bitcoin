@@ -1600,12 +1600,12 @@ void CWalletTx::GetAmounts(std::list<COutputEntry>& listReceived,
  * @return Earliest timestamp that could be successfully scanned from. Timestamp
  * returned will be higher than startTime if relevant blocks could not be read.
  */
-int64_t CWallet::RescanFromTime(int64_t startTime, const WalletRescanReserver& reserver, bool update)
+CWallet::ScanResult CWallet::RescanFromTime(int64_t startTime, const WalletRescanReserver& reserver, const CBlockIndex* failed_block, bool update)
 {
     // Find starting block. May be null if nCreateTime is greater than the
     // highest blockchain timestamp, in which case there is nothing that needs
     // to be scanned.
-    CBlockIndex* startBlock = nullptr;
+    const CBlockIndex* startBlock = nullptr;
     {
         auto locked_chain = chain().lock();
         startBlock = chainActive.FindEarliestAtLeast(startTime - TIMESTAMP_WINDOW);
@@ -1613,13 +1613,10 @@ int64_t CWallet::RescanFromTime(int64_t startTime, const WalletRescanReserver& r
     }
 
     if (startBlock) {
-        const CBlockIndex *failedBlock, *stop_block;
-        // TODO: this should take into account failure by ScanResult::USER_ABORT
-        if (ScanResult::FAILURE == ScanForWalletTransactions(startBlock, nullptr, reserver, failedBlock, stop_block, update)) {
-            return failedBlock->GetBlockTimeMax() + TIMESTAMP_WINDOW + 1;
-        }
+        const CBlockIndex* stop_block;
+        return ScanForWalletTransactions(startBlock, nullptr, reserver, failed_block, stop_block, update);
     }
-    return startTime;
+    return ScanResult::SUCCESS; // noop scan
 }
 
 /**
