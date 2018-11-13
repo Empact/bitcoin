@@ -907,6 +907,27 @@ public:
      * @params[out] failed_block on FAILURE, points to the most recent failed block
      */
     ScanResult RescanFromTime(int64_t startTime, const WalletRescanReserver& reserver, const CBlockIndex* failed_block, bool update);
+
+    /**
+     * Scan the block chain (starting in pindexStart) for transactions
+     * from or to us. If fUpdate is true, found transactions that already
+     * exist in the wallet will be updated.
+     *
+     * @param[in] pindexStop if not a nullptr, the scan will stop at this block-index
+     * @param[out] failed_block if FAILURE is returned, the most recent block
+     *     that could not be scanned, otherwise nullptr
+     * @param[out] stop_block the most recent block that could be scanned,
+     *     otherwise nullptr if no block could be scanned
+     *
+     * @return ScanResult indicating success or failure of the scan. SUCCESS if
+     * scan was successful. FAILURE if a complete rescan was not possible (due to
+     * pruning or corruption). USER_ABORT if the rescan was aborted before it
+     * could complete.
+     *
+     * @pre Caller needs to make sure pindexStop (and the optional pindexStart) are on
+     * the main chain after to the addition of any new keys you want to detect
+     * transactions for.
+     */
     ScanResult ScanForWalletTransactions(const CBlockIndex* const pindexStart, const CBlockIndex* const pindexStop, const WalletRescanReserver& reserver, const CBlockIndex*& failed_block, const CBlockIndex*& stop_block, bool fUpdate = false);
     void TransactionRemovedFromMempool(const CTransactionRef &ptx) override;
     void ReacceptWalletTransactions();
