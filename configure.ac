@@ -180,6 +180,12 @@ AC_ARG_ENABLE([ccache],
   [use_ccache=$enableval],
   [use_ccache=auto])
 
+AC_ARG_ENABLE([isystem],
+  [AS_HELP_STRING([--enable-isystem],
+  [enable isystem includes for dependencies and stricter warning checks (default is no)])],
+  [use_isystem=$enableval],
+  [use_isystem=no])
+
 AC_ARG_ENABLE([lcov],
   [AS_HELP_STRING([--enable-lcov],
   [enable lcov testing (default is no)])],
@@ -553,7 +559,8 @@ case $host in
          bdb_prefix=$($BREW --prefix berkeley-db4 2>/dev/null)
          qt5_prefix=$($BREW --prefix qt5 2>/dev/null)
          if test x$bdb_prefix != x; then
-           CPPFLAGS="$CPPFLAGS -I$bdb_prefix/include"
+           BITCOIN_SYSTEM_INCLUDE([bdb_cppflags], ["-I$bdb_prefix/include"])
+           CPPFLAGS="$CPPFLAGS $bdb_cppflags"
            LIBS="$LIBS -L$bdb_prefix/lib"
          fi
          if test x$qt5_prefix != x; then
@@ -1234,6 +1241,8 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 LIBS="$TEMP_LIBS"
 CPPFLAGS="$TEMP_CPPFLAGS"
 fi
+dnl Treat boost includes with isystem if applicable
+BITCOIN_SYSTEM_INCLUDE([BOOST_CPPFLAGS], [$BOOST_CPPFLAGS])
 
 if test x$boost_sleep != xyes; then
   AC_MSG_ERROR(No working boost sleep implementation found.)
@@ -1250,9 +1259,9 @@ if test x$use_pkgconfig = xyes; then
         BITCOIN_QT_CHECK([PKG_CHECK_MODULES([QR], [libqrencode], [have_qrencode=yes], [have_qrencode=no])])
       fi
       if test x$build_bitcoin_cli$build_bitcoind$bitcoin_enable_qt$use_tests != xnononono; then
-        PKG_CHECK_MODULES([EVENT], [libevent],, [AC_MSG_ERROR(libevent not found.)])
+        PKG_CHECK_MODULES([EVENT], [libevent], [BITCOIN_SYSTEM_INCLUDE([EVENT_CFLAGS], [$EVENT_CFLAGS])], [AC_MSG_ERROR(libevent not found.)])
         if test x$TARGET_OS != xwindows; then
-          PKG_CHECK_MODULES([EVENT_PTHREADS], [libevent_pthreads],, [AC_MSG_ERROR(libevent_pthreads not found.)])
+          PKG_CHECK_MODULES([EVENT_PTHREADS], [libevent_pthreads], [BITCOIN_SYSTEM_INCLUDE([EVENT_PTHREADS_CFLAGS], [$EVENT_PTHREADS_CFLAGS])], [AC_MSG_ERROR(libevent_pthreads not found.)])
         fi
       fi
 
@@ -1361,6 +1370,7 @@ fi
 
 if test x$need_bundled_univalue = xyes ; then
   UNIVALUE_CFLAGS='-I$(srcdir)/univalue/include'
+  BITCOIN_SYSTEM_INCLUDE([UNIVALUE_CFLAGS], [$UNIVALUE_CFLAGS])
   UNIVALUE_LIBS='univalue/libunivalue.la'
 fi
 
@@ -1653,6 +1663,7 @@ fi
 echo "  with bench    = $use_bench"
 echo "  with upnp     = $use_upnp"
 echo "  use asm       = $use_asm"
+echo "  use isystem   = $use_isystem"
 echo "  sanitizers    = $use_sanitizers"
 echo "  debug enabled = $enable_debug"
 echo "  gprof enabled = $enable_gprof"
