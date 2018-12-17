@@ -411,7 +411,7 @@ void BitcoinApplication::initializeResult(bool success)
             connect(paymentServer, &PaymentServer::message, [this](const QString& title, const QString& message, unsigned int style) {
                 window->message(title, message, style);
             });
-            QTimer::singleShot(100, paymentServer, &PaymentServer::uiReady);
+            QTimer::singleShot(100, paymentServer, SLOT(uiReady()));
         }
 #endif
         pollShutdownTimer->start(200);
