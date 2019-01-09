@@ -52,7 +52,14 @@ OptionsDialog::OptionsDialog(QWidget *parent, bool enableWallet) :
     /* Network elements init */
 #ifndef USE_UPNP
     ui->mapPortUpnp->setEnabled(false);
+    ui->mapPortPort->setEnabled(false);
+#else
+    ui->mapPortPort->setEnabled(false);
+    ui->mapPortPort->setValidator(new QIntValidator(1, 65535, this));
+    connect(ui->mapPortUpnp, &QPushButton::toggled, ui->mapPortPort, &QWidget::setEnabled);
+    connect(ui->mapPortPort, &QLineEdit::textChanged, this, &OptionsDialog::updateUpnpValidationState);
 #endif
+
 
     ui->proxyIp->setEnabled(false);
     ui->proxyPort->setEnabled(false);
@@ -207,6 +214,7 @@ void OptionsDialog::setMapper()
 
     /* Network */
     mapper->addMapping(ui->mapPortUpnp, OptionsModel::MapPortUPnP);
+    mapper->addMapping(ui->mapPortPort, OptionsModel::MapPortPort);
     mapper->addMapping(ui->allowIncoming, OptionsModel::Listen);
 
     mapper->addMapping(ui->connectSocks, OptionsModel::ProxyUse);
@@ -319,6 +327,21 @@ void OptionsDialog::clearStatusLabel()
     ui->statusLabel->clear();
     if (model && model->isRestartRequired()) {
         showRestartWarning(true);
+    }
+}
+
+void OptionsDialog::updateUpnpValidationState()
+{
+    if (!ui->mapPortPort->isEnabled() || ui->mapPortPort->text().toInt() > 0)
+    {
+        setOkButtonState(true);
+        clearStatusLabel();
+    }
+    else
+    {
+        setOkButtonState(false);
+        ui->statusLabel->setStyleSheet("QLabel { color: red; }");
+        ui->statusLabel->setText(tr("The supplied upnp port is invalid."));
     }
 }
 

@@ -62,6 +62,7 @@ private Q_SLOTS:
     void togglePruneWarning(bool enabled);
     void showRestartWarning(bool fPersistent = false);
     void clearStatusLabel();
+    void updateUpnpValidationState();
     void updateProxyValidationState();
     /* query the networks, for which the default proxy is used */
     void updateDefaultProxyNets();

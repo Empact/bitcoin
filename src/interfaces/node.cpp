@@ -93,6 +93,10 @@ public:
     {
         return g_connman ? g_connman->GetNodeCount(flags) : 0;
     }
+    uint16_t getDefaultListenPort() override
+    {
+        return g_connman ? g_connman->GetDefaultListenPort() : 0;
+    }
     bool getNodesStats(NodesStats& stats) override
     {
         stats.clear();

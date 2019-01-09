@@ -130,6 +130,12 @@ void OptionsModel::Init(bool resetSettings)
     if (!m_node.softSetBoolArg("-listen", settings.value("fListen").toBool()))
         addOverriddenOption("-listen");
 
+    std::cout << m_node.getDefaultListenPort() << std::endl;
+    if (!settings.contains("port"))
+        settings.setValue("port", m_node.getDefaultListenPort());
+    if (!m_node.softSetBoolArg("-port", settings.value("port").toInt()))
+        addOverriddenOption("-port");
+
     if (!settings.contains("fUseProxy"))
         settings.setValue("fUseProxy", false);
     if (!settings.contains("addrProxy"))
@@ -260,6 +266,12 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
 #else
             return false;
 #endif
+        case MapPortPort:
+#ifdef USE_UPNP
+            return settings.value("port");
+#else
+            return 0;
+#endif
         case MinimizeOnClose:
             return fMinimizeOnClose;
 
@@ -331,7 +343,11 @@ bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, in
             break;
         case MapPortUPnP: // core option - can be changed on-the-fly
             settings.setValue("fUseUPnP", value.toBool());
-            m_node.mapPort(value.toBool());
+            m_node.mapPort(value.toBool(), settings.value("port").toInt());
+            break;
+        case MapPortPort:
+            settings.setValue("port", value.toInt());
+            m_node.mapPort(settings.value("fUseUPnP").toBool(), value.toInt());
             break;
         case MinimizeOnClose:
             fMinimizeOnClose = value.toBool();

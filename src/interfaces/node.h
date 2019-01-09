@@ -94,6 +94,9 @@ public:
     //! Get number of connections.
     virtual size_t getNodeCount(CConnman::NumConnections flags) = 0;
 
+    //! Get default listen port.
+    virtual uint16_t getDefaultListenPort() = 0;
+
     //! Get stats for connected nodes.
     using NodesStats = std::vector<std::tuple<CNodeStats, bool, CNodeStateStats>>;
     virtual bool getNodesStats(NodesStats& stats) = 0;

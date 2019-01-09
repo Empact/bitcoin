@@ -250,14 +250,50 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_Network">
        <item>
-        <widget class="QCheckBox" name="mapPortUpnp">
-         <property name="toolTip">
-          <string>Automatically open the Bitcoin client port on the router. This only works when your router supports UPnP and it is enabled.</string>
-         </property>
-         <property name="text">
-          <string>Map port using &amp;UPnP</string>
-         </property>
-        </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_0_Network">
+           <item>
+            <widget class="QCheckBox" name="mapPortUpnp">
+             <property name="toolTip">
+              <string>Automatically open the Bitcoin client port on the router. This only works when your router supports UPnP and it is enabled.</string>
+             </property>
+             <property name="text">
+              <string>Map port using &amp;UPnP</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="mapPortPortLabel">
+             <property name="text">
+              <string>Port:</string>
+             </property>
+             <property name="textFormat">
+              <enum>Qt::PlainText</enum>
+             </property>
+             <property name="buddy">
+              <cstring>Upnp Port</cstring>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="mapPortPort">
+             <property name="minimumSize">
+              <size>
+               <width>55</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>55</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string>Port to use for Upnp (e.g. 9050)</string>
+             </property>
+            </widget>
+           </item>
+         </layout>
        </item>
        <item>
         <widget class="QCheckBox" name="allowIncoming">

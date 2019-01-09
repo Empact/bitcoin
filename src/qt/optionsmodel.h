@@ -38,6 +38,7 @@ public:
         HideTrayIcon,           // bool
         MinimizeToTray,         // bool
         MapPortUPnP,            // bool
+        MapPortPort,            // int
         MinimizeOnClose,        // bool
         ProxyUse,               // bool
         ProxyIP,                // QString
