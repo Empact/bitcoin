@@ -277,7 +277,7 @@ bool KnapsackSolver(const CAmount& nTargetValue, std::vector<OutputGroup>& group
             }
         }
 
-        if (LogAcceptCategory(BCLog::SELECTCOINS)) {
+        if (g_logger->Enabled(BCLog::SELECTCOINS)) {
             LogPrint(BCLog::SELECTCOINS, "SelectCoins() best subset: "); /* Continued */
             for (unsigned int i = 0; i < applicable_groups.size(); i++) {
                 if (vfBest[i]) {

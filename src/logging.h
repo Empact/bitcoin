@@ -88,9 +88,6 @@ namespace BCLog {
         /** Send a string to the log output */
         void LogPrintStr(const std::string &str);
 
-        /** Returns whether logs will be written to any output */
-        bool Enabled() const { return m_print_to_console || m_print_to_file; }
-
         bool OpenDebugLog();
         void ShrinkDebugFile();
 
@@ -101,7 +98,10 @@ namespace BCLog {
         void DisableCategory(LogFlags flag);
         bool DisableCategory(const std::string& str);
 
-        bool WillLogCategory(LogFlags category) const;
+        /** @returns true if logs will be written to any output */
+        bool Enabled() const;
+        /** @returns true if log accepts specified category */
+        bool Enabled(LogFlags category) const;
 
         bool DefaultShrinkDebugFile() const;
     };
@@ -109,12 +109,6 @@ namespace BCLog {
 } // namespace BCLog
 
 extern BCLog::Logger* const g_logger;
-
-/** Return true if log accepts specified category */
-static inline bool LogAcceptCategory(BCLog::LogFlags category)
-{
-    return g_logger->WillLogCategory(category);
-}
 
 /** Returns a string with the log categories. */
 std::string ListLogCategories();
@@ -147,7 +141,7 @@ static inline void LogPrintf(const char* fmt, const Args&... args)
 template <typename... Args>
 static inline void LogPrint(const BCLog::LogFlags& category, const Args&... args)
 {
-    if (LogAcceptCategory((category))) {
+    if (g_logger->Enabled(category)) {
         LogPrintf(args...);
     }
 }

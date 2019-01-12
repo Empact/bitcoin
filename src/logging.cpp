@@ -78,7 +78,12 @@ bool BCLog::Logger::DisableCategory(const std::string& str)
     return true;
 }
 
-bool BCLog::Logger::WillLogCategory(BCLog::LogFlags category) const
+bool BCLog::Logger::Enabled() const
+{
+    return m_print_to_console || m_print_to_file;
+}
+
+bool BCLog::Logger::Enabled(BCLog::LogFlags category) const
 {
     return (m_categories.load(std::memory_order_relaxed) & category) != 0;
 }
@@ -161,7 +166,7 @@ std::vector<CLogCategoryActive> ListActiveLogCategories()
         if (category_desc.flag != BCLog::NONE && category_desc.flag != BCLog::ALL) {
             CLogCategoryActive catActive;
             catActive.category = category_desc.category;
-            catActive.active = LogAcceptCategory(category_desc.flag);
+            catActive.active = g_logger->Enabled(category_desc.flag);
             ret.push_back(catActive);
         }
     }

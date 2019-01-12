@@ -421,7 +421,7 @@ UniValue logging(const JSONRPCRequest& request)
     // Throw an error if the user has explicitly asked to change only the libevent
     // flag and it failed.
     if (changed_log_categories & BCLog::LIBEVENT) {
-        if (!UpdateHTTPServerLogging(g_logger->WillLogCategory(BCLog::LIBEVENT))) {
+        if (!UpdateHTTPServerLogging(g_logger->Enabled(BCLog::LIBEVENT))) {
             g_logger->DisableCategory(BCLog::LIBEVENT);
             if (changed_log_categories == BCLog::LIBEVENT) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "libevent logging cannot be updated when using libevent before v2.1.1.");

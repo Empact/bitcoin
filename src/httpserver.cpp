@@ -364,7 +364,7 @@ bool InitHTTPServer()
     // Update libevent's log handling. Returns false if our version of
     // libevent doesn't support debug logging, in which case we should
     // clear the BCLog::LIBEVENT flag.
-    if (!UpdateHTTPServerLogging(g_logger->WillLogCategory(BCLog::LIBEVENT))) {
+    if (!UpdateHTTPServerLogging(g_logger->Enabled(BCLog::LIBEVENT))) {
         g_logger->DisableCategory(BCLog::LIBEVENT);
     }
 
