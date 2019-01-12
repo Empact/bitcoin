@@ -18,6 +18,7 @@
 #include <tuple>
 #include <vector>
 
+class ArgsManager;
 class CCoinControl;
 class CFeeRate;
 class CNodeStats;
@@ -26,6 +27,10 @@ class RPCTimerInterface;
 class UniValue;
 class proxyType;
 struct CNodeStateStats;
+
+namespace BCLog {
+  class Logger;
+}
 
 namespace interfaces {
 class Handler;
@@ -240,7 +245,7 @@ public:
 };
 
 //! Return implementation of Node interface.
-std::unique_ptr<Node> MakeNode();
+std::unique_ptr<Node> MakeNode(BCLog::Logger& logger, ArgsManager& args);
 
 } // namespace interfaces
 

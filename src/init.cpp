@@ -825,21 +825,21 @@ static std::string ResolveErrMsg(const char * const optname, const std::string& 
  * Note that this is called very early in the process lifetime, so you should be
  * careful about what global state you rely on here.
  */
-void InitLogging()
+void InitLogging(BCLog::Logger& logger, const ArgsManager& args)
 {
-    g_logger->m_print_to_file = !gArgs.IsArgNegated("-debuglogfile");
-    g_logger->m_file_path = AbsPathForConfigVal(gArgs.GetArg("-debuglogfile", DEFAULT_DEBUGLOGFILE));
+    logger.m_print_to_file = !args.IsArgNegated("-debuglogfile");
+    logger.m_file_path = AbsPathForConfigVal(args.GetArg("-debuglogfile", DEFAULT_DEBUGLOGFILE));
 
     // Add newlines to the logfile to distinguish this execution from the last
     // one; called before console logging is set up, so this is only sent to
     // debug.log.
-    LogPrintf("\n\n\n\n\n");
+    logger.LogPrintf("\n\n\n\n\n");
 
-    g_logger->m_print_to_console = gArgs.GetBoolArg("-printtoconsole", !gArgs.GetBoolArg("-daemon", false));
-    g_logger->m_log_timestamps = gArgs.GetBoolArg("-logtimestamps", DEFAULT_LOGTIMESTAMPS);
-    g_logger->m_log_time_micros = gArgs.GetBoolArg("-logtimemicros", DEFAULT_LOGTIMEMICROS);
+    logger.m_print_to_console = args.GetBoolArg("-printtoconsole", !args.GetBoolArg("-daemon", false));
+    logger.m_log_timestamps = args.GetBoolArg("-logtimestamps", DEFAULT_LOGTIMESTAMPS);
+    logger.m_log_time_micros = args.GetBoolArg("-logtimemicros", DEFAULT_LOGTIMEMICROS);
 
-    fLogIPs = gArgs.GetBoolArg("-logips", DEFAULT_LOGIPS);
+    fLogIPs = args.GetBoolArg("-logips", DEFAULT_LOGIPS);
 
     std::string version_string = FormatFullVersion();
 #ifdef DEBUG
@@ -847,7 +847,7 @@ void InitLogging()
 #else
     version_string += " (release build)";
 #endif
-    LogPrintf(PACKAGE_NAME " version %s\n", version_string);
+    logger.LogPrintf(PACKAGE_NAME " version %s\n", version_string);
 }
 
 namespace { // Variables internal to initialization process only

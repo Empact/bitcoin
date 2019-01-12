@@ -464,7 +464,10 @@ int GuiMain(int argc, char* argv[])
 #endif
     SetupEnvironment();
 
-    std::unique_ptr<interfaces::Node> node = interfaces::MakeNode();
+    std::unique_ptr<interfaces::Node> node = interfaces::MakeNode(
+        *g_logger,
+        gArgs
+    );
 
     // Subscribe to global signals from core
     std::unique_ptr<interfaces::Handler> handler_message_box = node->handleMessageBox(noui_ThreadSafeMessageBox);

@@ -50,23 +50,31 @@ namespace {
 
 class NodeImpl : public Node
 {
+private:
+    BCLog::Logger& m_logger;
+    ArgsManager& m_args;
+
 public:
-    NodeImpl() { m_interfaces.chain = MakeChain(); }
+    NodeImpl(BCLog::Logger& logger, ArgsManager& args)
+        : m_logger(logger), m_args(args)
+    {
+        m_interfaces.chain = MakeChain();
+    }
     bool parseParameters(int argc, const char* const argv[], std::string& error) override
     {
-        return gArgs.ParseParameters(argc, argv, error);
+        return m_args.ParseParameters(argc, argv, error);
     }
-    bool readConfigFiles(std::string& error) override { return gArgs.ReadConfigFiles(error, true); }
-    bool softSetArg(const std::string& arg, const std::string& value) override { return gArgs.SoftSetArg(arg, value); }
-    bool softSetBoolArg(const std::string& arg, bool value) override { return gArgs.SoftSetBoolArg(arg, value); }
+    bool readConfigFiles(std::string& error) override { return m_args.ReadConfigFiles(error, true); }
+    bool softSetArg(const std::string& arg, const std::string& value) override { return m_args.SoftSetArg(arg, value); }
+    bool softSetBoolArg(const std::string& arg, bool value) override { return m_args.SoftSetBoolArg(arg, value); }
     void selectParams(const std::string& network) override { SelectParams(network); }
     uint64_t getAssumedBlockchainSize() override { return Params().AssumedBlockchainSize(); }
     uint64_t getAssumedChainStateSize() override { return Params().AssumedChainStateSize(); }
     std::string getNetwork() override { return Params().NetworkIDString(); }
-    void initLogging() override { InitLogging(); }
+    void initLogging() override { InitLogging(m_logger, m_args); }
     void initParameterInteraction() override { InitParameterInteraction(); }
     std::string getWarnings(const std::string& type) override { return GetWarnings(type); }
-    uint32_t getLogCategories() override { return g_logger->GetCategoryMask(); }
+    uint32_t getLogCategories() override { return m_logger.GetCategoryMask(); }
     bool baseInitialize() override
     {
         return AppInitBasicSetup() && AppInitParameterInteraction() && AppInitSanityChecks() &&
@@ -300,6 +308,9 @@ public:
 
 } // namespace
 
-std::unique_ptr<Node> MakeNode() { return MakeUnique<NodeImpl>(); }
+std::unique_ptr<Node> MakeNode(BCLog::Logger& logger, ArgsManager& args)
+{
+    return MakeUnique<NodeImpl>(logger, args);
+}
 
 } // namespace interfaces

@@ -31,7 +31,7 @@ class thread_group;
 void Interrupt();
 void Shutdown(InitInterfaces& interfaces);
 //!Initialize the logging infrastructure
-void InitLogging();
+void InitLogging(BCLog::Logger& logger, const ArgsManager& args);
 //!Parameter interaction: change current parameters depending on various rules
 void InitParameterInteraction();
 

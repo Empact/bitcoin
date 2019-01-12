@@ -160,7 +160,10 @@ void TestGUI()
     std::unique_ptr<const PlatformStyle> platformStyle(PlatformStyle::instantiate("other"));
     SendCoinsDialog sendCoinsDialog(platformStyle.get());
     TransactionView transactionView(platformStyle.get());
-    auto node = interfaces::MakeNode();
+    auto node = interfaces::MakeNode(
+        *g_logger,
+        gArgs
+    );
     OptionsModel optionsModel(*node);
     AddWallet(wallet);
     WalletModel walletModel(std::move(node->getWallets().back()), *node, platformStyle.get(), &optionsModel);

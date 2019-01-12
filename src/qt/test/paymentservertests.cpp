@@ -67,7 +67,10 @@ static SendCoinsRecipient handleRequest(PaymentServer* server, std::vector<unsig
 void PaymentServerTests::paymentServerTests()
 {
     SelectParams(CBaseChainParams::MAIN);
-    auto node = interfaces::MakeNode();
+    auto node = interfaces::MakeNode(
+        *g_logger,
+        gArgs
+    );
     OptionsModel optionsModel(*node);
     PaymentServer* server = new PaymentServer(nullptr, false);
     X509_STORE* caStore = X509_STORE_new();
