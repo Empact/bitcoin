@@ -75,6 +75,9 @@ namespace BCLog {
 
         std::string LogTimestampStr(const std::string& str);
 
+        /** Send a string to the log output */
+        void LogPrintStr(const std::string &str);
+
     public:
         bool m_print_to_console = false;
         bool m_print_to_file = false;
@@ -85,8 +88,20 @@ namespace BCLog {
         fs::path m_file_path;
         std::atomic<bool> m_reopen_file{false};
 
-        /** Send a string to the log output */
-        void LogPrintStr(const std::string &str);
+        template <typename... Args>
+        inline void LogPrintf(const char* fmt, const Args&... args)
+        {
+            if (Enabled()) {
+                std::string log_msg;
+                try {
+                    log_msg = tfm::format(fmt, args...);
+                } catch (tinyformat::format_error& fmterr) {
+                    /* Original format string will have newline so don't add one here */
+                    log_msg = "Error \"" + std::string(fmterr.what()) + "\" while formatting log message: " + fmt;
+                }
+                LogPrintStr(log_msg);
+            }
+        }
 
         bool OpenDebugLog();
         void ShrinkDebugFile();
@@ -126,23 +141,14 @@ bool GetLogCategory(BCLog::LogFlags& flag, const std::string& str);
 template <typename... Args>
 static inline void LogPrintf(const char* fmt, const Args&... args)
 {
-    if (g_logger->Enabled()) {
-        std::string log_msg;
-        try {
-            log_msg = tfm::format(fmt, args...);
-        } catch (tinyformat::format_error& fmterr) {
-            /* Original format string will have newline so don't add one here */
-            log_msg = "Error \"" + std::string(fmterr.what()) + "\" while formatting log message: " + fmt;
-        }
-        g_logger->LogPrintStr(log_msg);
-    }
+    g_logger->LogPrintf(fmt, args...);
 }
 
 template <typename... Args>
 static inline void LogPrint(const BCLog::LogFlags& category, const Args&... args)
 {
     if (g_logger->Enabled(category)) {
-        LogPrintf(args...);
+        g_logger->LogPrintf(args...);
     }
 }
 
