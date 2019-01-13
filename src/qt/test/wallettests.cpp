@@ -162,6 +162,7 @@ void TestGUI()
     TransactionView transactionView(platformStyle.get());
     auto node = interfaces::MakeNode(
         *g_logger,
+        g_connman.get(),
         gArgs
     );
     OptionsModel optionsModel(*node);

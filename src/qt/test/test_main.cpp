@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     gArgs.ForceSetArg("-datadir", pathTemp.string());
     auto node = interfaces::MakeNode(
         *g_logger,
+        g_connman.get(),
         gArgs
     );
 

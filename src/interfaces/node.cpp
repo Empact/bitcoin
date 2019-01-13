@@ -52,11 +52,12 @@ class NodeImpl : public Node
 {
 private:
     BCLog::Logger& m_logger;
+    CConnman* const m_connman;
     ArgsManager& m_args;
 
 public:
-    NodeImpl(BCLog::Logger& logger, ArgsManager& args)
-        : m_logger(logger), m_args(args)
+    NodeImpl(BCLog::Logger& logger, CConnman* const connman, ArgsManager& args)
+        : m_logger(logger), m_connman(connman), m_args(args)
     {
         m_interfaces.chain = MakeChain();
     }
@@ -101,15 +102,15 @@ public:
     bool getProxy(Network net, proxyType& proxy_info) override { return GetProxy(net, proxy_info); }
     size_t getNodeCount(CConnman::NumConnections flags) override
     {
-        return g_connman ? g_connman->GetNodeCount(flags) : 0;
+        return m_connman ? m_connman->GetNodeCount(flags) : 0;
     }
     bool getNodesStats(NodesStats& stats) override
     {
         stats.clear();
 
-        if (g_connman) {
+        if (m_connman) {
             std::vector<CNodeStats> stats_temp;
-            g_connman->GetNodeStats(stats_temp);
+            m_connman->GetNodeStats(stats_temp);
 
             stats.reserve(stats_temp.size());
             for (auto& node_stats_temp : stats_temp) {
@@ -130,37 +131,37 @@ public:
     }
     bool getBanned(banmap_t& banmap) override
     {
-        if (g_connman) {
-            g_connman->GetBanned(banmap);
+        if (m_connman) {
+            m_connman->GetBanned(banmap);
             return true;
         }
         return false;
     }
     bool ban(const CNetAddr& net_addr, BanReason reason, int64_t ban_time_offset) override
     {
-        if (g_connman) {
-            g_connman->Ban(net_addr, reason, ban_time_offset);
+        if (m_connman) {
+            m_connman->Ban(net_addr, reason, ban_time_offset);
             return true;
         }
         return false;
     }
     bool unban(const CSubNet& ip) override
     {
-        if (g_connman) {
-            g_connman->Unban(ip);
+        if (m_connman) {
+            m_connman->Unban(ip);
             return true;
         }
         return false;
     }
     bool disconnect(NodeId id) override
     {
-        if (g_connman) {
-            return g_connman->DisconnectNode(id);
+        if (m_connman) {
+            return m_connman->DisconnectNode(id);
         }
         return false;
     }
-    int64_t getTotalBytesRecv() override { return g_connman ? g_connman->GetTotalBytesRecv() : 0; }
-    int64_t getTotalBytesSent() override { return g_connman ? g_connman->GetTotalBytesSent() : 0; }
+    int64_t getTotalBytesRecv() override { return m_connman ? m_connman->GetTotalBytesRecv() : 0; }
+    int64_t getTotalBytesSent() override { return m_connman ? m_connman->GetTotalBytesSent() : 0; }
     size_t getMempoolSize() override { return ::mempool.size(); }
     size_t getMempoolDynamicUsage() override { return ::mempool.DynamicMemoryUsage(); }
     bool getHeaderTip(int& height, int64_t& block_time) override
@@ -200,11 +201,11 @@ public:
     bool getImporting() override { return ::fImporting; }
     void setNetworkActive(bool active) override
     {
-        if (g_connman) {
-            g_connman->SetNetworkActive(active);
+        if (m_connman) {
+            m_connman->SetNetworkActive(active);
         }
     }
-    bool getNetworkActive() override { return g_connman && g_connman->GetNetworkActive(); }
+    bool getNetworkActive() override { return m_connman && m_connman->GetNetworkActive(); }
     CAmount getMaxTxFee() override { return ::maxTxFee; }
     CFeeRate estimateSmartFee(int num_blocks, bool conservative, int* returned_target = nullptr) override
     {
@@ -308,9 +309,9 @@ public:
 
 } // namespace
 
-std::unique_ptr<Node> MakeNode(BCLog::Logger& logger, ArgsManager& args)
+std::unique_ptr<Node> MakeNode(BCLog::Logger& logger, CConnman* const connman, ArgsManager& args)
 {
-    return MakeUnique<NodeImpl>(logger, args);
+    return MakeUnique<NodeImpl>(logger, connman, args);
 }
 
 } // namespace interfaces

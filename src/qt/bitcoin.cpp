@@ -466,6 +466,7 @@ int GuiMain(int argc, char* argv[])
 
     std::unique_ptr<interfaces::Node> node = interfaces::MakeNode(
         *g_logger,
+        g_connman.get(),
         gArgs
     );
 

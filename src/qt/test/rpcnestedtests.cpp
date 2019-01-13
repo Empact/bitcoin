@@ -48,6 +48,7 @@ void RPCNestedTests::rpcNestedTests()
     std::string filtered;
     auto node = interfaces::MakeNode(
         *g_logger,
+        g_connman.get(),
         gArgs
     );
     RPCConsole::RPCExecuteCommandLine(*node, result, "getblockchaininfo()[chain]", &filtered); //simple result filtering with path

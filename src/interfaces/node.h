@@ -245,7 +245,7 @@ public:
 };
 
 //! Return implementation of Node interface.
-std::unique_ptr<Node> MakeNode(BCLog::Logger& logger, ArgsManager& args);
+std::unique_ptr<Node> MakeNode(BCLog::Logger& logger, CConnman* connman, ArgsManager& args);
 
 } // namespace interfaces
 

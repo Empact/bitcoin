@@ -105,6 +105,7 @@ void TestAddAddressesToSendBook()
     std::unique_ptr<const PlatformStyle> platformStyle(PlatformStyle::instantiate("other"));
     auto node = interfaces::MakeNode(
         *g_logger,
+        g_connman.get(),
         gArgs
     );
     OptionsModel optionsModel(*node);
