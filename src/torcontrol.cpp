@@ -7,6 +7,7 @@
 #include <util/strencodings.h>
 #include <netbase.h>
 #include <net.h>
+#include <net/socket.h> // for MillisToTimeval
 #include <util/system.h>
 #include <crypto/hmac_sha256.h>
 

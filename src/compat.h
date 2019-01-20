@@ -99,12 +99,4 @@ typedef char* sockopt_arg_type;
 #define USE_POLL
 #endif
 
-bool static inline IsSelectableSocket(const SOCKET& s) {
-#if defined(USE_POLL) || defined(WIN32)
-    return true;
-#else
-    return (s < FD_SETSIZE);
-#endif
-}
-
 #endif // BITCOIN_COMPAT_H
