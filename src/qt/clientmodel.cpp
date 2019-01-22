@@ -18,6 +18,7 @@
 #include <validation.h>
 #include <net.h>
 #include <netbase.h>
+#include <net/proxy.h>
 #include <txmempool.h>
 #include <ui_interface.h>
 #include <util/system.h>

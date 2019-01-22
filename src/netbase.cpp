@@ -6,7 +6,6 @@
 #include <netbase.h>
 
 #include <hash.h>
-#include <sync.h>
 #include <uint256.h>
 #include <random.h>
 #include <util/system.h>
@@ -15,9 +14,6 @@
 #include <atomic>
 
 // Settings
-static CCriticalSection cs_proxyInfos;
-static proxyType proxyInfo[NET_MAX] GUARDED_BY(cs_proxyInfos);
-static proxyType nameProxy GUARDED_BY(cs_proxyInfos);
 int nConnectTimeout = DEFAULT_CONNECT_TIMEOUT;
 bool fNameLookup = DEFAULT_NAME_LOOKUP;
 
@@ -158,54 +154,6 @@ CService LookupNumeric(const char *pszName, int portDefault)
     if(!Lookup(pszName, addr, portDefault, false))
         addr = CService();
     return addr;
-}
-
-bool SetProxy(enum Network net, const proxyType &addrProxy) {
-    assert(net >= 0 && net < NET_MAX);
-    if (!addrProxy.IsValid())
-        return false;
-    LOCK(cs_proxyInfos);
-    proxyInfo[net] = addrProxy;
-    return true;
-}
-
-bool GetProxy(enum Network net, proxyType &proxyInfoOut) {
-    assert(net >= 0 && net < NET_MAX);
-    LOCK(cs_proxyInfos);
-    if (!proxyInfo[net].IsValid())
-        return false;
-    proxyInfoOut = proxyInfo[net];
-    return true;
-}
-
-bool SetNameProxy(const proxyType &addrProxy) {
-    if (!addrProxy.IsValid())
-        return false;
-    LOCK(cs_proxyInfos);
-    nameProxy = addrProxy;
-    return true;
-}
-
-bool GetNameProxy(proxyType &nameProxyOut) {
-    LOCK(cs_proxyInfos);
-    if(!nameProxy.IsValid())
-        return false;
-    nameProxyOut = nameProxy;
-    return true;
-}
-
-bool HaveNameProxy() {
-    LOCK(cs_proxyInfos);
-    return nameProxy.IsValid();
-}
-
-bool IsProxy(const CNetAddr &addr) {
-    LOCK(cs_proxyInfos);
-    for (int i = 0; i < NET_MAX; i++) {
-        if (addr == static_cast<CNetAddr>(proxyInfo[i].proxy))
-            return true;
-    }
-    return false;
 }
 
 bool LookupSubNet(const char* pszName, CSubNet& ret)

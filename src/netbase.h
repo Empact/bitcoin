@@ -19,26 +19,8 @@ static const int DEFAULT_CONNECT_TIMEOUT = 5000;
 //! -dns default
 static const int DEFAULT_NAME_LOOKUP = true;
 
-class proxyType
-{
-public:
-    proxyType(): randomize_credentials(false) {}
-    explicit proxyType(const CService &_proxy, bool _randomize_credentials=false): proxy(_proxy), randomize_credentials(_randomize_credentials) {}
-
-    bool IsValid() const { return proxy.IsValid(); }
-
-    CService proxy;
-    bool randomize_credentials;
-};
-
 enum Network ParseNetwork(std::string net);
 std::string GetNetworkName(enum Network net);
-bool SetProxy(enum Network net, const proxyType &addrProxy);
-bool GetProxy(enum Network net, proxyType &proxyInfoOut);
-bool IsProxy(const CNetAddr &addr);
-bool SetNameProxy(const proxyType &addrProxy);
-bool HaveNameProxy();
-bool GetNameProxy(proxyType &nameProxyOut);
 bool LookupHost(const char *pszName, std::vector<CNetAddr>& vIP, unsigned int nMaxSolutions, bool fAllowLookup);
 bool LookupHost(const char *pszName, CNetAddr& addr, bool fAllowLookup);
 bool Lookup(const char *pszName, CService& addr, int portDefault, bool fAllowLookup);

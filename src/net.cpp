@@ -17,6 +17,7 @@
 #include <crypto/sha256.h>
 #include <primitives/transaction.h>
 #include <netbase.h>
+#include <net/proxy.h>
 #include <net/socket.h>
 #include <scheduler.h>
 #include <ui_interface.h>

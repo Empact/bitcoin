@@ -144,6 +144,7 @@ BITCOIN_CORE_H = \
   net_processing.h \
   netaddress.h \
   netbase.h \
+  net/proxy.h \
   net/socket.h \
   netmessagemaker.h \
   noui.h \
@@ -407,6 +408,7 @@ libbitcoin_common_a_SOURCES = \
   keystore.cpp \
   netaddress.cpp \
   netbase.cpp \
+  net/proxy.cpp \
   policy/feerate.cpp \
   protocol.cpp \
   scheduler.cpp \
