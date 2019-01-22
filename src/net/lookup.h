@@ -2,19 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_NETBASE_H
-#define BITCOIN_NETBASE_H
+#ifndef BITCOIN_NET_LOOKUP_H
+#define BITCOIN_NET_LOOKUP_H
 
 #include <netaddress.h>
 
-#include <cstddef>
 #include <vector>
 
-extern int nConnectTimeout;
 extern bool fNameLookup;
 
-//! -timeout default
-static const int DEFAULT_CONNECT_TIMEOUT = 5000;
 //! -dns default
 static const int DEFAULT_NAME_LOOKUP = true;
 
@@ -25,4 +21,4 @@ bool Lookup(const char *pszName, std::vector<CService>& vAddr, int portDefault, 
 CService LookupNumeric(const char *pszName, int portDefault = 0);
 bool LookupSubNet(const char *pszName, CSubNet& subnet);
 
-#endif // BITCOIN_NETBASE_H
+#endif // BITCOIN_NET_LOOKUP_H

@@ -3,7 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <netbase.h>
+#include <net/lookup.h>
 
 #include <hash.h>
 #include <uint256.h>
@@ -12,9 +12,9 @@
 #include <util/strencodings.h>
 
 #include <atomic>
+#include <cstddef>
 
 // Settings
-int nConnectTimeout = DEFAULT_CONNECT_TIMEOUT;
 bool fNameLookup = DEFAULT_NAME_LOOKUP;
 
 bool static LookupIntern(const char *pszName, std::vector<CNetAddr>& vIP, unsigned int nMaxSolutions, bool fAllowLookup)

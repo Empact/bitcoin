@@ -15,7 +15,6 @@
 #include <validation.h>
 #include <merkleblock.h>
 #include <netmessagemaker.h>
-#include <netbase.h>
 #include <net/proxy.h>
 #include <policy/fees.h>
 #include <policy/policy.h>

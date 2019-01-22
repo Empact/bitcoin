@@ -15,7 +15,7 @@
 
 #include <interfaces/node.h>
 #include <validation.h> // for DEFAULT_SCRIPTCHECK_THREADS and MAX_SCRIPTCHECK_THREADS
-#include <netbase.h>
+#include <net/lookup.h>
 #include <net/proxy.h>
 #include <txdb.h> // for -dbcache defaults
 

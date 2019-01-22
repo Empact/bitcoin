@@ -9,7 +9,7 @@
 #include <serialize.h>
 #include <streams.h>
 #include <net.h>
-#include <netbase.h>
+#include <net/lookup.h>
 #include <chainparams.h>
 #include <util/system.h>
 

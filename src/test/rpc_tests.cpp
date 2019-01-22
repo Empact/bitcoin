@@ -10,7 +10,6 @@
 #include <init.h>
 #include <interfaces/chain.h>
 #include <key_io.h>
-#include <netbase.h>
 
 #include <test/test_bitcoin.h>
 

@@ -16,7 +16,6 @@
 #include <net.h>
 #include <net_processing.h>
 #include <netaddress.h>
-#include <netbase.h>
 #include <net/proxy.h>
 #include <policy/feerate.h>
 #include <policy/fees.h>

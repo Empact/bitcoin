@@ -8,7 +8,7 @@
 #include <compat.h>
 #include <util/system.h>
 #include <util/strencodings.h>
-#include <netbase.h>
+#include <net/lookup.h>
 #include <rpc/protocol.h> // For HTTP status codes
 #include <shutdown.h>
 #include <sync.h>

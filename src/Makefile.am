@@ -143,7 +143,7 @@ BITCOIN_CORE_H = \
   net.h \
   net_processing.h \
   netaddress.h \
-  netbase.h \
+  net/lookup.h \
   net/network_name.h \
   net/proxy.h \
   net/socket.h \
@@ -249,6 +249,7 @@ libbitcoin_server_a_SOURCES = \
   miner.cpp \
   net.cpp \
   net_processing.cpp \
+  net/lookup.cpp \
   net/network_name.cpp \
   net/socket.cpp \
   noui.cpp \
@@ -409,7 +410,6 @@ libbitcoin_common_a_SOURCES = \
   key_io.cpp \
   keystore.cpp \
   netaddress.cpp \
-  netbase.cpp \
   net/proxy.cpp \
   policy/feerate.cpp \
   protocol.cpp \

@@ -15,7 +15,7 @@
 #include <qt/walletmodel.h>
 #include <chainparams.h>
 #include <interfaces/node.h>
-#include <netbase.h>
+#include <net/lookup.h>
 #include <rpc/server.h>
 #include <rpc/client.h>
 #include <util/strencodings.h>

@@ -16,7 +16,7 @@
 #include <crypto/common.h>
 #include <crypto/sha256.h>
 #include <primitives/transaction.h>
-#include <netbase.h>
+#include <net/lookup.h>
 #include <net/proxy.h>
 #include <net/socket.h>
 #include <scheduler.h>
@@ -97,6 +97,8 @@ CCriticalSection cs_mapLocalHost;
 std::map<CNetAddr, LocalServiceInfo> mapLocalHost GUARDED_BY(cs_mapLocalHost);
 static bool vfLimited[NET_MAX] GUARDED_BY(cs_mapLocalHost) = {};
 std::string strSubVersion;
+
+int nConnectTimeout = DEFAULT_CONNECT_TIMEOUT;
 
 limitedmap<uint256, int64_t> mapAlreadyAskedFor(MAX_INV_SZ);
 

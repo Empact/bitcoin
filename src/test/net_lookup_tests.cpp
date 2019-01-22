@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <netbase.h>
+#include <net/lookup.h>
 #include <test/test_bitcoin.h>
 #include <util/strencodings.h>
 
@@ -10,7 +10,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_FIXTURE_TEST_SUITE(netbase_tests, BasicTestingSetup)
+BOOST_FIXTURE_TEST_SUITE(net_lookup_tests, BasicTestingSetup)
 
 static CNetAddr ResolveIP(const char* ip)
 {
@@ -33,7 +33,7 @@ static CNetAddr CreateInternal(const char* host)
     return addr;
 }
 
-BOOST_AUTO_TEST_CASE(netbase_networks)
+BOOST_AUTO_TEST_CASE(net_lookup_networks)
 {
     BOOST_CHECK(ResolveIP("127.0.0.1").GetNetwork()                              == NET_UNROUTABLE);
     BOOST_CHECK(ResolveIP("::1").GetNetwork()                                    == NET_UNROUTABLE);
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(netbase_networks)
 
 }
 
-BOOST_AUTO_TEST_CASE(netbase_properties)
+BOOST_AUTO_TEST_CASE(net_lookup_properties)
 {
 
     BOOST_CHECK(ResolveIP("127.0.0.1").IsIPv4());
@@ -80,7 +80,7 @@ bool static TestSplitHost(std::string test, std::string host, int port)
     return hostOut == host && port == portOut;
 }
 
-BOOST_AUTO_TEST_CASE(netbase_splithost)
+BOOST_AUTO_TEST_CASE(net_lookup_splithost)
 {
     BOOST_CHECK(TestSplitHost("www.bitcoincore.org", "www.bitcoincore.org", -1));
     BOOST_CHECK(TestSplitHost("[www.bitcoincore.org]", "www.bitcoincore.org", -1));
@@ -105,7 +105,7 @@ bool static TestParse(std::string src, std::string canon)
     return canon == addr.ToString();
 }
 
-BOOST_AUTO_TEST_CASE(netbase_lookupnumeric)
+BOOST_AUTO_TEST_CASE(net_lookup_lookupnumeric)
 {
     BOOST_CHECK(TestParse("127.0.0.1", "127.0.0.1:65535"));
     BOOST_CHECK(TestParse("127.0.0.1:8333", "127.0.0.1:8333"));
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE(subnet_test)
 
 }
 
-BOOST_AUTO_TEST_CASE(netbase_getgroup)
+BOOST_AUTO_TEST_CASE(net_lookup_getgroup)
 {
 
     BOOST_CHECK(ResolveIP("127.0.0.1").GetGroup() == std::vector<unsigned char>({0})); // Local -> !Routable()

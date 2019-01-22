@@ -25,9 +25,9 @@
 #include <key.h>
 #include <validation.h>
 #include <miner.h>
-#include <netbase.h>
 #include <net.h>
 #include <net_processing.h>
+#include <net/lookup.h>
 #include <net/network_name.h>
 #include <net/proxy.h>
 #include <policy/feerate.h>
