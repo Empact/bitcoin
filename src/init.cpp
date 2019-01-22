@@ -28,6 +28,7 @@
 #include <netbase.h>
 #include <net.h>
 #include <net_processing.h>
+#include <net/network_name.h>
 #include <net/proxy.h>
 #include <policy/feerate.h>
 #include <policy/fees.h>
@@ -1321,7 +1322,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     if (gArgs.IsArgSet("-onlynet")) {
         std::set<enum Network> nets;
         for (const std::string& snet : gArgs.GetArgs("-onlynet")) {
-            enum Network net = ParseNetwork(snet);
+            enum Network net = ParseNetworkName(snet);
             if (net == NET_UNROUTABLE)
                 return InitError(strprintf(_("Unknown network specified in -onlynet: '%s'"), snet));
             nets.insert(net);

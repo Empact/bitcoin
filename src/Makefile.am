@@ -144,6 +144,7 @@ BITCOIN_CORE_H = \
   net_processing.h \
   netaddress.h \
   netbase.h \
+  net/network_name.h \
   net/proxy.h \
   net/socket.h \
   netmessagemaker.h \
@@ -248,6 +249,7 @@ libbitcoin_server_a_SOURCES = \
   miner.cpp \
   net.cpp \
   net_processing.cpp \
+  net/network_name.cpp \
   net/socket.cpp \
   noui.cpp \
   outputtype.cpp \

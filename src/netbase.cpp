@@ -17,28 +17,6 @@
 int nConnectTimeout = DEFAULT_CONNECT_TIMEOUT;
 bool fNameLookup = DEFAULT_NAME_LOOKUP;
 
-enum Network ParseNetwork(std::string net) {
-    Downcase(net);
-    if (net == "ipv4") return NET_IPV4;
-    if (net == "ipv6") return NET_IPV6;
-    if (net == "onion") return NET_ONION;
-    if (net == "tor") {
-        LogPrintf("Warning: net name 'tor' is deprecated and will be removed in the future. You should use 'onion' instead.\n");
-        return NET_ONION;
-    }
-    return NET_UNROUTABLE;
-}
-
-std::string GetNetworkName(enum Network net) {
-    switch(net)
-    {
-    case NET_IPV4: return "ipv4";
-    case NET_IPV6: return "ipv6";
-    case NET_ONION: return "onion";
-    default: return "";
-    }
-}
-
 bool static LookupIntern(const char *pszName, std::vector<CNetAddr>& vIP, unsigned int nMaxSolutions, bool fAllowLookup)
 {
     vIP.clear();

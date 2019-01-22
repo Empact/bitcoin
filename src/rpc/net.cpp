@@ -11,6 +11,7 @@
 #include <net.h>
 #include <net_processing.h>
 #include <netbase.h>
+#include <net/network_name.h>
 #include <net/proxy.h>
 #include <policy/policy.h>
 #include <rpc/protocol.h>

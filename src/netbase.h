@@ -7,8 +7,7 @@
 
 #include <netaddress.h>
 
-#include <stdint.h>
-#include <string>
+#include <cstddef>
 #include <vector>
 
 extern int nConnectTimeout;
@@ -19,8 +18,6 @@ static const int DEFAULT_CONNECT_TIMEOUT = 5000;
 //! -dns default
 static const int DEFAULT_NAME_LOOKUP = true;
 
-enum Network ParseNetwork(std::string net);
-std::string GetNetworkName(enum Network net);
 bool LookupHost(const char *pszName, std::vector<CNetAddr>& vIP, unsigned int nMaxSolutions, bool fAllowLookup);
 bool LookupHost(const char *pszName, CNetAddr& addr, bool fAllowLookup);
 bool Lookup(const char *pszName, CService& addr, int portDefault, bool fAllowLookup);
