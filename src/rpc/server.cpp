@@ -37,10 +37,9 @@ struct RPCCommandExecutionInfo
     int64_t start;
 };
 
-struct RPCServerInfo
-{
+struct RPCServerInfo {
     Mutex mutex;
-    std::list<RPCCommandExecutionInfo> active_commands GUARDED_BY(mutex);
+    std::list<RPCCommandExecutionInfo> m_active_commands GUARDED_BY(mutex);
 };
 
 static RPCServerInfo g_rpc_server_info;
@@ -51,12 +50,12 @@ struct RPCCommandExecution
     explicit RPCCommandExecution(const std::string& method)
     {
         LOCK(g_rpc_server_info.mutex);
-        it = g_rpc_server_info.active_commands.insert(g_rpc_server_info.active_commands.cend(), {method, GetTimeMicros()});
+        it = g_rpc_server_info.m_active_commands.insert(g_rpc_server_info.m_active_commands.end(), {method, GetTimeMicros()});
     }
     ~RPCCommandExecution()
     {
         LOCK(g_rpc_server_info.mutex);
-        g_rpc_server_info.active_commands.erase(it);
+        g_rpc_server_info.m_active_commands.erase(it);
     }
 };
 
@@ -294,7 +293,7 @@ static UniValue getrpcinfo(const JSONRPCRequest& request)
 
     LOCK(g_rpc_server_info.mutex);
     UniValue active_commands(UniValue::VARR);
-    for (const RPCCommandExecutionInfo& info : g_rpc_server_info.active_commands) {
+    for (const RPCCommandExecutionInfo& info : g_rpc_server_info.m_active_commands) {
         UniValue entry(UniValue::VOBJ);
         entry.pushKV("method", info.method);
         entry.pushKV("duration", GetTimeMicros() - info.start);
