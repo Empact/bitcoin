@@ -154,7 +154,7 @@ public:
     //! Get the KeyID of this public key (hash of its serialization)
     CKeyID GetID() const
     {
-        return CKeyID(Hash160(vch, vch + size()));
+        return CKeyID(Hash160(vch, size()));
     }
 
     //! Get the 256-bit hash of this public key.

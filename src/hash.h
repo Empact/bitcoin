@@ -89,28 +89,25 @@ inline uint256 Hash(const T1 p1begin, const T1 p1end,
     return result;
 }
 
-/** Compute the 160-bit hash an object. */
-template<typename T1>
-inline uint160 Hash160(const T1 pbegin, const T1 pend)
+/** Compute the 160-bit hash an array. */
+inline uint160 Hash160(const unsigned char* data, size_t size)
 {
-    static unsigned char pblank[1] = {};
     uint160 result;
-    CHash160().Write(pbegin == pend ? pblank : (const unsigned char*)&pbegin[0], (pend - pbegin) * sizeof(pbegin[0]))
-              .Finalize((unsigned char*)&result);
+    CHash160().Write(data, size).Finalize((unsigned char*)&result);
     return result;
 }
 
 /** Compute the 160-bit hash of a vector. */
 inline uint160 Hash160(const std::vector<unsigned char>& vch)
 {
-    return Hash160(vch.begin(), vch.end());
+    return Hash160(vch.data(), vch.size());
 }
 
 /** Compute the 160-bit hash of a vector. */
 template<unsigned int N>
 inline uint160 Hash160(const prevector<N, unsigned char>& vch)
 {
-    return Hash160(vch.begin(), vch.end());
+    return Hash160(vch.data(), vch.size());
 }
 
 /** A writer stream (for serialization) that computes a 256-bit hash. */

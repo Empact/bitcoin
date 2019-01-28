@@ -17,7 +17,7 @@ typedef std::vector<unsigned char> valtype;
 bool fAcceptDatacarrier = DEFAULT_ACCEPT_DATACARRIER;
 unsigned nMaxDatacarrierBytes = MAX_OP_RETURN_RELAY;
 
-CScriptID::CScriptID(const CScript& in) : uint160(Hash160(in.begin(), in.end())) {}
+CScriptID::CScriptID(const CScript& in) : uint160(Hash160(in.data(), in.size())) {}
 
 WitnessV0ScriptHash::WitnessV0ScriptHash(const CScript& in)
 {
@@ -314,7 +314,7 @@ CScript GetScriptForWitness(const CScript& redeemscript)
     std::vector<std::vector<unsigned char> > vSolutions;
     txnouttype typ = Solver(redeemscript, vSolutions);
     if (typ == TX_PUBKEY) {
-        return GetScriptForDestination(WitnessV0KeyHash(Hash160(vSolutions[0].begin(), vSolutions[0].end())));
+        return GetScriptForDestination(WitnessV0KeyHash(Hash160(vSolutions[0])));
     } else if (typ == TX_PUBKEYHASH) {
         return GetScriptForDestination(WitnessV0KeyHash(vSolutions[0]));
     }
