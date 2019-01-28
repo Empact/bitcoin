@@ -86,6 +86,16 @@ static bool CreateSig(const BaseSignatureCreator& creator, SignatureData& sigdat
     return false;
 }
 
+static bool ScripthashStep(const SigningProvider& provider, const uint160& scripthash, SignatureData& sigdata, std::vector<valtype>& ret)
+{
+    CScript scriptRet;
+    if (GetCScript(provider, sigdata, scripthash, scriptRet)) {
+        ret.push_back(std::vector<unsigned char>(scriptRet.begin(), scriptRet.end()));
+        return true;
+    }
+    return false;
+}
+
 /**
  * Sign scriptPubKey using signature made with creator.
  * Signatures are returned in scriptSigRet (or returns false if scriptPubKey can't be signed),
@@ -95,8 +105,6 @@ static bool CreateSig(const BaseSignatureCreator& creator, SignatureData& sigdat
 static bool SignStep(const SigningProvider& provider, const BaseSignatureCreator& creator, const CScript& scriptPubKey,
                      std::vector<valtype>& ret, txnouttype& whichTypeRet, SigVersion sigversion, SignatureData& sigdata)
 {
-    CScript scriptRet;
-    uint160 h160;
     ret.clear();
     std::vector<unsigned char> sig;
 
@@ -123,12 +131,7 @@ static bool SignStep(const SigningProvider& provider, const BaseSignatureCreator
         return true;
     }
     case TX_SCRIPTHASH:
-        if (GetCScript(provider, sigdata, uint160(vSolutions[0]), scriptRet)) {
-            ret.push_back(std::vector<unsigned char>(scriptRet.begin(), scriptRet.end()));
-            return true;
-        }
-        return false;
-
+        return ScripthashStep(provider, uint160(vSolutions[0]), sigdata, ret);
     case TX_MULTISIG: {
         size_t required = vSolutions.front()[0];
         ret.push_back(valtype()); // workaround CHECKMULTISIG bug
@@ -148,14 +151,11 @@ static bool SignStep(const SigningProvider& provider, const BaseSignatureCreator
         ret.push_back(vSolutions[0]);
         return true;
 
-    case TX_WITNESS_V0_SCRIPTHASH:
+    case TX_WITNESS_V0_SCRIPTHASH: {
+        uint160 h160;
         CRIPEMD160().Write(&vSolutions[0][0], vSolutions[0].size()).Finalize(h160.begin());
-        if (GetCScript(provider, sigdata, h160, scriptRet)) {
-            ret.push_back(std::vector<unsigned char>(scriptRet.begin(), scriptRet.end()));
-            return true;
-        }
-        return false;
-
+        return ScripthashStep(provider, h160, sigdata, ret);
+    }
     default:
         return false;
     }
