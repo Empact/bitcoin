@@ -4,6 +4,7 @@
 
 #include <chain.h>
 #include <core_io.h>
+#include <crypto/ripemd160.h>
 #include <interfaces/chain.h>
 #include <key_io.h>
 #include <merkleblock.h>
@@ -893,11 +894,10 @@ static std::string RecurseImportData(const CScript& script, ImportData& import_d
     }
     case TX_WITNESS_V0_SCRIPTHASH: {
         if (script_ctx == ScriptContext::WITNESS_V0) throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Trying to nest P2WSH inside another P2WSH");
-        uint256 fullid(solverdata[0]);
-        CScriptID id;
-        CRIPEMD160().Write(fullid.begin(), fullid.size()).Finalize(id.begin());
         auto subscript = std::move(import_data.witnessscript); // Remove redeemscript from import_data to check for superfluous script later.
         if (!subscript) return "missing witnessscript";
+        uint256 fullid(solverdata[0]);
+        CScriptID id{RipeMd160(fullid.begin(), fullid.size())};
         if (CScriptID(*subscript) != id) return "witnessScript does not match the scriptPubKey or redeemScript";
         if (script_ctx == ScriptContext::TOP) {
             import_data.import_scripts.emplace(script); // Special rule for IsMine: native P2WSH requires the TOP script imported (see script/ismine.cpp)

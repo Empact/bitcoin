@@ -7,6 +7,7 @@
 #include <chain.h>
 #include <consensus/validation.h>
 #include <core_io.h>
+#include <crypto/ripemd160.h>
 #include <httpserver.h>
 #include <init.h>
 #include <interfaces/chain.h>
@@ -3531,10 +3532,8 @@ public:
     {
         UniValue obj(UniValue::VOBJ);
         CScript subscript;
-        CRIPEMD160 hasher;
-        uint160 hash;
-        hasher.Write(id.begin(), 32).Finalize(hash.begin());
-        if (pwallet && pwallet->GetCScript(CScriptID(hash), subscript)) {
+        CScriptID scriptid{RipeMd160(id.begin(), 32)};
+        if (pwallet && pwallet->GetCScript(scriptid, subscript)) {
             ProcessSubScript(subscript, obj);
         }
         return obj;

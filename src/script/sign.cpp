@@ -5,6 +5,7 @@
 
 #include <script/sign.h>
 
+#include <crypto/ripemd160.h>
 #include <key.h>
 #include <policy/policy.h>
 #include <primitives/transaction.h>
@@ -96,7 +97,6 @@ static bool SignStep(const SigningProvider& provider, const BaseSignatureCreator
                      std::vector<valtype>& ret, txnouttype& whichTypeRet, SigVersion sigversion, SignatureData& sigdata)
 {
     CScript scriptRet;
-    uint160 h160;
     ret.clear();
     std::vector<unsigned char> sig;
 
@@ -149,8 +149,7 @@ static bool SignStep(const SigningProvider& provider, const BaseSignatureCreator
         return true;
 
     case TX_WITNESS_V0_SCRIPTHASH:
-        CRIPEMD160().Write(&vSolutions[0][0], vSolutions[0].size()).Finalize(h160.begin());
-        if (GetCScript(provider, sigdata, h160, scriptRet)) {
+        if (GetCScript(provider, sigdata, RipeMd160(vSolutions[0]), scriptRet)) {
             ret.push_back(std::vector<unsigned char>(scriptRet.begin(), scriptRet.end()));
             return true;
         }
