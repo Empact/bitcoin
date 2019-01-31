@@ -34,8 +34,7 @@ before_script:
 script:
   - if [ $SECONDS -gt 1200 ]; then set +o errexit; echo "Travis early exit to cache current state"; false; else set -o errexit; source .travis/test_06_script.sh; fi
 after_script:
-  - echo $TRAVIS_COMMIT_RANGE
-  - echo $TRAVIS_COMMIT_LOG
+  - if [ $SECONDS -gt 1200 ]; then set +o errexit; echo "Travis early exit to cache current state"; false; else set -o errexit; source .travis/test_07_after_script.sh; fi
 jobs:
   include:
 
@@ -51,6 +50,8 @@ jobs:
         - set -o errexit; source .travis/lint_05_before_script.sh
       script:
         - set -o errexit; source .travis/lint_06_script.sh
+      after_script:
+        - true
 
     - stage: test
       name: 'ARM  [GOAL: install]  [no unit or functional tests]'
