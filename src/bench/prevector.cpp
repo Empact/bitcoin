@@ -9,17 +9,12 @@
 
 #include <bench/bench.h>
 
-// Clang has consistently implemented this feature via __has_trivial_constructor
-// https://libcxx.llvm.org/type_traits_design.html
-// https://github.com/llvm-mirror/libcxx/commit/2fd6d25bf1758218aa71938ab343dcaefff4ffeb
-#if defined(__clang__)
-#define IS_TRIVIALLY_CONSTRUCTIBLE(T) __has_trivial_constructor(T)
 // GCC 4.8 is missing some C++11 type_traits,
 // https://www.gnu.org/software/gcc/gcc-5/changes.html
-#elif defined(__GNUC__) && __GNUC__ < 5
-#define IS_TRIVIALLY_CONSTRUCTIBLE(T) std::has_trivial_default_constructor<T>::value
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 5
+#define IS_TRIVIALLY_CONSTRUCTIBLE std::has_trivial_default_constructor
 #else
-#define IS_TRIVIALLY_CONSTRUCTIBLE(T) std::is_trivially_default_constructible<T>::value
+#define IS_TRIVIALLY_CONSTRUCTIBLE std::is_trivially_default_constructible
 #endif
 
 struct nontrivial_t {
@@ -29,11 +24,11 @@ struct nontrivial_t {
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action) {READWRITE(x);}
 };
-static_assert(!IS_TRIVIALLY_CONSTRUCTIBLE(nontrivial_t),
+static_assert(!IS_TRIVIALLY_CONSTRUCTIBLE<nontrivial_t>::value,
               "expected nontrivial_t to not be trivially constructible");
 
 typedef unsigned char trivial_t;
-static_assert(IS_TRIVIALLY_CONSTRUCTIBLE(trivial_t),
+static_assert(IS_TRIVIALLY_CONSTRUCTIBLE<trivial_t>::value,
               "expected trivial_t to be trivially constructible");
 
 template <typename T>
