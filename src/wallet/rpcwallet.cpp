@@ -3532,7 +3532,7 @@ public:
     {
         UniValue obj(UniValue::VOBJ);
         CScript subscript;
-        CScriptID scriptid{RipeMd160(id.begin(), 32)};
+        CScriptID scriptid{RipeMd160(id)};
         if (pwallet && pwallet->GetCScript(scriptid, subscript)) {
             ProcessSubScript(subscript, obj);
         }

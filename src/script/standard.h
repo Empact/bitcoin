@@ -25,6 +25,7 @@ public:
     CScriptID() : uint160() {}
     explicit CScriptID(const CScript& in);
     CScriptID(const uint160& in) : uint160(in) {}
+    CScriptID(const uint160&& in) : uint160(std::move(in)) {}
 };
 
 /**

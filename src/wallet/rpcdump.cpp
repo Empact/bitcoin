@@ -896,8 +896,7 @@ static std::string RecurseImportData(const CScript& script, ImportData& import_d
         if (script_ctx == ScriptContext::WITNESS_V0) throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Trying to nest P2WSH inside another P2WSH");
         auto subscript = std::move(import_data.witnessscript); // Remove redeemscript from import_data to check for superfluous script later.
         if (!subscript) return "missing witnessscript";
-        uint256 fullid(solverdata[0]);
-        CScriptID id{RipeMd160(fullid.begin(), fullid.size())};
+        CScriptID id{RipeMd160(uint256(solverdata[0]))};
         if (CScriptID(*subscript) != id) return "witnessScript does not match the scriptPubKey or redeemScript";
         if (script_ctx == ScriptContext::TOP) {
             import_data.import_scripts.emplace(script); // Special rule for IsMine: native P2WSH requires the TOP script imported (see script/ismine.cpp)

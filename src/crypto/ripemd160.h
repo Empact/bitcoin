@@ -27,19 +27,13 @@ public:
     CRIPEMD160& Reset();
 };
 
-/** Compute the 160-bit RIPEMD-160 hash of an array. */
-inline uint160 RipeMd160(const unsigned char* data, size_t size)
-{
-    uint160 result;
-    CRIPEMD160().Write(data, size).Finalize(result.begin());
-    return result;
-}
-
 /** Compute the 160-bit RIPEMD-160 hash of an object. */
 template <typename T>
 inline uint160 RipeMd160(const T& container)
 {
-    return RipeMd160(container.data(), container.size());
+    uint160 result;
+    CRIPEMD160().Write(container.data(), container.size()).Finalize(result.data());
+    return result;
 }
 
 #endif // BITCOIN_CRYPTO_RIPEMD160_H
