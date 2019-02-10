@@ -24,7 +24,7 @@ fi
 END_FOLD
 
 mkdir build
-cd build || (echo "could not enter build directory"; exit 1)
+cd build || (echo "could not enter build directory $PWD/build: $?"; exit 1)
 
 BEGIN_FOLD configure
 DOCKER_EXEC ../configure --cache-file=config.cache $BITCOIN_CONFIG_ALL $BITCOIN_CONFIG || ( cat config.log && false)
@@ -34,7 +34,7 @@ BEGIN_FOLD distdir
 DOCKER_EXEC make distdir VERSION=$HOST
 END_FOLD
 
-cd "bitcoin-$HOST" || (echo "could not enter distdir bitcoin-$HOST"; exit 1)
+cd "bitcoin-$HOST" || (echo "could not enter distdir $PWD/bitcoin-$HOST: $?"; exit 1)
 
 BEGIN_FOLD configure
 DOCKER_EXEC ./configure --cache-file=../config.cache $BITCOIN_CONFIG_ALL $BITCOIN_CONFIG || ( cat config.log && false)
@@ -47,4 +47,4 @@ BEGIN_FOLD build
 DOCKER_EXEC make $MAKEJOBS $GOAL || ( echo "Build failure. Verbose build follows." && DOCKER_EXEC make $GOAL V=1 ; false )
 END_FOLD
 
-cd ${TRAVIS_BUILD_DIR} || (echo "could not enter travis build dir $TRAVIS_BUILD_DIR"; exit 1)
+cd ${TRAVIS_BUILD_DIR} || (echo "could not enter travis build dir $PWD/$TRAVIS_BUILD_DIR: $?"; exit 1)
