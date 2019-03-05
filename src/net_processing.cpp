@@ -189,8 +189,32 @@ namespace {
 
     std::vector<std::map<uint256, COrphanTx>::iterator> g_orphan_list GUARDED_BY(g_cs_orphans); //! For random eviction
 
-    static size_t vExtraTxnForCompactIt GUARDED_BY(g_cs_orphans) = 0;
-    static std::vector<std::pair<uint256, CTransactionRef>> vExtraTxnForCompact GUARDED_BY(g_cs_orphans);
+    class ExtraTransactionsForCompactBlock
+    {
+        mutable CCriticalSection m_cs;
+
+        size_t m_txn_it GUARDED_BY(m_cs) = 0;
+        std::vector<std::pair<uint256, CTransactionRef>> m_txns GUARDED_BY(m_cs);
+
+    public:
+        void Add(const CTransactionRef& tx, size_t max_extra_txn)
+        {
+            if (max_extra_txn <= 0)
+                return;
+            LOCK(m_cs);
+            if (!m_txns.size())
+                m_txns.resize(max_extra_txn);
+            m_txns[m_txn_it] = std::make_pair(tx->GetWitnessHash(), tx);
+            m_txn_it = (m_txn_it + 1) % max_extra_txn;
+        }
+
+        operator const std::vector<std::pair<uint256, CTransactionRef>>&() const
+        {
+            LOCK(m_cs);
+            return m_txns;
+        }
+    };
+    static ExtraTransactionsForCompactBlock g_extra_txns_for_compact;
 } // namespace
 
 namespace {
@@ -820,18 +844,7 @@ bool GetNodeStateStats(NodeId nodeid, CNodeStateStats &stats) {
 // mapOrphanTransactions
 //
 
-static void AddToCompactExtraTransactions(const CTransactionRef& tx) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans)
-{
-    size_t max_extra_txn = gArgs.GetArg("-blockreconstructionextratxn", DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN);
-    if (max_extra_txn <= 0)
-        return;
-    if (!vExtraTxnForCompact.size())
-        vExtraTxnForCompact.resize(max_extra_txn);
-    vExtraTxnForCompact[vExtraTxnForCompactIt] = std::make_pair(tx->GetWitnessHash(), tx);
-    vExtraTxnForCompactIt = (vExtraTxnForCompactIt + 1) % max_extra_txn;
-}
-
-bool AddOrphanTx(const CTransactionRef& tx, NodeId peer) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans)
+bool AddOrphanTx(const CTransactionRef& tx, NodeId peer, size_t max_extra_txn) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans)
 {
     const uint256& hash = tx->GetHash();
     if (mapOrphanTransactions.count(hash))
@@ -858,7 +871,7 @@ bool AddOrphanTx(const CTransactionRef& tx, NodeId peer) EXCLUSIVE_LOCKS_REQUIRE
         mapOrphanTransactionsByPrev[txin.prevout].insert(ret.first);
     }
 
-    AddToCompactExtraTransactions(tx);
+    g_extra_txns_for_compact.Add(tx, max_extra_txn);
 
     LogPrint(BCLog::MEMPOOL, "stored orphan tx %s (mapsz %u outsz %u)\n", hash.ToString(),
              mapOrphanTransactions.size(), mapOrphanTransactionsByPrev.size());
@@ -2373,6 +2386,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
         std::list<CTransactionRef> lRemovedTxn;
 
+        size_t max_extra_txn = gArgs.GetArg("-blockreconstructionextratxn", DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN);
         if (!AlreadyHave(inv) &&
             AcceptToMemoryPool(mempool, state, ptx, &fMissingInputs, &lRemovedTxn, false /* bypass_limits */, 0 /* nAbsurdFee */)) {
             mempool.check(pcoinsTip.get());
@@ -2467,7 +2481,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                     pfrom->AddInventoryKnown(_inv);
                     if (!AlreadyHave(_inv)) RequestTx(State(pfrom->GetId()), _inv.hash, nNow);
                 }
-                AddOrphanTx(ptx, pfrom->GetId());
+                AddOrphanTx(ptx, pfrom->GetId(), max_extra_txn);
 
                 // DoS prevention: do not allow mapOrphanTransactions to grow unbounded
                 unsigned int nMaxOrphanTx = (unsigned int)std::max((int64_t)0, gArgs.GetArg("-maxorphantx", DEFAULT_MAX_ORPHAN_TRANSACTIONS));
@@ -2489,10 +2503,10 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 assert(recentRejects);
                 recentRejects->insert(tx.GetHash());
                 if (RecursiveDynamicUsage(*ptx) < 100000) {
-                    AddToCompactExtraTransactions(ptx);
+                    g_extra_txns_for_compact.Add(ptx, max_extra_txn);
                 }
             } else if (tx.HasWitness() && RecursiveDynamicUsage(*ptx) < 100000) {
-                AddToCompactExtraTransactions(ptx);
+                g_extra_txns_for_compact.Add(ptx, max_extra_txn);
             }
 
             if (pfrom->fWhitelisted && gArgs.GetBoolArg("-whitelistforcerelay", DEFAULT_WHITELISTFORCERELAY)) {
@@ -2515,7 +2529,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         }
 
         for (const CTransactionRef& removedTx : lRemovedTxn)
-            AddToCompactExtraTransactions(removedTx);
+            g_extra_txns_for_compact.Add(removedTx, max_extra_txn);
 
         // If a tx has been detected by recentRejects, we will have reached
         // this point and the tx will have been ignored. Because we haven't run
@@ -2663,7 +2677,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 }
 
                 PartiallyDownloadedBlock& partialBlock = *(*queuedBlockIt)->partialBlock;
-                ReadStatus status = partialBlock.InitData(cmpctblock, vExtraTxnForCompact);
+                ReadStatus status = partialBlock.InitData(cmpctblock, g_extra_txns_for_compact);
                 if (status == READ_STATUS_INVALID) {
                     MarkBlockAsReceived(pindex->GetBlockHash()); // Reset in-flight state in case of whitelist
                     Misbehaving(pfrom->GetId(), 100, strprintf("Peer %d sent us invalid compact block\n", pfrom->GetId()));
@@ -2698,7 +2712,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 // Optimistically try to reconstruct anyway since we might be
                 // able to without any round trips.
                 PartiallyDownloadedBlock tempBlock(&mempool);
-                ReadStatus status = tempBlock.InitData(cmpctblock, vExtraTxnForCompact);
+                ReadStatus status = tempBlock.InitData(cmpctblock, g_extra_txns_for_compact);
                 if (status != READ_STATUS_OK) {
                     // TODO: don't ignore failures
                     return true;
