@@ -315,15 +315,15 @@ struct CNodeState {
      *   such transaction that we don't have already and that hasn't been
      *   requested from another peer recently, up until we hit the
      *   MAX_PEER_TX_IN_FLIGHT limit for the peer. Then we'll update
-     *   g_already_asked_for for each requested txid, storing the time of the
-     *   GETDATA request. We use g_already_asked_for to coordinate transaction
+     *   g_tx_requested_ats for each requested txid, storing the time of the
+     *   GETDATA request. We use g_tx_requested_ats to coordinate transaction
      *   requests amongst our peers.
      *
      *   For transactions that we still need but we have already recently
      *   requested from some other peer, we'll reinsert (process_time, txid)
      *   back into the peer's m_tx_process_time at the point in the future at
      *   which the most recent GETDATA request would time out (ie
-     *   GETDATA_TX_INTERVAL + the request time stored in g_already_asked_for).
+     *   GETDATA_TX_INTERVAL + the request time stored in g_tx_requested_ats).
      *   We add an additional delay for inbound peers, again to prefer
      *   attempting download from outbound peers first.
      *   We also add an extra small random delay up to 2 seconds
@@ -332,7 +332,7 @@ struct CNodeState {
      *
      *   When we receive a transaction from a peer, we remove the txid from the
      *   peer's m_tx_in_flight set and from their recently announced set
-     *   (m_tx_announced).  We also clear g_already_asked_for for that entry, so
+     *   (m_tx_announced).  We also clear g_tx_requested_ats for that entry, so
      *   that if somehow the transaction is not accepted but also not added to
      *   the reject filter, then we will eventually redownload from other
      *   peers.
@@ -378,9 +378,6 @@ struct CNodeState {
         m_last_block_announcement = 0;
     }
 };
-
-// Keeps track of the time (in microseconds) when transactions were requested last time
-limitedmap<uint256, int64_t> g_already_asked_for GUARDED_BY(cs_main)(MAX_INV_SZ);
 
 /** Map maintaining per-node state. */
 static std::map<NodeId, CNodeState> mapNodeState GUARDED_BY(cs_main);
@@ -672,30 +669,44 @@ static void FindNextBlocksToDownload(NodeId nodeid, unsigned int count, std::vec
     }
 }
 
-void EraseTxRequest(const uint256& txid) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+class TxRequests
 {
-    g_already_asked_for.erase(txid);
-}
+    mutable CCriticalSection m_cs;
+    limitedmap<uint256, int64_t> m_tx_requests GUARDED_BY(m_cs);
 
-int64_t GetTxRequestTime(const uint256& txid) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
-{
-    auto it = g_already_asked_for.find(txid);
-    if (it != g_already_asked_for.end()) {
-        return it->second;
+public:
+    TxRequests() : m_tx_requests(MAX_INV_SZ) {};
+
+    void Erase(const uint256& txid)
+    {
+        LOCK(m_cs);
+        m_tx_requests.erase(txid);
     }
-    return 0;
-}
 
-void UpdateTxRequestTime(const uint256& txid, int64_t request_time) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
-{
-    auto it = g_already_asked_for.find(txid);
-    if (it == g_already_asked_for.end()) {
-        g_already_asked_for.insert(std::make_pair(txid, request_time));
-    } else {
-        g_already_asked_for.update(it, request_time);
+    int64_t Get(const uint256& txid) const
+    {
+        LOCK(m_cs);
+        auto it = m_tx_requests.find(txid);
+        if (it != m_tx_requests.end()) {
+            return it->second;
+        }
+        return 0;
     }
-}
 
+    void Update(const uint256& txid, int64_t request_time)
+    {
+        LOCK(m_cs);
+        auto it = m_tx_requests.find(txid);
+        if (it == m_tx_requests.end()) {
+            m_tx_requests.insert(std::make_pair(txid, request_time));
+        } else {
+            m_tx_requests.update(it, request_time);
+        }
+    }
+};
+
+// Keeps track of the time (in microseconds) when transactions were requested last time
+TxRequests g_tx_requested_ats;
 
 void RequestTx(CNodeState* state, const uint256& txid, int64_t nNow) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
@@ -708,7 +719,7 @@ void RequestTx(CNodeState* state, const uint256& txid, int64_t nNow) EXCLUSIVE_L
     peer_download_state.m_tx_announced.insert(txid);
 
     int64_t process_time;
-    int64_t last_request_time = GetTxRequestTime(txid);
+    int64_t last_request_time = g_tx_requested_ats.Get(txid);
     // First time requesting this tx
     if (last_request_time == 0) {
         process_time = nNow;
@@ -2358,7 +2369,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         CNodeState* nodestate = State(pfrom->GetId());
         nodestate->m_tx_download.m_tx_announced.erase(inv.hash);
         nodestate->m_tx_download.m_tx_in_flight.erase(inv.hash);
-        EraseTxRequest(inv.hash);
+        g_tx_requested_ats.Erase(inv.hash);
 
         std::list<CTransactionRef> lRemovedTxn;
 
@@ -3886,7 +3897,7 @@ bool PeerLogicValidation::SendMessages(CNode* pto)
             if (!AlreadyHave(inv)) {
                 // If this transaction was last requested more than 1 minute ago,
                 // then request.
-                int64_t last_request_time = GetTxRequestTime(inv.hash);
+                int64_t last_request_time = g_tx_requested_ats.Get(inv.hash);
                 if (last_request_time <= nNow - GETDATA_TX_INTERVAL) {
                     LogPrint(BCLog::NET, "Requesting %s peer=%d\n", inv.ToString(), pto->GetId());
                     vGetData.push_back(inv);
@@ -3894,7 +3905,7 @@ bool PeerLogicValidation::SendMessages(CNode* pto)
                         connman->PushMessage(pto, msgMaker.Make(NetMsgType::GETDATA, vGetData));
                         vGetData.clear();
                     }
-                    UpdateTxRequestTime(inv.hash, nNow);
+                    g_tx_requested_ats.Update(inv.hash, nNow);
                     state.m_tx_download.m_tx_in_flight.insert(inv.hash);
                 } else {
                     // This transaction is in flight from someone else; queue
