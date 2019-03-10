@@ -222,10 +222,13 @@ bool BlockFilterTypeByName(const std::string& name, BlockFilterType& filter_type
 
 const std::vector<BlockFilterType>& AllBlockFilterTypes()
 {
-    static std::vector<BlockFilterType> retval{
-        BlockFilterType::BASIC,
-    };
-    return retval;
+    static std::vector<BlockFilterType> types;
+    if (types.empty()) {
+        for (auto entry : g_filter_types) {
+            types.push_back(entry.first);
+        }
+    }
+    return types;
 }
 
 std::string ListBlockFilterTypes()
