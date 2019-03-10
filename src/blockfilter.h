@@ -97,7 +97,7 @@ const std::string& BlockFilterTypeName(BlockFilterType filter_type);
 bool BlockFilterTypeByName(const std::string& name, BlockFilterType& filter_type);
 
 /** Get a list of known filter types. */
-const std::vector<BlockFilterType>& AllBlockFilterTypes();
+const std::vector<std::string>& AllBlockFilterTypeNames();
 
 /** Get a comma-separated list of known filter type names. */
 std::string ListBlockFilterTypes();

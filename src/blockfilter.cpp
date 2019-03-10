@@ -220,24 +220,24 @@ bool BlockFilterTypeByName(const std::string& name, BlockFilterType& filter_type
     return false;
 }
 
-const std::vector<BlockFilterType>& AllBlockFilterTypes()
+const std::vector<std::string>& AllBlockFilterTypeNames()
 {
-    static std::vector<BlockFilterType> types;
-    if (types.empty()) {
+    static std::vector<std::string> names;
+    if (names.empty()) {
         for (auto entry : g_filter_types) {
-            types.push_back(entry.first);
+            names.push_back(entry.second);
         }
     }
-    return types;
+    return names;
 }
 
 std::string ListBlockFilterTypes()
 {
     std::stringstream ret;
     bool first = true;
-    for (auto filter_type : AllBlockFilterTypes()) {
+    for (const std::string& filter_name : AllBlockFilterTypeNames()) {
         if (!first) ret << ", ";
-        ret << BlockFilterTypeName(filter_type);
+        ret << filter_name;
         first = false;
     }
     return ret.str();

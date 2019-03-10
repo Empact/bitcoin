@@ -966,10 +966,12 @@ bool AppInitParameterInteraction()
 
     // parse and validate enabled filter types
     std::string blockfilterindex_value = gArgs.GetArg("-blockfilterindex", "0");
-    if (blockfilterindex_value == "" || blockfilterindex_value == "1") {
-        enabled_filter_types = AllBlockFilterTypes();
-    } else if (blockfilterindex_value != "0") {
-        const std::vector<std::string> names = gArgs.GetArgs("-blockfilterindex");
+    if (blockfilterindex_value != "0") {
+        std::vector<std::string> names{
+            blockfilterindex_value == "" || blockfilterindex_value == "1"
+              ? AllBlockFilterTypeNames()
+              : gArgs.GetArgs("-blockfilterindex")
+        };
         enabled_filter_types.reserve(names.size());
         for (const auto& name : names) {
             BlockFilterType filter_type;
