@@ -2329,7 +2329,7 @@ static UniValue getblockfilter(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unknown filtertype");
     }
 
-    BlockFilterIndex* index = GetBlockFilterIndex(filtertype);
+    BlockFilterIndex* index = g_filter_indexes.Get(filtertype);
     if (!index) {
         throw JSONRPCError(RPC_MISC_ERROR, "Index is not enabled for filtertype " + filtertype_name);
     }

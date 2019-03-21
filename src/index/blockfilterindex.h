@@ -65,30 +65,39 @@ public:
                                std::vector<uint256>& hashes_out) const;
 };
 
-/**
- * Get a block filter index by type. Returns nullptr if index has not been initialized or was
- * already destroyed.
- */
-BlockFilterIndex* GetBlockFilterIndex(BlockFilterType filter_type);
+class BlockFilterIndexes final
+{
+private:
+  std::map<BlockFilterType, BlockFilterIndex> m_filter_indexes;
 
-/** Iterate over all running block filter indexes, invoking fn on each. */
-void ForEachBlockFilterIndex(std::function<void (BlockFilterIndex&)> fn);
+public:
+  /**
+   * Get a block filter index by type. Returns nullptr if index has not been initialized or was
+   * already destroyed.
+   */
+  BlockFilterIndex* Get(BlockFilterType filter_type);
 
-/**
- * Initialize a block filter index for the given type if one does not already exist. Returns true if
- * a new index is created and false if one has already been initialized.
- */
-bool InitBlockFilterIndex(BlockFilterType filter_type,
-                          size_t n_cache_size, bool f_memory = false, bool f_wipe = false);
+  /** Iterate over all running block filter indexes, invoking fn on each. */
+  void ForEach(std::function<void (BlockFilterIndex&)> fn);
 
-/**
- * Destroy the block filter index with the given type. Returns false if no such index exists. This
- * just releases the allocated memory and closes the database connection, it does not delete the
- * index data.
- */
-bool DestroyBlockFilterIndex(BlockFilterType filter_type);
+  /**
+   * Initialize a block filter index for the given type if one does not already exist. Returns true if
+   * a new index is created and false if one has already been initialized.
+   */
+  bool Init(BlockFilterType filter_type,
+                            size_t n_cache_size, bool f_memory = false, bool f_wipe = false);
 
-/** Destroy all open block filter indexes. */
-void DestroyAllBlockFilterIndexes();
+  /**
+   * Destroy the block filter index with the given type. Returns false if no such index exists. This
+   * just releases the allocated memory and closes the database connection, it does not delete the
+   * index data.
+   */
+  bool Destroy(BlockFilterType filter_type);
+
+  /** Destroy all open block filter indexes. */
+  void DestroyAll();
+};
+
+extern BlockFilterIndexes g_filter_indexes;
 
 #endif // BITCOIN_INDEX_BLOCKFILTERINDEX_H

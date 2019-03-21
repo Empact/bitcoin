@@ -270,36 +270,36 @@ BOOST_FIXTURE_TEST_CASE(blockfilter_index_init_destroy, BasicTestingSetup)
 
     BlockFilterIndex* filter_index;
 
-    filter_index = GetBlockFilterIndex(BlockFilterType::BASIC);
+    filter_index = g_filter_indexes.Get(BlockFilterType::BASIC);
     BOOST_CHECK(filter_index == nullptr);
 
-    BOOST_CHECK(InitBlockFilterIndex(BlockFilterType::BASIC, 1 << 20, true, false));
+    BOOST_CHECK(g_filter_indexes.Init(BlockFilterType::BASIC, 1 << 20, true, false));
 
-    filter_index = GetBlockFilterIndex(BlockFilterType::BASIC);
+    filter_index = g_filter_indexes.Get(BlockFilterType::BASIC);
     BOOST_CHECK(filter_index != nullptr);
     BOOST_CHECK(filter_index->GetFilterType() == BlockFilterType::BASIC);
 
     // Initialize returns false if index already exists.
-    BOOST_CHECK(!InitBlockFilterIndex(BlockFilterType::BASIC, 1 << 20, true, false));
+    BOOST_CHECK(!g_filter_indexes.Init(BlockFilterType::BASIC, 1 << 20, true, false));
 
     int iter_count = 0;
-    ForEachBlockFilterIndex([&iter_count](BlockFilterIndex& _index) { iter_count++; });
+    g_filter_indexes.ForEach([&iter_count](BlockFilterIndex& _index) { iter_count++; });
     BOOST_CHECK_EQUAL(iter_count, 1);
 
-    BOOST_CHECK(DestroyBlockFilterIndex(BlockFilterType::BASIC));
+    BOOST_CHECK(g_filter_indexes.Destroy(BlockFilterType::BASIC));
 
     // Destroy returns false because index was already destroyed.
-    BOOST_CHECK(!DestroyBlockFilterIndex(BlockFilterType::BASIC));
+    BOOST_CHECK(!g_filter_indexes.Destroy(BlockFilterType::BASIC));
 
-    filter_index = GetBlockFilterIndex(BlockFilterType::BASIC);
+    filter_index = g_filter_indexes.Get(BlockFilterType::BASIC);
     BOOST_CHECK(filter_index == nullptr);
 
     // Reinitialize index.
-    BOOST_CHECK(InitBlockFilterIndex(BlockFilterType::BASIC, 1 << 20, true, false));
+    BOOST_CHECK(g_filter_indexes.Init(BlockFilterType::BASIC, 1 << 20, true, false));
 
-    DestroyAllBlockFilterIndexes();
+    g_filter_indexes.DestroyAll();
 
-    filter_index = GetBlockFilterIndex(BlockFilterType::BASIC);
+    filter_index = g_filter_indexes.Get(BlockFilterType::BASIC);
     BOOST_CHECK(filter_index == nullptr);
 }
 

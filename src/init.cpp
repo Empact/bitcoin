@@ -191,7 +191,7 @@ void Interrupt()
     if (g_txindex) {
         g_txindex->Interrupt();
     }
-    ForEachBlockFilterIndex([](BlockFilterIndex& index) { index.Interrupt(); });
+    g_filter_indexes.ForEach([](BlockFilterIndex& index) { index.Interrupt(); });
 }
 
 void Shutdown(InitInterfaces& interfaces)
@@ -223,7 +223,7 @@ void Shutdown(InitInterfaces& interfaces)
     if (peerLogic) UnregisterValidationInterface(peerLogic.get());
     if (g_connman) g_connman->Stop();
     if (g_txindex) g_txindex->Stop();
-    ForEachBlockFilterIndex([](BlockFilterIndex& index) { index.Stop(); });
+    g_filter_indexes.ForEach([](BlockFilterIndex& index) { index.Stop(); });
 
     StopTorControl();
 
@@ -238,7 +238,7 @@ void Shutdown(InitInterfaces& interfaces)
     g_connman.reset();
     g_banman.reset();
     g_txindex.reset();
-    DestroyAllBlockFilterIndexes();
+    g_filter_indexes.DestroyAll();
 
     if (g_is_mempool_loaded && gArgs.GetArg("-persistmempool", DEFAULT_PERSIST_MEMPOOL)) {
         DumpMempool();
@@ -1700,8 +1700,8 @@ bool AppInitMain(InitInterfaces& interfaces)
     }
 
     for (const auto& filter_type : enabled_filter_types) {
-        InitBlockFilterIndex(filter_type, filter_index_cache, false, fReindex);
-        GetBlockFilterIndex(filter_type)->Start();
+        g_filter_indexes.Init(filter_type, filter_index_cache, false, fReindex);
+        g_filter_indexes.Get(filter_type)->Start();
     }
 
     // ********************************************************* Step 9: load wallet
