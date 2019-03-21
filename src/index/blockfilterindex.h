@@ -87,8 +87,7 @@ public:
    * Initialize a block filter index for the given type if one does not already exist. Returns a
    * reference to the new or existing filter index.
    */
-  BlockFilterIndex& Init(BlockFilterType filter_type,
-                            size_t n_cache_size, bool f_memory = false, bool f_wipe = false);
+  BlockFilterIndex& Init(BlockFilterType filter_type, size_t n_cache_size, bool f_memory, bool f_wipe);
 
   /** Destroy all open block filter indexes. */
   void clear();
