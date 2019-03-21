@@ -96,9 +96,6 @@ bool BlockFilterTypeByName(const std::string& name, BlockFilterType& filter_type
 /** Get a list of known filter types. */
 const std::vector<std::string>& AllBlockFilterTypeNames();
 
-/** Get a comma-separated list of known filter type names. */
-std::string ListBlockFilterTypes();
-
 /**
  * Complete block filter struct as defined in BIP 157. Serialization matches
  * payload of "cfilter" messages.

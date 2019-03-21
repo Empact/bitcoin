@@ -357,6 +357,18 @@ static void OnRPCStopped()
     LogPrint(BCLog::RPC, "RPC stopped.\n");
 }
 
+static std::string Join(const std::vector<std::string>& strings, const std::string& separator)
+{
+    std::stringstream ret;
+    bool first = true;
+    for (const std::string& string : strings) {
+        if (!first) ret << separator;
+        ret << string;
+        first = false;
+    }
+    return ret.str();
+}
+
 void SetupServerArgs()
 {
     SetupHelpOptions(gArgs);
@@ -410,7 +422,7 @@ void SetupServerArgs()
 #endif
     gArgs.AddArg("-txindex", strprintf("Maintain a full transaction index, used by the getrawtransaction rpc call (default: %u)", DEFAULT_TXINDEX), false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-blockfilterindex=<type>",
-                 strprintf("Maintain an index of compact filters by block (default: %u, values: %s).", 0, ListBlockFilterTypes()) +
+                 strprintf("Maintain an index of compact filters by block (default: %u, values: %s).", 0, Join(AllBlockFilterTypeNames(), ", ")) +
                  " If <type> is not supplied or if <type> = 1, indexes for all known types are enabled.",
                  false, OptionsCategory::OPTIONS);
 

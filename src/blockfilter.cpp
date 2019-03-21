@@ -2,8 +2,6 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <sstream>
-
 #include <blockfilter.h>
 #include <crypto/siphash.h>
 #include <hash.h>
@@ -229,18 +227,6 @@ const std::vector<std::string>& AllBlockFilterTypeNames()
         }
     }
     return names;
-}
-
-std::string ListBlockFilterTypes()
-{
-    std::stringstream ret;
-    bool first = true;
-    for (const std::string& filter_name : AllBlockFilterTypeNames()) {
-        if (!first) ret << ", ";
-        ret << filter_name;
-        first = false;
-    }
-    return ret.str();
 }
 
 static GCSFilter::ElementSet BasicFilterElements(const CBlock& block,
