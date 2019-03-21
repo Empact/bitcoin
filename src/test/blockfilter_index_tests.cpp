@@ -282,8 +282,7 @@ BOOST_FIXTURE_TEST_CASE(blockfilter_index_init_destroy, BasicTestingSetup)
     // Initialize returns false if index already exists.
     BOOST_CHECK(!g_filter_indexes.Init(BlockFilterType::BASIC, 1 << 20, true, false));
 
-    int iter_count = 0;
-    g_filter_indexes.ForEach([&iter_count](BlockFilterIndex& _index) { iter_count++; });
+    int iter_count = g_filter_indexes.size();
     BOOST_CHECK_EQUAL(iter_count, 1);
 
     BOOST_CHECK(g_filter_indexes.Destroy(BlockFilterType::BASIC));

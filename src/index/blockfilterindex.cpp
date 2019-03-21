@@ -429,9 +429,14 @@ BlockFilterIndex* BlockFilterIndexes::Get(BlockFilterType filter_type)
     return it != m_filter_indexes.end() ? &it->second : nullptr;
 }
 
-void BlockFilterIndexes::ForEach(std::function<void (BlockFilterIndex&)> fn)
+void BlockFilterIndexes::Interrupt()
 {
-    for (auto& entry : m_filter_indexes) fn(entry.second);
+    for (auto& entry : m_filter_indexes) entry.second.Interrupt();
+}
+
+void BlockFilterIndexes::Stop()
+{
+    for (auto& entry : m_filter_indexes) entry.second.Stop();
 }
 
 bool BlockFilterIndexes::Init(BlockFilterType filter_type,
@@ -452,6 +457,11 @@ bool BlockFilterIndexes::Destroy(BlockFilterType filter_type)
 void BlockFilterIndexes::DestroyAll()
 {
     m_filter_indexes.clear();
+}
+
+size_t BlockFilterIndexes::size() const
+{
+    return m_filter_indexes.size();
 }
 
 BlockFilterIndexes g_filter_indexes;

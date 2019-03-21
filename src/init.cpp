@@ -191,7 +191,7 @@ void Interrupt()
     if (g_txindex) {
         g_txindex->Interrupt();
     }
-    g_filter_indexes.ForEach([](BlockFilterIndex& index) { index.Interrupt(); });
+    g_filter_indexes.Interrupt();
 }
 
 void Shutdown(InitInterfaces& interfaces)
@@ -223,7 +223,7 @@ void Shutdown(InitInterfaces& interfaces)
     if (peerLogic) UnregisterValidationInterface(peerLogic.get());
     if (g_connman) g_connman->Stop();
     if (g_txindex) g_txindex->Stop();
-    g_filter_indexes.ForEach([](BlockFilterIndex& index) { index.Stop(); });
+    g_filter_indexes.Stop();
 
     StopTorControl();
 

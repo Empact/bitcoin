@@ -77,8 +77,11 @@ public:
    */
   BlockFilterIndex* Get(BlockFilterType filter_type);
 
-  /** Iterate over all running block filter indexes, invoking fn on each. */
-  void ForEach(std::function<void (BlockFilterIndex&)> fn);
+  /** Interrupt each of the indexes */
+  void Interrupt();
+
+  /** Stop each of the indexes */
+  void Stop();
 
   /**
    * Initialize a block filter index for the given type if one does not already exist. Returns true if
@@ -96,6 +99,9 @@ public:
 
   /** Destroy all open block filter indexes. */
   void DestroyAll();
+
+  /** @returns the number of filter indexes. */
+  size_t size() const;
 };
 
 extern BlockFilterIndexes g_filter_indexes;
