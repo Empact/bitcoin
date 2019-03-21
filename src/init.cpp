@@ -1700,8 +1700,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     }
 
     for (const auto& filter_type : enabled_filter_types) {
-        g_filter_indexes.Init(filter_type, filter_index_cache, false, fReindex);
-        g_filter_indexes.Get(filter_type)->Start();
+        g_filter_indexes.Init(filter_type, filter_index_cache, false, fReindex).Start();
     }
 
     // ********************************************************* Step 9: load wallet

@@ -84,10 +84,10 @@ public:
   void Stop();
 
   /**
-   * Initialize a block filter index for the given type if one does not already exist. Returns true if
-   * a new index is created and false if one has already been initialized.
+   * Initialize a block filter index for the given type if one does not already exist. Returns a
+   * reference to the new or existing filter index.
    */
-  bool Init(BlockFilterType filter_type,
+  BlockFilterIndex& Init(BlockFilterType filter_type,
                             size_t n_cache_size, bool f_memory = false, bool f_wipe = false);
 
   /** Destroy all open block filter indexes. */

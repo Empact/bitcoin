@@ -273,14 +273,15 @@ BOOST_FIXTURE_TEST_CASE(blockfilter_index_init_destroy, BasicTestingSetup)
     filter_index = g_filter_indexes.Get(BlockFilterType::BASIC);
     BOOST_CHECK(filter_index == nullptr);
 
-    BOOST_CHECK(g_filter_indexes.Init(BlockFilterType::BASIC, 1 << 20, true, false));
+    BlockFilterIndex& init_filter_index = g_filter_indexes.Init(BlockFilterType::BASIC, 1 << 20, true, false);
 
     filter_index = g_filter_indexes.Get(BlockFilterType::BASIC);
     BOOST_CHECK(filter_index != nullptr);
+    BOOST_CHECK(&init_filter_index == filter_index);
     BOOST_CHECK(filter_index->GetFilterType() == BlockFilterType::BASIC);
 
-    // Initialize returns false if index already exists.
-    BOOST_CHECK(!g_filter_indexes.Init(BlockFilterType::BASIC, 1 << 20, true, false));
+    // Init recalls existing filter
+    BOOST_CHECK(&g_filter_indexes.Init(BlockFilterType::BASIC, 1 << 20, true, false) == filter_index);
 
     int iter_count = g_filter_indexes.size();
     BOOST_CHECK_EQUAL(iter_count, 1);
@@ -291,7 +292,7 @@ BOOST_FIXTURE_TEST_CASE(blockfilter_index_init_destroy, BasicTestingSetup)
     BOOST_CHECK(filter_index == nullptr);
 
     // Reinitialize index.
-    BOOST_CHECK(g_filter_indexes.Init(BlockFilterType::BASIC, 1 << 20, true, false));
+    g_filter_indexes.Init(BlockFilterType::BASIC, 1 << 20, true, false);
 
     g_filter_indexes.clear();
 

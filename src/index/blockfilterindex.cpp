@@ -439,14 +439,14 @@ void BlockFilterIndexes::Stop()
     for (auto& entry : m_filter_indexes) entry.second.Stop();
 }
 
-bool BlockFilterIndexes::Init(BlockFilterType filter_type,
+BlockFilterIndex& BlockFilterIndexes::Init(BlockFilterType filter_type,
                           size_t n_cache_size, bool f_memory, bool f_wipe)
 {
     auto result = m_filter_indexes.emplace(std::piecewise_construct,
                                            std::forward_as_tuple(filter_type),
                                            std::forward_as_tuple(filter_type,
                                                                  n_cache_size, f_memory, f_wipe));
-    return result.second;
+    return result.first->second;
 }
 
 void BlockFilterIndexes::clear()
