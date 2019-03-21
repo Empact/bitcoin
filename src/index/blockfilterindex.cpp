@@ -454,7 +454,7 @@ bool BlockFilterIndexes::Destroy(BlockFilterType filter_type)
     return m_filter_indexes.erase(filter_type);
 }
 
-void BlockFilterIndexes::DestroyAll()
+void BlockFilterIndexes::clear()
 {
     m_filter_indexes.clear();
 }

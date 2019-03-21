@@ -98,7 +98,7 @@ public:
   bool Destroy(BlockFilterType filter_type);
 
   /** Destroy all open block filter indexes. */
-  void DestroyAll();
+  void clear();
 
   /** @returns the number of filter indexes. */
   size_t size() const;
