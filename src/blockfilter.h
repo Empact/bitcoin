@@ -81,9 +81,6 @@ public:
     bool MatchAny(const ElementSet& elements) const;
 };
 
-constexpr uint8_t BASIC_FILTER_P = 19;
-constexpr uint32_t BASIC_FILTER_M = 784931;
-
 enum class BlockFilterType : uint8_t
 {
     BASIC = 0,

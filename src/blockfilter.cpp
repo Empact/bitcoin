@@ -290,6 +290,9 @@ BlockFilter::BlockFilter(BlockFilterType filter_type, const CBlock& block, const
 
 bool BlockFilter::BuildParams(GCSFilter::Params& params) const
 {
+    constexpr uint8_t BASIC_FILTER_P = 19;
+    constexpr uint32_t BASIC_FILTER_M = 784931;
+
     switch (m_filter_type) {
     case BlockFilterType::BASIC:
         params.m_siphash_k0 = m_block_hash.GetUint64(0);
