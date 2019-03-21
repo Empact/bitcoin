@@ -2318,7 +2318,7 @@ static UniValue getblockfilter(const JSONRPCRequest& request)
         );
     }
 
-    uint256 block_hash = uint256S(request.params[0].get_str());
+    uint256 block_hash = ParseHashV(request.params[0], "blockhash");
     std::string filtertype_name = "basic";
     if (!request.params[1].isNull()) {
         filtertype_name = request.params[1].get_str();
