@@ -285,10 +285,7 @@ BOOST_FIXTURE_TEST_CASE(blockfilter_index_init_destroy, BasicTestingSetup)
     int iter_count = g_filter_indexes.size();
     BOOST_CHECK_EQUAL(iter_count, 1);
 
-    BOOST_CHECK(g_filter_indexes.Destroy(BlockFilterType::BASIC));
-
-    // Destroy returns false because index was already destroyed.
-    BOOST_CHECK(!g_filter_indexes.Destroy(BlockFilterType::BASIC));
+    g_filter_indexes.clear();
 
     filter_index = g_filter_indexes.Get(BlockFilterType::BASIC);
     BOOST_CHECK(filter_index == nullptr);

@@ -90,13 +90,6 @@ public:
   bool Init(BlockFilterType filter_type,
                             size_t n_cache_size, bool f_memory = false, bool f_wipe = false);
 
-  /**
-   * Destroy the block filter index with the given type. Returns false if no such index exists. This
-   * just releases the allocated memory and closes the database connection, it does not delete the
-   * index data.
-   */
-  bool Destroy(BlockFilterType filter_type);
-
   /** Destroy all open block filter indexes. */
   void clear();
 
