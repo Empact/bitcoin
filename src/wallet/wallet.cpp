@@ -31,6 +31,7 @@
 #include <util/bip32.h>
 #include <util/error.h>
 #include <util/moneystr.h>
+#include <util/rbf.h>
 #include <wallet/fees.h>
 
 #include <algorithm>
