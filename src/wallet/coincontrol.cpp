@@ -4,6 +4,7 @@
 
 #include <wallet/coincontrol.h>
 
+#include <util/fees.h>
 #include <util/system.h>
 
 void CCoinControl::SetNull()
@@ -20,4 +21,3 @@ void CCoinControl::SetNull()
     m_signal_bip125_rbf.reset();
     m_fee_mode = FeeEstimateMode::UNSET;
 }
-
