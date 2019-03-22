@@ -21,6 +21,7 @@
 #include <policy/fees.h>
 #include <policy/policy.h>
 #include <policy/rbf.h>
+#include <policy/settings.h>
 #include <pow.h>
 #include <primitives/block.h>
 #include <primitives/transaction.h>

@@ -13,6 +13,7 @@ EXPECTED_CIRCULAR_DEPENDENCIES=(
     "checkpoints -> validation -> checkpoints"
     "index/txindex -> validation -> index/txindex"
     "policy/fees -> txmempool -> policy/fees"
+    "policy/policy -> policy/settings -> policy/policy"
     "policy/policy -> validation -> policy/policy"
     "qt/addresstablemodel -> qt/walletmodel -> qt/addresstablemodel"
     "qt/bantablemodel -> qt/clientmodel -> qt/bantablemodel"
