@@ -202,6 +202,7 @@ BITCOIN_CORE_H = \
   util/bip32.h \
   util/bytevectorhash.h \
   util/error.h \
+  util/fees.h \
   util/system.h \
   util/memory.h \
   util/moneystr.h \
@@ -467,6 +468,7 @@ libbitcoin_util_a_SOURCES = \
   util/bip32.cpp \
   util/bytevectorhash.cpp \
   util/error.cpp \
+  util/fees.cpp \
   util/system.cpp \
   util/moneystr.cpp \
   util/strencodings.cpp \
