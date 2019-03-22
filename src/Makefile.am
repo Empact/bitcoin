@@ -245,13 +245,15 @@ obj/build.h: FORCE
 libbitcoin_util_a-clientversion.$(OBJEXT): obj/build.h
 
 # server: shared between bitcoind and bitcoin-qt
+# Contains code accessing mempool and chain state that is meant to be separated
+# from wallet and gui code (see node/README.md). Shared code should go in
+# libbitcoin_common or libbitcoin_util libraries, instead.
 libbitcoin_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
 libbitcoin_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_server_a_SOURCES = \
   addrdb.cpp \
   addrman.cpp \
   banman.cpp \
-  bloom.cpp \
   blockencodings.cpp \
   blockfilter.cpp \
   chain.cpp \
@@ -263,18 +265,15 @@ libbitcoin_server_a_SOURCES = \
   index/base.cpp \
   index/txindex.cpp \
   interfaces/chain.cpp \
-  interfaces/handler.cpp \
   interfaces/node.cpp \
   init.cpp \
   dbwrapper.cpp \
-  merkleblock.cpp \
   miner.cpp \
   net.cpp \
   net_processing.cpp \
   node/coin.cpp \
   node/transaction.cpp \
   noui.cpp \
-  outputtype.cpp \
   policy/fees.cpp \
   policy/rbf.cpp \
   policy/settings.cpp \
@@ -432,6 +431,7 @@ libbitcoin_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_common_a_SOURCES = \
   base58.cpp \
   bech32.cpp \
+  bloom.cpp \
   chainparams.cpp \
   coins.cpp \
   compressor.cpp \
@@ -440,8 +440,10 @@ libbitcoin_common_a_SOURCES = \
   key.cpp \
   key_io.cpp \
   keystore.cpp \
+  merkleblock.cpp \
   netaddress.cpp \
   netbase.cpp \
+  outputtype.cpp \
   policy/feerate.cpp \
   policy/policy.cpp \
   psbt.cpp \
@@ -470,6 +472,7 @@ libbitcoin_util_a_SOURCES = \
   compat/glibcxx_sanity.cpp \
   compat/strnlen.cpp \
   fs.cpp \
+  interfaces/handler.cpp \
   logging.cpp \
   random.cpp \
   rpc/protocol.cpp \
