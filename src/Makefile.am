@@ -210,6 +210,7 @@ BITCOIN_CORE_H = \
   util/rbf.h \
   util/time.h \
   util/url.h \
+  util/validation.h \
   validation.h \
   validationinterface.h \
   versionbits.h \
@@ -297,6 +298,9 @@ libbitcoin_server_a_SOURCES = \
   versionbits.cpp \
   $(BITCOIN_CORE_H)
 
+if ENABLE_WALLET
+libbitcoin_server_a_SOURCES += wallet/init.cpp
+endif
 if !ENABLE_WALLET
 libbitcoin_server_a_SOURCES += dummywallet.cpp
 endif
@@ -479,6 +483,7 @@ libbitcoin_util_a_SOURCES = \
   util/strencodings.cpp \
   util/time.cpp \
   util/url.cpp \
+  util/validation.cpp \
   $(BITCOIN_CORE_H)
 
 if GLIBC_BACK_COMPAT

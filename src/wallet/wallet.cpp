@@ -32,6 +32,7 @@
 #include <util/error.h>
 #include <util/moneystr.h>
 #include <util/rbf.h>
+#include <util/validation.h>
 #include <wallet/fees.h>
 
 #include <algorithm>
