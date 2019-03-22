@@ -26,6 +26,7 @@
 #include <timedata.h>
 #include <transaction_error.h>
 #include <util/bip32.h>
+#include <util/fees.h>
 #include <util/system.h>
 #include <util/moneystr.h>
 #include <util/url.h>
