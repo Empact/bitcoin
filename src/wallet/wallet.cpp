@@ -1282,7 +1282,6 @@ void CWallet::BlockDisconnected(const CBlock& block) {
 
 
 void CWallet::BlockUntilSyncedToCurrentChain() {
-    AssertLockNotHeld(cs_main);
     AssertLockNotHeld(cs_wallet);
 
     {
