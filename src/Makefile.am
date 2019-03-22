@@ -201,6 +201,7 @@ BITCOIN_CORE_H = \
   undo.h \
   util/bip32.h \
   util/bytevectorhash.h \
+  util/error.h \
   util/system.h \
   util/memory.h \
   util/moneystr.h \
@@ -464,6 +465,7 @@ libbitcoin_util_a_SOURCES = \
   threadinterrupt.cpp \
   util/bip32.cpp \
   util/bytevectorhash.cpp \
+  util/error.cpp \
   util/system.cpp \
   util/moneystr.cpp \
   util/strencodings.cpp \

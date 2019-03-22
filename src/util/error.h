@@ -1,0 +1,28 @@
+// Copyright (c) 2010-2018 The Bitcoin Core developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#ifndef BITCOIN_UTIL_ERROR_H
+#define BITCOIN_UTIL_ERROR_H
+
+#include <string>
+
+enum class TransactionError {
+    OK, //!< No error
+    MISSING_INPUTS,
+    ALREADY_IN_CHAIN,
+    P2P_DISABLED,
+    MEMPOOL_REJECTED,
+    MEMPOOL_ERROR,
+    INVALID_PSBT,
+    PSBT_MISMATCH,
+    SIGHASH_MISMATCH,
+};
+
+std::string TransactionErrorString(const TransactionError error);
+
+std::string AmountHighWarn(const std::string& optname);
+
+std::string AmountErrMsg(const char* const optname, const std::string& strValue);
+
+#endif // BITCOIN_UTIL_ERROR_H
