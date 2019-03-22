@@ -206,6 +206,7 @@ BITCOIN_CORE_H = \
   util/memory.h \
   util/moneystr.h \
   util/time.h \
+  util/url.h \
   validation.h \
   validationinterface.h \
   versionbits.h \
@@ -470,6 +471,7 @@ libbitcoin_util_a_SOURCES = \
   util/moneystr.cpp \
   util/strencodings.cpp \
   util/time.cpp \
+  util/url.cpp \
   $(BITCOIN_CORE_H)
 
 if GLIBC_BACK_COMPAT
