@@ -6,10 +6,10 @@
 #define BITCOIN_PSBT_H
 
 #include <attributes.h>
-#include <node/transaction.h>
 #include <primitives/transaction.h>
 #include <pubkey.h>
 #include <script/sign.h>
+#include <transaction_error.h>
 
 // Magic bytes
 static constexpr uint8_t PSBT_MAGIC_BYTES[5] = {'p', 's', 'b', 't', 0xff};
