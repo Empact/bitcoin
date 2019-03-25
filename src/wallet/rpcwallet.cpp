@@ -12,7 +12,6 @@
 #include <validation.h>
 #include <key_io.h>
 #include <net.h>
-#include <node/transaction.h>
 #include <outputtype.h>
 #include <policy/feerate.h>
 #include <policy/fees.h>
@@ -25,6 +24,7 @@
 #include <script/sign.h>
 #include <shutdown.h>
 #include <timedata.h>
+#include <transaction_error.h>
 #include <util/bip32.h>
 #include <util/fees.h>
 #include <util/system.h>

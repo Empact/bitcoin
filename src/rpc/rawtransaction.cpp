@@ -29,6 +29,7 @@
 #include <script/script_error.h>
 #include <script/sign.h>
 #include <script/standard.h>
+#include <transaction_error.h>
 #include <uint256.h>
 #include <util/bip32.h>
 #include <util/moneystr.h>

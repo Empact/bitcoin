@@ -5,10 +5,10 @@
 #ifndef BITCOIN_RPC_UTIL_H
 #define BITCOIN_RPC_UTIL_H
 
-#include <node/transaction.h>
 #include <pubkey.h>
 #include <rpc/protocol.h>
 #include <script/standard.h>
+#include <transaction_error.h>
 #include <univalue.h>
 
 #include <string>

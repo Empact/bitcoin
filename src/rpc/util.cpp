@@ -6,6 +6,7 @@
 #include <keystore.h>
 #include <rpc/util.h>
 #include <tinyformat.h>
+#include <transaction_error.h>
 #include <util/strencodings.h>
 
 InitInterfaces* g_rpc_interfaces = nullptr;
