@@ -1261,72 +1261,17 @@ static UniValue ProcessImport(CWallet * const pwallet, const UniValue& data, con
         for (const auto& entry : import_data.import_scripts) {
             if (!pwallet->HaveCScript(CScriptID(entry)) && !pwallet->AddCScript(entry)) {
                 throw JSONRPCError(RPC_WALLET_ERROR, "Error adding script to wallet");
-             }
-         }
-         std::unique_ptr<WalletBatch> batch = MakeUnique<WalletBatch>(pwallet->GetDBHandle());
-         size_t cnt = 0;
-         for (const auto& entry : privkey_map) {
-             const CKey& key = entry.second;
-             CPubKey pubkey = key.GetPubKey();
-             const CKeyID& id = entry.first;
-             assert(key.VerifyPubKey(pubkey));
-             pwallet->mapKeyMetadata[id].nCreateTime = timestamp;
-             // If the private key is not present in the wallet, insert it.
-             if (!pwallet->HaveKey(id) && !pwallet->AddKeyPubKeyWithDB(*batch, key, pubkey)) {
-                 throw JSONRPCError(RPC_WALLET_ERROR, "Error adding key to wallet");
-             }
-             pwallet->UpdateTimeFirstKey(timestamp);
-             if (++cnt % 1000 == 0) {
-                 batch.reset(new WalletBatch(pwallet->GetDBHandle()));
-             }
-         }
-        for (const CKeyID& id : ordered_pubkeys) {
-            auto entry = pubkey_map.find(id);
-            if (entry == pubkey_map.end()) {
-                continue;
-            }
-             const CPubKey& pubkey = entry->second;
-             CPubKey temp;
-             if (!pwallet->GetPubKey(id, temp) && !pwallet->AddWatchOnlyWithDB(*batch, GetScriptForRawPubKey(pubkey), timestamp)) {
-                throw JSONRPCError(RPC_WALLET_ERROR, "Error adding address to wallet");
-            }
-            if (++cnt % 1000 == 0) {
-                batch.reset(new WalletBatch(pwallet->GetDBHandle()));
-            }
-            const auto& key_orig_it = import_data.key_origins.find(id);
-            if (key_orig_it != import_data.key_origins.end()) {
-                pwallet->AddKeyOriginWithDB(*batch, pubkey, key_orig_it->second);
-                if (++cnt % 1000 == 0) {
-                    batch.reset(new WalletBatch(pwallet->GetDBHandle()));
-                }
-            }
-            pwallet->mapKeyMetadata[id].nCreateTime = timestamp;
-
-            // Add to keypool only works with pubkeys
-            if (add_keypool) {
-                pwallet->AddKeypoolPubkeyWithDB(pubkey, internal, *batch);
-                if (++cnt % 1000 == 0) {
-                    batch.reset(new WalletBatch(pwallet->GetDBHandle()));
-                }
             }
         }
-
-        for (const CScript& script : script_pub_keys) {
-            if (!have_solving_data || !::IsMine(*pwallet, script)) { // Always call AddWatchOnly for non-solvable watch-only, so that watch timestamp gets updated
-                if (!pwallet->AddWatchOnlyWithDB(*batch, script, timestamp)) {
-                    throw JSONRPCError(RPC_WALLET_ERROR, "Error adding address to wallet");
-                }
-                if (++cnt % 1000 == 0) {
-                    batch.reset(new WalletBatch(pwallet->GetDBHandle()));
-                }
-            }
-            CTxDestination dest;
-            ExtractDestination(script, dest);
-            if (!internal && IsValidDestination(dest)) {
-                pwallet->SetAddressBook(dest, label, "receive");
-            }
+        if (!pwallet->ImportPrivKeys(privkey_map, timestamp)) {
+            throw JSONRPCError(RPC_WALLET_ERROR, "Error adding key to wallet");
         }
-        batch.reset();
+        if (!pwallet->ImportPubKeys(ordered_pubkeys, pubkey_map, import_data.key_origins, add_keypool, internal, timestamp)) {
+            throw JSONRPCError(RPC_WALLET_ERROR, "Error adding address to wallet");
+        }
+        if (!pwallet->ImportScriptPubKeys(label, script_pub_keys, have_solving_data, internal, timestamp)) {
+            throw JSONRPCError(RPC_WALLET_ERROR, "Error adding address to wallet");
+        }
 
         result.pushKV("success", UniValue(true));
     } catch (const UniValue& e) {
