@@ -733,6 +733,8 @@ private:
 
     void AddKeypoolPubkeyWithDB(const CPubKey& pubkey, const bool internal, WalletBatch& batch);
 
+    bool SetAddressBookWithDB(WalletBatch& batch, const CTxDestination& address, const std::string& strName, const std::string& strPurpose);
+
     /** Interface for accessing chain state. */
     interfaces::Chain& m_chain;
 
