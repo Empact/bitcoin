@@ -359,12 +359,6 @@ void CWallet::LoadScriptMetadata(const CScriptID& script_id, const CKeyMetadata&
     m_script_metadata[script_id] = meta;
 }
 
-// Writes a keymetadata for a public key. overwrite specifies whether to overwrite an existing metadata for that key if there exists one.
-bool CWallet::WriteKeyMetadata(const CKeyMetadata& meta, const CPubKey& pubkey, const bool overwrite)
-{
-    return WalletBatch(*database).WriteKeyMetadata(meta, pubkey, overwrite);
-}
-
 void CWallet::UpgradeKeyMetadata()
 {
     AssertLockHeld(cs_wallet);
@@ -4547,10 +4541,4 @@ bool CWallet::AddKeyOriginWithDB(WalletBatch& batch, const CPubKey& pubkey, cons
     mapKeyMetadata[pubkey.GetID()].has_key_origin = true;
     mapKeyMetadata[pubkey.GetID()].hdKeypath = WriteHDKeypath(info.path);
     return batch.WriteKeyMetadata(mapKeyMetadata[pubkey.GetID()], pubkey, true);
-}
-
-bool CWallet::AddKeyOrigin(const CPubKey& pubkey, const KeyOriginInfo& info)
-{
-    WalletBatch batch(*database);
-    return AddKeyOriginWithDB(batch, pubkey, info);
 }

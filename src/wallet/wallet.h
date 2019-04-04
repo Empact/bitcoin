@@ -779,8 +779,6 @@ public:
     // Map from Script ID to key metadata (for watch-only keys).
     std::map<CScriptID, CKeyMetadata> m_script_metadata GUARDED_BY(cs_wallet);
 
-    bool WriteKeyMetadata(const CKeyMetadata& meta, const CPubKey& pubkey, bool overwrite);
-
     typedef std::map<unsigned int, CMasterKey> MasterKeyMap;
     MasterKeyMap mapMasterKeys;
     unsigned int nMasterKeyMaxID = 0;
@@ -1223,7 +1221,6 @@ public:
     bool GetKeyOrigin(const CKeyID& keyid, KeyOriginInfo& info) const override;
 
     /** Add a KeyOriginInfo to the wallet */
-    bool AddKeyOrigin(const CPubKey& pubkey, const KeyOriginInfo& info);
     bool AddKeyOriginWithDB(WalletBatch& batch, const CPubKey& pubkey, const KeyOriginInfo& info);
 
     friend struct WalletTestingSetup;
