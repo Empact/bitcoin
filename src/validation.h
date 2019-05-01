@@ -143,7 +143,6 @@ extern CCriticalSection cs_main;
 extern CBlockPolicyEstimator feeEstimator;
 extern CTxMemPool mempool;
 typedef std::unordered_map<uint256, CBlockIndex*, BlockHasher> BlockMap;
-extern BlockMap& mapBlockIndex GUARDED_BY(cs_main);
 extern Mutex g_best_block_mutex;
 extern std::condition_variable g_best_block_cv;
 extern uint256 g_best_block;
@@ -412,11 +411,17 @@ public:
 /** Replay blocks that aren't fully applied to the database. */
 bool ReplayBlocks(const CChainParams& params, CCoinsView* view);
 
+/** @returns the block index map (a map from hash to block index). */
+const BlockMap& MapBlockIndex() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
+/** Only used in tests. */
+BlockMap& MutableMapBlockIndex() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
 inline CBlockIndex* LookupBlockIndex(const uint256& hash)
 {
     AssertLockHeld(cs_main);
-    BlockMap::const_iterator it = mapBlockIndex.find(hash);
-    return it == mapBlockIndex.end() ? nullptr : it->second;
+    BlockMap::const_iterator it = MapBlockIndex().find(hash);
+    return it == MapBlockIndex().end() ? nullptr : it->second;
 }
 
 /** Find the last common block between the parameter chain and a locator. */
@@ -436,7 +441,13 @@ bool InvalidateBlock(CValidationState& state, const CChainParams& chainparams, C
 void ResetBlockFailureFlags(CBlockIndex* pindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /** The currently-connected chain of blocks (protected by cs_main). */
-extern CChain& chainActive;
+extern CChain& chainActive; // DEPRECATED. USE ChainActive() IN NEW CODE
+
+/** @returns the most-work chain. */
+const CChain& ChainActive() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
+/** Only used in tests. */
+CChain& MutableChainActive() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /** Global variable that points to the coins database (protected by cs_main) */
 extern std::unique_ptr<CCoinsViewDB> pcoinsdbview;

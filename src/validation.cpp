@@ -230,7 +230,12 @@ private:
  */
 RecursiveMutex cs_main;
 
-BlockMap& mapBlockIndex = g_chainstate.mapBlockIndex;
+const CChain& ChainActive() { return g_chainstate.chainActive; }
+CChain& MutableChainActive() { return g_chainstate.chainActive; }
+
+const BlockMap& MapBlockIndex() { return g_chainstate.mapBlockIndex; }
+BlockMap& MutableMapBlockIndex() { return g_chainstate.mapBlockIndex; }
+
 CChain& chainActive = g_chainstate.chainActive;
 CBlockIndex *pindexBestHeader = nullptr;
 Mutex g_best_block_mutex;
@@ -262,6 +267,7 @@ CScript COINBASE_FLAGS;
 
 // Internal stuff
 namespace {
+    BlockMap& mapBlockIndex = g_chainstate.mapBlockIndex;
     CBlockIndex *&pindexBestInvalid = g_chainstate.pindexBestInvalid;
 
     /** All pairs A->B, where A (or one of its ancestors) misses transactions, but B has transactions.
