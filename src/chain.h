@@ -421,7 +421,12 @@ public:
     }
 
     /** Returns the index entry for the tip of this chain, or nullptr if none. */
-    CBlockIndex *Tip() const {
+    const CBlockIndex* Tip() const {
+        return vChain.size() > 0 ? vChain[vChain.size() - 1] : nullptr;
+    }
+
+    /** Returns the index entry for the tip of this chain, or nullptr if none. */
+    CBlockIndex* Tip() {
         return vChain.size() > 0 ? vChain[vChain.size() - 1] : nullptr;
     }
 
