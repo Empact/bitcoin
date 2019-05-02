@@ -26,6 +26,8 @@
 
 BOOST_FIXTURE_TEST_SUITE(miner_tests, TestingSetup)
 
+extern CChain chainActive; // validation.cpp
+
 // BOOST_CHECK_EXCEPTION predicates to check the specific validation error
 class HasReason {
 public:
@@ -82,7 +84,7 @@ struct {
     {2, 0xbbbeb305}, {2, 0xfe1c810a},
 };
 
-static CBlockIndex CreateBlockIndex(int nHeight)
+static CBlockIndex CreateBlockIndex(int nHeight) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
     CBlockIndex index;
     index.nHeight = nHeight;
@@ -377,7 +379,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
         next->pprev = prev;
         next->nHeight = prev->nHeight + 1;
         next->BuildSkip();
-        MutableChainActive().SetTip(next);
+        chainActive.SetTip(next);
     }
     BOOST_CHECK(pblocktemplate = AssemblerForTest(chainparams).CreateNewBlock(scriptPubKey));
     // Extend to a 210000-long block chain.
@@ -389,7 +391,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
         next->pprev = prev;
         next->nHeight = prev->nHeight + 1;
         next->BuildSkip();
-        MutableChainActive().SetTip(next);
+        chainActive.SetTip(next);
     }
     BOOST_CHECK(pblocktemplate = AssemblerForTest(chainparams).CreateNewBlock(scriptPubKey));
 
@@ -414,7 +416,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     // Delete the dummy blocks again.
     while (chainActive.Tip()->nHeight > nHeight) {
         CBlockIndex* del = chainActive.Tip();
-        MutableChainActive().SetTip(del->pprev);
+        chainActive.SetTip(del->pprev);
         pcoinsTip->SetBestBlock(del->pprev->GetBlockHash());
         delete del->phashBlock;
         delete del;

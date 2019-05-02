@@ -166,7 +166,7 @@ extern uint256 hashAssumeValid;
 extern arith_uint256 nMinimumChainWork;
 
 /** Best header we've seen so far (used for getheaders queries' starting points). */
-extern CBlockIndex *pindexBestHeader;
+extern const CBlockIndex *pindexBestHeader;
 
 /** Pruning-related variables and constants */
 /** True if any block files have ever been pruned. */
@@ -414,9 +414,6 @@ bool ReplayBlocks(const CChainParams& params, CCoinsView* view);
 /** @returns the block index map (a map from hash to block index). */
 const BlockMap& MapBlockIndex() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
-/** Only used in tests. */
-BlockMap& MutableMapBlockIndex() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
-
 inline CBlockIndex* LookupBlockIndex(const uint256& hash)
 {
     AssertLockHeld(cs_main);
@@ -440,14 +437,8 @@ bool InvalidateBlock(CValidationState& state, const CChainParams& chainparams, C
 /** Remove invalidity status from a block and its descendants. */
 void ResetBlockFailureFlags(CBlockIndex* pindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
-/** The currently-connected chain of blocks (protected by cs_main). */
-extern CChain& chainActive; // DEPRECATED. USE ChainActive() IN NEW CODE
-
 /** @returns the most-work chain. */
 const CChain& ChainActive() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
-
-/** Only used in tests. */
-CChain& MutableChainActive() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /** Global variable that points to the coins database (protected by cs_main) */
 extern std::unique_ptr<CCoinsViewDB> pcoinsdbview;

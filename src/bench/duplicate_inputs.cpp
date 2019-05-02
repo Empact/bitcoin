@@ -29,7 +29,11 @@ static void DuplicateInputs(benchmark::State& state)
     CMutableTransaction coinbaseTx{};
     CMutableTransaction naughtyTx{};
 
-    CBlockIndex* pindexPrev = ::chainActive.Tip();
+    const CBlockIndex* pindexPrev;
+    {
+        LOCK(cs_main);
+        pindexPrev = ChainActive().Tip();
+    }
     assert(pindexPrev != nullptr);
     block.nBits = GetNextWorkRequired(pindexPrev, &block, chainparams.GetConsensus());
     block.nNonce = 0;
