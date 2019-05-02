@@ -59,7 +59,7 @@ const CBlockIndex *CChain::FindFork(const CBlockIndex *pindex) const {
     return pindex;
 }
 
-CBlockIndex* CChain::FindEarliestAtLeast(int64_t nTime, int height) const
+const CBlockIndex* CChain::FindEarliestAtLeast(int64_t nTime, int height) const
 {
     std::pair<int64_t, int> blockparams = std::make_pair(nTime, height);
     std::vector<CBlockIndex*>::const_iterator lower = std::lower_bound(vChain.begin(), vChain.end(), blockparams,

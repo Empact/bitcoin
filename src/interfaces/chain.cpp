@@ -86,7 +86,7 @@ class LockImpl : public Chain::Lock
     }
     Optional<int> findFirstBlockWithTimeAndHeight(int64_t time, int height, uint256* hash) override
     {
-        CBlockIndex* block = ::chainActive.FindEarliestAtLeast(time, height);
+        const CBlockIndex* block = ::chainActive.FindEarliestAtLeast(time, height);
         if (block) {
             if (hash) *hash = block->GetBlockHash();
             return block->nHeight;
