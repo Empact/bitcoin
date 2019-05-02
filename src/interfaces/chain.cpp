@@ -132,7 +132,8 @@ class LockImpl : public Chain::Lock
     Optional<int> findLocatorFork(const CBlockLocator& locator) override
     {
         LockAnnotation lock(::cs_main);
-        if (CBlockIndex* fork = FindForkInGlobalIndex(::chainActive, locator)) {
+        const CBlockIndex* fork = FindForkInGlobalIndex(::chainActive, locator);
+        if (fork) {
             return fork->nHeight;
         }
         return nullopt;
