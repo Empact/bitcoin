@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(findearliestatleast_test)
         // Pick a random element in vBlocksMain.
         int r = InsecureRandRange(vBlocksMain.size());
         int64_t test_time = vBlocksMain[r].nTime;
-        CBlockIndex* ret = chain.FindEarliestAtLeast(test_time, 0);
+        const CBlockIndex* ret = chain.FindEarliestAtLeast(test_time, 0);
         BOOST_CHECK(ret->nTimeMax >= test_time);
         BOOST_CHECK((ret->pprev==nullptr) || ret->pprev->nTimeMax < test_time);
         BOOST_CHECK(vBlocksMain[r].GetAncestor(ret->nHeight) == ret);
@@ -181,10 +181,10 @@ BOOST_AUTO_TEST_CASE(findearliestatleast_edge_test)
     BOOST_CHECK_EQUAL(chain.FindEarliestAtLeast(0, 8)->nHeight, 8);
     BOOST_CHECK(!chain.FindEarliestAtLeast(0, 9));
 
-    CBlockIndex* ret1 = chain.FindEarliestAtLeast(100, 2);
+    const CBlockIndex* ret1 = chain.FindEarliestAtLeast(100, 2);
     BOOST_CHECK(ret1->nTimeMax >= 100 && ret1->nHeight == 2);
     BOOST_CHECK(!chain.FindEarliestAtLeast(300, 9));
-    CBlockIndex* ret2 = chain.FindEarliestAtLeast(200, 4);
+    const CBlockIndex* ret2 = chain.FindEarliestAtLeast(200, 4);
     BOOST_CHECK(ret2->nTimeMax >= 200 && ret2->nHeight == 4);
 }
 
