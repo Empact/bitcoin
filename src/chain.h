@@ -431,7 +431,14 @@ public:
     }
 
     /** Returns the index entry at a particular height in this chain, or nullptr if no such height exists. */
-    CBlockIndex *operator[](int nHeight) const {
+    const CBlockIndex* operator[](int nHeight) const {
+        if (nHeight < 0 || nHeight >= (int)vChain.size())
+            return nullptr;
+        return vChain[nHeight];
+    }
+
+    /** Returns the index entry at a particular height in this chain, or nullptr if no such height exists. */
+    CBlockIndex* operator[](int nHeight) {
         if (nHeight < 0 || nHeight >= (int)vChain.size())
             return nullptr;
         return vChain[nHeight];
