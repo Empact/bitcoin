@@ -502,7 +502,7 @@ public:
         if (m_subdescriptor_arg) {
             FlatSigningProvider subprovider;
             if (!m_subdescriptor_arg->ExpandHelper(pos, arg, read_cache, subscripts, subprovider, write_cache)) return false;
-            out = Merge(out, subprovider);
+            out.Merge(subprovider);
         }
 
         std::vector<CPubKey> pubkeys;
@@ -545,7 +545,7 @@ public:
         if (m_subdescriptor_arg) {
             FlatSigningProvider subprovider;
             m_subdescriptor_arg->ExpandPrivate(pos, provider, subprovider);
-            out = Merge(out, subprovider);
+            out.Merge(subprovider);
         }
     }
 
