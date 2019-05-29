@@ -86,8 +86,10 @@ bool PSBTInput::IsNull() const
     return !non_witness_utxo && witness_utxo.IsNull() && partial_sigs.empty() && unknown.empty() && hd_keypaths.empty() && redeem_script.empty() && witness_script.empty();
 }
 
-void PSBTInput::FillSignatureData(SignatureData& sigdata) const
+SignatureData PSBTInput::ToSignatureData() const
 {
+    SignatureData sigdata;
+
     if (!final_script_sig.empty()) {
         sigdata.scriptSig = final_script_sig;
         sigdata.complete = true;
@@ -97,7 +99,7 @@ void PSBTInput::FillSignatureData(SignatureData& sigdata) const
         sigdata.complete = true;
     }
     if (sigdata.complete) {
-        return;
+        return sigdata;
     }
 
     sigdata.signatures.insert(partial_sigs.begin(), partial_sigs.end());
@@ -110,6 +112,8 @@ void PSBTInput::FillSignatureData(SignatureData& sigdata) const
     for (const auto& key_pair : hd_keypaths) {
         sigdata.misc_pubkeys.emplace(key_pair.first.GetID(), key_pair);
     }
+
+    return sigdata;
 }
 
 void PSBTInput::FromSignatureData(const SignatureData& sigdata)
@@ -171,8 +175,10 @@ bool PSBTInput::IsSane() const
     return true;
 }
 
-void PSBTOutput::FillSignatureData(SignatureData& sigdata) const
+SignatureData PSBTOutput::ToSignatureData() const
 {
+    SignatureData sigdata;
+
     if (!redeem_script.empty()) {
         sigdata.redeem_script = redeem_script;
     }
@@ -182,6 +188,8 @@ void PSBTOutput::FillSignatureData(SignatureData& sigdata) const
     for (const auto& key_pair : hd_keypaths) {
         sigdata.misc_pubkeys.emplace(key_pair.first.GetID(), key_pair);
     }
+
+    return sigdata;
 }
 
 void PSBTOutput::FromSignatureData(const SignatureData& sigdata)
@@ -224,9 +232,7 @@ bool SignPSBTInput(const SigningProvider& provider, PartiallySignedTransaction& 
         return true;
     }
 
-    // Fill SignatureData with input info
-    SignatureData sigdata;
-    input.FillSignatureData(sigdata);
+    SignatureData sigdata{input.ToSignatureData()};
 
     // Get UTXO
     bool require_witness_sig = false;

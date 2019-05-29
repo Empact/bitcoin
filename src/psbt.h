@@ -54,7 +54,7 @@ struct PSBTInput
     int sighash_type = 0;
 
     bool IsNull() const;
-    void FillSignatureData(SignatureData& sigdata) const;
+    SignatureData ToSignatureData() const;
     void FromSignatureData(const SignatureData& sigdata);
     void Merge(const PSBTInput& input);
     bool IsSane() const;
@@ -273,7 +273,7 @@ struct PSBTOutput
     std::map<std::vector<unsigned char>, std::vector<unsigned char>> unknown;
 
     bool IsNull() const;
-    void FillSignatureData(SignatureData& sigdata) const;
+    SignatureData ToSignatureData() const;
     void FromSignatureData(const SignatureData& sigdata);
     void Merge(const PSBTOutput& output);
     bool IsSane() const;
