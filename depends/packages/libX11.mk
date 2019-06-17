@@ -6,8 +6,7 @@ $(package)_sha256_hash=2aa027e837231d2eeea90f3a4afe19948a6eb4c8b2bec0241eba7dbc8
 $(package)_dependencies=libxcb xtrans xextproto xproto
 
 define $(package)_set_vars
-  # See libXext for --disable-malloc0returnsnull rationale.
-  $(package)_config_opts=--disable-xkb --disable-static --disable-malloc0returnsnull
+  $(package)_config_opts=--disable-xkb --disable-static
   $(package)_config_opts_linux=--with-pic
 endef
 
