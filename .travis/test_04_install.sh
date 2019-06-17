@@ -29,6 +29,5 @@ DOCKER_EXEC () {
   docker exec $DOCKER_ID bash -c "cd $PWD && $*"
 }
 
-travis_retry DOCKER_EXEC apt-get update
-travis_retry DOCKER_EXEC apt-get install --no-install-recommends --no-upgrade -qq $PACKAGES $DOCKER_PACKAGES
-
+travis_retry DOCKER_EXEC apt-get -qq update
+travis_retry DOCKER_EXEC apt-get -qq install --no-install-recommends --no-upgrade $PACKAGES $DOCKER_PACKAGES

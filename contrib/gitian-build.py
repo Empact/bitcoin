@@ -13,7 +13,7 @@ def setup():
     elif args.docker and not os.path.isfile('/lib/systemd/system/docker.service'):
         dockers = ['docker.io', 'docker-ce']
         for i in dockers:
-            return_code = subprocess.call(['sudo', 'apt-get', 'install', '-qq', i])
+            return_code = subprocess.call(['sudo', 'apt-get', '-qq', 'install', i])
             if return_code == 0:
                 break
         if return_code != 0:
@@ -21,7 +21,7 @@ def setup():
             sys.exit(1)
     else:
         programs += ['apt-cacher-ng', 'lxc', 'debootstrap']
-    subprocess.check_call(['sudo', 'apt-get', 'install', '-qq'] + programs)
+    subprocess.check_call(['sudo', 'apt-get', '-qq', 'install'] + programs)
     if not os.path.isdir('gitian.sigs'):
         subprocess.check_call(['git', 'clone', 'https://github.com/bitcoin-core/gitian.sigs.git'])
     if not os.path.isdir('bitcoin-detached-sigs'):
