@@ -68,6 +68,8 @@ jobs:
       cache: false
       language: python
       python: '3.5' # Oldest supported version according to doc/dependencies.md
+      before_install:
+        - set -o errexit; source ./ci/test/00_setup_env.sh
       install:
         - set -o errexit; source ./ci/lint/04_install.sh
       before_script:
@@ -81,6 +83,8 @@ jobs:
       cache: false
       language: python
       python: '3.5'
+      before_install:
+        - set -o errexit; source ./ci/test/00_setup_env.sh
       install:
         - set -o errexit; source ./ci/extended_lint/04_install.sh
       before_script:
@@ -103,6 +107,8 @@ jobs:
         - 2.3.7
       env:
       cache: false
+      before_install:
+        - set -o errexit; source ./ci/test/00_setup_env.sh
       install:
         - set -o errexit; source ./ci/lint/04_install.sh
       before_script:
