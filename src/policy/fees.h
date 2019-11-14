@@ -61,6 +61,12 @@ struct EstimatorBucket
     double totalConfirmed = 0;
     double inMempool = 0;
     double leftMempool = 0;
+
+    double percentWithinTarget() const {
+        double processed = this->totalConfirmed + this->inMempool + this->leftMempool;
+
+        return (processed > 0 ? 100 * this->withinTarget / processed : 0);
+    }
 };
 
 /* Used to return detailed information about a fee estimate calculation */
