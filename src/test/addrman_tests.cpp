@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(addrman_simple)
 
     CService addr2 = ResolveService("250.1.1.2", 8333);
     BOOST_CHECK(addrman.Add(CAddress(addr2, NODE_NONE), source));
-    BOOST_CHECK(addrman.size() >= 1);
+    BOOST_CHECK_GE(addrman.size(), 1U);
 
     // Test: AddrMan::Clear() should empty the new table.
     addrman.Clear();
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(addrman_simple)
     vAddr.push_back(CAddress(ResolveService("250.1.1.3", 8333), NODE_NONE));
     vAddr.push_back(CAddress(ResolveService("250.1.1.4", 8333), NODE_NONE));
     BOOST_CHECK(addrman.Add(vAddr, source));
-    BOOST_CHECK(addrman.size() >= 1);
+    BOOST_CHECK_GE(addrman.size(), 1U);
 }
 
 BOOST_AUTO_TEST_CASE(addrman_ports)
