@@ -1525,7 +1525,7 @@ void static ProcessGetBlockData(CNode* pfrom, const CChainParams& chainparams, c
     }
 }
 
-void static ProcessGetData(CNode* pfrom, const CChainParams& chainparams, CConnman* connman, const CTxMemPool& mempool, const std::atomic<bool>& interruptMsgProc) LOCKS_EXCLUDED(cs_main)
+void PeerLogicValidation::ProcessGetData(CNode* pfrom, const std::atomic<bool>& interruptMsgProc) LOCKS_EXCLUDED(cs_main)
 {
     AssertLockNotHeld(cs_main);
 
@@ -1562,7 +1562,7 @@ void static ProcessGetData(CNode* pfrom, const CChainParams& chainparams, CConnm
                 connman->PushMessage(pfrom, msgMaker.Make(nSendFlags, NetMsgType::TX, *mi->second));
                 push = true;
             } else {
-                auto txinfo = mempool.info(inv.hash);
+                auto txinfo = m_mempool.info(inv.hash);
                 // To protect privacy, do not answer getdata using the mempool when
                 // that TX couldn't have been INVed in reply to a MEMPOOL request,
                 // or when it's too recent to have expired from mapRelay.
@@ -1584,7 +1584,7 @@ void static ProcessGetData(CNode* pfrom, const CChainParams& chainparams, CConnm
         const CInv &inv = *it;
         if (inv.type == MSG_BLOCK || inv.type == MSG_FILTERED_BLOCK || inv.type == MSG_CMPCT_BLOCK || inv.type == MSG_WITNESS_BLOCK) {
             it++;
-            ProcessGetBlockData(pfrom, chainparams, inv, connman);
+            ProcessGetBlockData(pfrom, m_chainparams, inv, connman);
         }
     }
 
@@ -2283,7 +2283,7 @@ bool PeerLogicValidation::ProcessMessage(CNode* pfrom, const std::string& strCom
         }
 
         pfrom->vRecvGetData.insert(pfrom->vRecvGetData.end(), vInv.begin(), vInv.end());
-        ProcessGetData(pfrom, m_chainparams, connman, m_mempool, interruptMsgProc);
+        ProcessGetData(pfrom, interruptMsgProc);
         return true;
     }
 
@@ -3259,7 +3259,7 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
     bool fMoreWork = false;
 
     if (!pfrom->vRecvGetData.empty())
-        ProcessGetData(pfrom, m_chainparams, connman, m_mempool, interruptMsgProc);
+        ProcessGetData(pfrom, interruptMsgProc);
 
     if (!pfrom->orphan_work_set.empty()) {
         std::list<CTransactionRef> removed_txn;
