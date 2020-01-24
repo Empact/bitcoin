@@ -80,6 +80,8 @@ public:
 private:
     bool ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, int64_t nTimeReceived, const std::atomic<bool>& interruptMsgProc);
 
+    bool AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
     int64_t m_stale_tip_check_time; //!< Next time to check for stale tip
 };
 

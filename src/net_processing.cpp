@@ -1288,7 +1288,7 @@ void PeerLogicValidation::BlockChecked(const CBlock& block, const BlockValidatio
 //
 
 
-bool static AlreadyHave(const CInv& inv, const CTxMemPool& mempool) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+bool PeerLogicValidation::AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
     switch (inv.type)
     {
@@ -1313,7 +1313,7 @@ bool static AlreadyHave(const CInv& inv, const CTxMemPool& mempool) EXCLUSIVE_LO
             const CCoinsViewCache& coins_cache = ::ChainstateActive().CoinsTip();
 
             return recentRejects->contains(inv.hash) ||
-                   mempool.exists(inv.hash) ||
+                   m_mempool.exists(inv.hash) ||
                    coins_cache.HaveCoinInCache(COutPoint(inv.hash, 0)) || // Best effort: only try output 0 and 1
                    coins_cache.HaveCoinInCache(COutPoint(inv.hash, 1));
         }
@@ -2232,7 +2232,7 @@ bool PeerLogicValidation::ProcessMessage(CNode* pfrom, const std::string& strCom
             if (interruptMsgProc)
                 return true;
 
-            bool fAlreadyHave = AlreadyHave(inv, m_mempool);
+            bool fAlreadyHave = AlreadyHave(inv);
             LogPrint(BCLog::NET, "got inv: %s  %s peer=%d\n", inv.ToString(), fAlreadyHave ? "have" : "new", pfrom->GetId());
 
             if (inv.type == MSG_TX) {
@@ -2500,7 +2500,7 @@ bool PeerLogicValidation::ProcessMessage(CNode* pfrom, const std::string& strCom
 
         std::list<CTransactionRef> lRemovedTxn;
 
-        if (!AlreadyHave(inv, m_mempool) &&
+        if (!AlreadyHave(inv) &&
             AcceptToMemoryPool(m_mempool, state, ptx, &lRemovedTxn, false /* bypass_limits */, 0 /* nAbsurdFee */)) {
             m_mempool.check(&::ChainstateActive().CoinsTip());
             RelayTransaction(tx.GetHash(), *connman);
@@ -2539,7 +2539,7 @@ bool PeerLogicValidation::ProcessMessage(CNode* pfrom, const std::string& strCom
                 for (const CTxIn& txin : tx.vin) {
                     CInv _inv(MSG_TX | nFetchFlags, txin.prevout.hash);
                     pfrom->AddInventoryKnown(_inv);
-                    if (!AlreadyHave(_inv, m_mempool)) RequestTx(State(pfrom->GetId()), _inv.hash, current_time);
+                    if (!AlreadyHave(_inv)) RequestTx(State(pfrom->GetId()), _inv.hash, current_time);
                 }
                 AddOrphanTx(ptx, pfrom->GetId());
 
@@ -4013,7 +4013,7 @@ bool PeerLogicValidation::SendMessages(CNode* pto)
             // processing at a later time, see below)
             tx_process_time.erase(tx_process_time.begin());
             CInv inv(MSG_TX | GetFetchFlags(pto), txid);
-            if (!AlreadyHave(inv, m_mempool)) {
+            if (!AlreadyHave(inv)) {
                 // If this transaction was last requested more than 1 minute ago,
                 // then request.
                 const auto last_request_time = GetTxRequestTime(inv.hash);
