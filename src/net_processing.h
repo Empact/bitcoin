@@ -14,6 +14,7 @@
 class CTxMemPool;
 class CChainParams;
 class CBlockHeader;
+struct QueuedBlock;
 
 extern RecursiveMutex cs_main;
 
@@ -84,6 +85,7 @@ private:
     void ProcessGetData(CNode* pfrom, const std::atomic<bool>& interruptMsgProc) LOCKS_EXCLUDED(cs_main);
     void ProcessOrphanTx(std::set<uint256>& orphan_work_set, std::list<CTransactionRef>& removed_txn);
     bool AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+    bool MarkBlockAsInFlight(NodeId nodeid, const uint256& hash, const CBlockIndex* pindex = nullptr, std::list<QueuedBlock>::iterator** pit = nullptr) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
     int64_t m_stale_tip_check_time; //!< Next time to check for stale tip
 };
