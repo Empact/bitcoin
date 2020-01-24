@@ -13,6 +13,7 @@
 
 class CTxMemPool;
 class CChainParams;
+class CBlockHeader;
 
 extern RecursiveMutex cs_main;
 
@@ -79,6 +80,7 @@ public:
 
 private:
     bool ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, int64_t nTimeReceived, const std::atomic<bool>& interruptMsgProc);
+    bool ProcessHeadersMessage(CNode* pfrom, const std::vector<CBlockHeader>& headers, bool via_compact_block);
     void ProcessGetData(CNode* pfrom, const std::atomic<bool>& interruptMsgProc) LOCKS_EXCLUDED(cs_main);
     void ProcessOrphanTx(std::set<uint256>& orphan_work_set, std::list<CTransactionRef>& removed_txn);
     bool AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
