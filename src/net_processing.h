@@ -12,6 +12,7 @@
 #include <validationinterface.h>
 
 class CTxMemPool;
+class CChainParams;
 
 extern RecursiveMutex cs_main;
 
@@ -23,6 +24,7 @@ static const bool DEFAULT_PEERBLOOMFILTERS = false;
 
 class PeerLogicValidation final : public CValidationInterface, public NetEventsInterface {
 private:
+    const CChainParams& m_chainparams;
     CConnman* const connman;
     BanMan* const m_banman;
     CTxMemPool& m_mempool;
@@ -76,6 +78,8 @@ public:
     void EvictExtraOutboundPeers(int64_t time_in_seconds) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 private:
+    bool ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, int64_t nTimeReceived, const std::atomic<bool>& interruptMsgProc);
+
     int64_t m_stale_tip_check_time; //!< Next time to check for stale tip
 };
 
