@@ -1105,8 +1105,8 @@ static bool BlockRequestAllowed(const CBlockIndex* pindex, const Consensus::Para
         (GetBlockProofEquivalentTime(*pindexBestHeader, *pindex, *pindexBestHeader, consensusParams) < STALE_RELAY_AGE_LIMIT);
 }
 
-PeerLogicValidation::PeerLogicValidation(CConnman* connmanIn, BanMan* banman, CScheduler& scheduler, CTxMemPool& pool)
-    : m_chainparams(Params()),
+PeerLogicValidation::PeerLogicValidation(const CChainParams& chainparams, CConnman* connmanIn, BanMan* banman, CScheduler& scheduler, CTxMemPool& pool)
+    : m_chainparams(chainparams),
       connman(connmanIn),
       m_banman(banman),
       m_mempool(pool),

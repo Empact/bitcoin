@@ -1321,7 +1321,7 @@ bool AppInitMain(NodeContext& node)
     assert(!node.mempool);
     node.mempool = &::mempool;
 
-    node.peer_logic.reset(new PeerLogicValidation(node.connman.get(), node.banman.get(), scheduler, *node.mempool));
+    node.peer_logic.reset(new PeerLogicValidation(chainparams, node.connman.get(), node.banman.get(), scheduler, *node.mempool));
     RegisterValidationInterface(node.peer_logic.get());
 
     // sanitize comments per BIP-0014, format user agent and check total size

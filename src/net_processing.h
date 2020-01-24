@@ -32,7 +32,7 @@ private:
     bool CheckIfBanned(CNode* pnode) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 public:
-    PeerLogicValidation(CConnman* connman, BanMan* banman, CScheduler& scheduler, CTxMemPool& pool);
+    PeerLogicValidation(const CChainParams& chainparams, CConnman* connman, BanMan* banman, CScheduler& scheduler, CTxMemPool& pool);
 
     /**
      * Overridden from CValidationInterface.
