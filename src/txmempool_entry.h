@@ -74,14 +74,10 @@ public:
         : tx(_tx), nFee(_nFee), nTxWeight(GetTransactionWeight(*tx)), nUsageSize(RecursiveDynamicUsage(tx)),
           nTime(_nTime), entryHeight(_entryHeight),
           spendsCoinbase(_spendsCoinbase), sigOpCost(_sigOpsCost), lockPoints(lp),
+          m_tx_size(GetVirtualTransactionSize(nTxWeight, _sigOpsCost)),
+          nSizeWithDescendants(m_tx_size), nModFeesWithDescendants(_nFee),
+          nSizeWithAncestors(m_tx_size), nModFeesWithAncestors(_nFee), nSigOpCostWithAncestors(_sigOpsCost)
     {
-        m_tx_size = GetVirtualTransactionSize(nTxWeight, _sigOpsCost);
-        nSizeWithDescendants = m_tx_size;
-        nModFeesWithDescendants = nFee;
-
-        nSizeWithAncestors = m_tx_size;
-        nModFeesWithAncestors = nFee;
-        nSigOpCostWithAncestors = sigOpCost;
     }
 
     const CTransaction& GetTx() const { return *this->tx; }
