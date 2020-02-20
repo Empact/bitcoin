@@ -52,6 +52,7 @@ private:
     const int64_t sigOpCost;        //!< Total sigop cost
     int64_t feeDelta{0};            //!< Used for determining the priority of the transaction for mining in a block
     LockPoints lockPoints;          //!< Track the height and time at which tx was final
+    const int64_t m_tx_size;        //!< Virtual transaction size
 
     // Information about descendants of this transaction that are in the
     // mempool; if we remove this transaction we must remove all of these
@@ -74,10 +75,11 @@ public:
           nTime(_nTime), entryHeight(_entryHeight),
           spendsCoinbase(_spendsCoinbase), sigOpCost(_sigOpsCost), lockPoints(lp),
     {
-        nSizeWithDescendants = GetTxSize();
+        m_tx_size = GetVirtualTransactionSize(nTxWeight, _sigOpsCost);
+        nSizeWithDescendants = m_tx_size;
         nModFeesWithDescendants = nFee;
 
-        nSizeWithAncestors = GetTxSize();
+        nSizeWithAncestors = m_tx_size;
         nModFeesWithAncestors = nFee;
         nSigOpCostWithAncestors = sigOpCost;
     }
@@ -85,10 +87,7 @@ public:
     const CTransaction& GetTx() const { return *this->tx; }
     CTransactionRef GetSharedTx() const { return this->tx; }
     const CAmount& GetFee() const { return nFee; }
-    size_t GetTxSize() const
-    {
-        return GetVirtualTransactionSize(nTxWeight, sigOpCost);
-    }
+    size_t GetTxSize() const { return m_tx_size; }
     size_t GetTxWeight() const { return nTxWeight; }
     std::chrono::seconds GetTime() const { return std::chrono::seconds{nTime}; }
     unsigned int GetHeight() const { return entryHeight; }
