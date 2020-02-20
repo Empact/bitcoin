@@ -50,18 +50,18 @@ private:
     const unsigned int entryHeight; //!< Chain height when entering the mempool
     const bool spendsCoinbase;      //!< keep track of transactions that spend a coinbase
     const int64_t sigOpCost;        //!< Total sigop cost
-    int64_t feeDelta;               //!< Used for determining the priority of the transaction for mining in a block
+    int64_t feeDelta{0};            //!< Used for determining the priority of the transaction for mining in a block
     LockPoints lockPoints;          //!< Track the height and time at which tx was final
 
     // Information about descendants of this transaction that are in the
     // mempool; if we remove this transaction we must remove all of these
     // descendants as well.
-    uint64_t nCountWithDescendants;  //!< number of descendant transactions
-    uint64_t nSizeWithDescendants;   //!< ... and size
-    CAmount nModFeesWithDescendants; //!< ... and total fees (all including us)
+    uint64_t nCountWithDescendants{1}; //!< number of descendant transactions
+    uint64_t nSizeWithDescendants;     //!< ... and size
+    CAmount nModFeesWithDescendants;   //!< ... and total fees (all including us)
 
     // Analogous statistics for ancestor transactions
-    uint64_t nCountWithAncestors;
+    uint64_t nCountWithAncestors{1};
     uint64_t nSizeWithAncestors;
     CAmount nModFeesWithAncestors;
     int64_t nSigOpCostWithAncestors;
@@ -72,15 +72,11 @@ public:
                     bool _spendsCoinbase, int64_t _sigOpsCost, LockPoints lp)
         : tx(_tx), nFee(_nFee), nTxWeight(GetTransactionWeight(*tx)), nUsageSize(RecursiveDynamicUsage(tx)),
           nTime(_nTime), entryHeight(_entryHeight),
-          spendsCoinbase(_spendsCoinbase), sigOpCost(_sigOpsCost), lockPoints(lp), m_epoch(0)
+          spendsCoinbase(_spendsCoinbase), sigOpCost(_sigOpsCost), lockPoints(lp),
     {
-        nCountWithDescendants = 1;
         nSizeWithDescendants = GetTxSize();
         nModFeesWithDescendants = nFee;
 
-        feeDelta = 0;
-
-        nCountWithAncestors = 1;
         nSizeWithAncestors = GetTxSize();
         nModFeesWithAncestors = nFee;
         nSigOpCostWithAncestors = sigOpCost;
@@ -150,7 +146,7 @@ public:
     int64_t GetSigOpCostWithAncestors() const { return nSigOpCostWithAncestors; }
 
     mutable size_t vTxHashesIdx; //!< Index in mempool's vTxHashes
-    mutable uint64_t m_epoch; //!< epoch when last touched, useful for graph algorithms
+    mutable uint64_t m_epoch{0}; //!< epoch when last touched, useful for graph algorithms
 };
 
 #endif // BITCOIN_TXMEMPOOL_ENTRY_H
