@@ -180,6 +180,12 @@ AC_ARG_ENABLE([ccache],
   [use_ccache=$enableval],
   [use_ccache=auto])
 
+AC_ARG_ENABLE([isystem],
+  [AS_HELP_STRING([--enable-isystem],
+  [enable isystem includes for dependencies and stricter warning checks (default is no)])],
+  [use_isystem=$enableval],
+  [use_isystem=no])
+
 AC_ARG_ENABLE([lcov],
   [AS_HELP_STRING([--enable-lcov],
   [enable lcov testing (default is no)])],
@@ -1269,6 +1275,9 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 LIBS="$TEMP_LIBS"
 CPPFLAGS="$TEMP_CPPFLAGS"
 
+dnl Treat boost includes with isystem if applicable
+BITCOIN_SYSTEM_INCLUDE([BOOST_CPPFLAGS], [$BOOST_CPPFLAGS])
+
 if test x$boost_sleep != xyes; then
 TEMP_LIBS="$LIBS"
 LIBS="$BOOST_LIBS $LIBS"
@@ -1718,6 +1727,7 @@ fi
 echo "  with bench    = $use_bench"
 echo "  with upnp     = $use_upnp"
 echo "  use asm       = $use_asm"
+echo "  isystem       = $use_isystem"
 echo "  sanitizers    = $use_sanitizers"
 echo "  debug enabled = $enable_debug"
 echo "  gprof enabled = $enable_gprof"
