@@ -667,6 +667,7 @@ dnl The following macro will add the necessary defines to bitcoin-config.h, but
 dnl they also need to be passed down to any subprojects. Pull the results out of
 dnl the cache and add them to CPPFLAGS.
 AC_SYS_LARGEFILE
+AC_CHECK_FUNCS([gmtime_r])
 dnl detect POSIX or GNU variant of strerror_r
 AC_FUNC_STRERROR_R
 
@@ -1595,6 +1596,7 @@ AC_SUBST(EVENT_LIBS)
 AC_SUBST(EVENT_PTHREADS_LIBS)
 AC_SUBST(ZMQ_LIBS)
 AC_SUBST(QR_LIBS)
+AC_SUBST(HAVE_GMTIME_R)
 AC_SUBST(HAVE_FDATASYNC)
 AC_SUBST(HAVE_FULLFSYNC)
 AC_SUBST(HAVE_O_CLOEXEC)
