@@ -69,7 +69,7 @@ public:
     std::string getNetwork() override { return Params().NetworkIDString(); }
     void initLogging() override { InitLogging(); }
     void initParameterInteraction() override { InitParameterInteraction(); }
-    std::string getWarnings() override { return GetWarnings(true); }
+    std::string getWarnings(const std::string separator) override { return GetWarnings(/* verbose */ true, separator); }
     uint32_t getLogCategories() override { return LogInstance().GetCategoryMask(); }
     bool baseInitialize() override
     {

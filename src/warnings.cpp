@@ -38,11 +38,10 @@ void SetfLargeWorkInvalidChainFound(bool flag)
     fLargeWorkInvalidChainFound = flag;
 }
 
-std::string GetWarnings(bool verbose)
+std::string GetWarnings(bool verbose, const std::string warning_separator)
 {
     std::string warnings_concise;
     std::string warnings_verbose;
-    const std::string warning_separator = "<hr />";
 
     LOCK(cs_warnings);
 

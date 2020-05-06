@@ -14,10 +14,11 @@ bool GetfLargeWorkForkFound();
 void SetfLargeWorkInvalidChainFound(bool flag);
 /** Format a string that describes several potential problems detected by the core.
  * @param[in] verbose bool
- * - if true, get all warnings, translated (where possible), separated by <hr />
+ * - if true, get all warnings, translated (where possible), separated by warning_separator
  * - if false, get the most important warning
+ * @param[in] warning_separator the string by which to separate multiple verbose warnings
  * @returns the warning string
  */
-std::string GetWarnings(bool verbose);
+std::string GetWarnings(bool verbose, const std::string warning_separator = "\n\n");
 
 #endif //  BITCOIN_WARNINGS_H
