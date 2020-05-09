@@ -3684,17 +3684,7 @@ bool CWallet::Verify(interfaces::Chain& chain, const WalletLocation& location, b
 
     // Keep same database environment instance across Verify/Recover calls below.
     std::unique_ptr<WalletDatabase> database = WalletDatabase::Create(wallet_path);
-
-    try {
-        if (!WalletBatch::VerifyEnvironment(wallet_path, error_string)) {
-            return false;
-        }
-    } catch (const fs::filesystem_error& e) {
-        error_string = Untranslated(strprintf("Error loading wallet %s. %s", location.GetName(), fsbridge::get_filesystem_error_message(e)));
-        return false;
-    }
-
-    return WalletBatch::VerifyDatabaseFile(wallet_path, warnings, error_string);
+    return database->Verify(warnings, error_string);
 }
 
 std::shared_ptr<CWallet> CWallet::CreateWalletFromFile(interfaces::Chain& chain, const WalletLocation& location, bilingual_str& error, std::vector<bilingual_str>& warnings, uint64_t wallet_creation_flags)

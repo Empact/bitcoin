@@ -248,10 +248,14 @@ bool ExecuteWalletToolFunc(const std::string& command, const std::string& name)
             return false;
         }
         bilingual_str error;
-        if (!WalletBatch::VerifyEnvironment(path, error)) {
+        std::vector<bilingual_str> warnings;
+        std::unique_ptr<WalletDatabase> database = WalletDatabase::Create(path);
+        if (!database->Verify(warnings, error)) {
             tfm::format(std::cerr, "%s\nError loading %s. Is wallet being used by other process?\n", error.original, name);
             return false;
         }
+        database.reset();
+        database = nullptr;
 
         if (command == "info") {
             std::shared_ptr<CWallet> wallet_instance = LoadWallet(name, path);
