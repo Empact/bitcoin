@@ -879,7 +879,7 @@ void MaybeCompactWalletDB()
         }
 
         if (dbh.nLastFlushed != nUpdateCounter && GetTime() - dbh.nLastWalletUpdate >= 2) {
-            if (BerkeleyBatch::PeriodicFlush(dbh)) {
+            if (dbh.PeriodicFlush()) {
                 dbh.nLastFlushed = nUpdateCounter;
             }
         }
