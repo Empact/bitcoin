@@ -722,3 +722,67 @@ void BerkeleyDatabase::Acquire()
 {
     m_refcount++;
 }
+
+bool BerkeleyDatabase::DBRead(CDataStream& key, CDataStream& value) const
+{
+    if (!m_db)
+        return false;
+
+    // Key
+    SafeDbt datKey(key.data(), key.size());
+
+    // Read
+    SafeDbt datValue;
+    int ret = m_db->get(m_active_txn, datKey, datValue, 0);
+    if (ret == 0 && datValue.get_data() != nullptr) {
+        value.write((char*)datValue.get_data(), datValue.get_size());
+        return true;
+    }
+    return false;
+}
+
+bool BerkeleyDatabase::DBWrite(CDataStream& key, CDataStream& value, bool overwrite) const
+{
+    if (!m_db)
+        return true;
+    if (m_read_only)
+        assert(!"Write called on database in read-only mode");
+
+    // Key
+    SafeDbt datKey(key.data(), key.size());
+
+    // Value
+    SafeDbt datValue(value.data(), value.size());
+
+    // Write
+    int ret = m_db->put(m_active_txn, datKey, datValue, (overwrite ? 0 : DB_NOOVERWRITE));
+    return (ret == 0);
+}
+
+bool BerkeleyDatabase::DBErase(CDataStream& key) const
+{
+    if (!m_db)
+        return false;
+    if (m_read_only)
+        assert(!"Erase called on database in read-only mode");
+
+    // Key
+    SafeDbt datKey(key.data(), key.size());
+
+    // Erase
+    int ret = m_db->del(m_active_txn, datKey, 0);
+    return (ret == 0 || ret == DB_NOTFOUND);
+}
+
+bool BerkeleyDatabase::DBExists(CDataStream& key) const
+{
+    if (!m_db)
+        return false;
+
+    // Key
+    SafeDbt datKey(key.data(), key.size());
+
+    // Exists
+    int ret = m_db->exists(m_active_txn, datKey, 0);
+    return ret == 0;
+}
