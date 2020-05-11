@@ -446,14 +446,7 @@ void BerkeleyBatch::Flush()
     if (activeTxn)
         return;
 
-    // Flush database activity from memory pool to disk log
-    unsigned int nMinutes = 0;
-    if (fReadOnly)
-        nMinutes = 1;
-
-    if (env) { // env is nullptr for dummy databases (i.e. in tests). Don't actually flush if env is nullptr so we don't segfault
-        env->dbenv->txn_checkpoint(nMinutes ? gArgs.GetArg("-dblogsize", DEFAULT_WALLET_DBLOGSIZE) * 1024 : 0, nMinutes, 0);
-    }
+    m_database.Flush();
 }
 
 void BerkeleyDatabase::IncrementUpdateCounter()
@@ -723,6 +716,18 @@ void BerkeleyDatabase::Close()
         // pointers, or else separate the database and environment shutdowns so
         // environments can be shut down after databases.
         g_fileids.erase(m_file_path);
+    }
+}
+
+void BerkeleyDatabase::Flush()
+{
+    if (!IsDummy()) {
+        // Flush database activity from memory pool to disk log
+        unsigned int nMinutes = 0;
+        if (m_read_only)
+            nMinutes = 1;
+
+        env->dbenv->txn_checkpoint(nMinutes ? gArgs.GetArg("-dblogsize", DEFAULT_WALLET_DBLOGSIZE) * 1024 : 0, nMinutes, 0);
     }
 }
 

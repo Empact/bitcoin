@@ -167,6 +167,8 @@ public:
     /** Close the database and make sure all changes are flushed to disk.
      */
     void Close();
+    /** Just flush the changes to disk, but not necessarily clean up environment stuff like log files */
+    void Flush();
     /* flush the wallet passively (TRY_LOCK)
        ideal to be called periodically */
     bool PeriodicFlush();
