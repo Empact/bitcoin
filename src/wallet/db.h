@@ -154,25 +154,6 @@ public:
 
     ~BerkeleyDatabase();
 
-    /** Return object for accessing database at specified path. */
-    static std::unique_ptr<BerkeleyDatabase> Create(const fs::path& path)
-    {
-        std::string filename;
-        return MakeUnique<BerkeleyDatabase>(GetWalletEnv(path, filename), std::move(filename));
-    }
-
-    /** Return object for accessing dummy database with no read/write capabilities. */
-    static std::unique_ptr<BerkeleyDatabase> CreateDummy()
-    {
-        return MakeUnique<BerkeleyDatabase>();
-    }
-
-    /** Return object for accessing temporary in-memory database. */
-    static std::unique_ptr<BerkeleyDatabase> CreateMock()
-    {
-        return MakeUnique<BerkeleyDatabase>(std::make_shared<BerkeleyEnvironment>(), "");
-    }
-
     /** Open the database if it is not already opened. */
     void Open(const char* mode);
 
@@ -373,5 +354,14 @@ private:
 };
 
 std::string BerkeleyDatabaseVersion();
+
+/** Return object for accessing database at specified path. */
+std::unique_ptr<BerkeleyDatabase> CreateWalletDatabase(const fs::path& path);
+
+/** Return object for accessing dummy database with no read/write capabilities. */
+std::unique_ptr<BerkeleyDatabase> CreateDummyWalletDatabase();
+
+/** Return object for accessing temporary in-memory database. */
+std::unique_ptr<BerkeleyDatabase> CreateMockWalletDatabase();
 
 #endif // BITCOIN_WALLET_DB_H

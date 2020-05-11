@@ -786,3 +786,22 @@ bool BerkeleyDatabase::DBExists(CDataStream& key) const
     int ret = m_db->exists(m_active_txn, datKey, 0);
     return ret == 0;
 }
+
+/** Return object for accessing database at specified path. */
+std::unique_ptr<BerkeleyDatabase> CreateWalletDatabase(const fs::path& path)
+{
+    std::string filename;
+    return MakeUnique<BerkeleyDatabase>(GetWalletEnv(path, filename), std::move(filename));
+}
+
+/** Return object for accessing dummy database with no read/write capabilities. */
+std::unique_ptr<BerkeleyDatabase> CreateDummyWalletDatabase()
+{
+    return MakeUnique<BerkeleyDatabase>();
+}
+
+/** Return object for accessing temporary in-memory database. */
+std::unique_ptr<BerkeleyDatabase> CreateMockWalletDatabase()
+{
+    return MakeUnique<BerkeleyDatabase>(std::make_shared<BerkeleyEnvironment>(), "");
+}
