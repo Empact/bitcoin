@@ -156,8 +156,8 @@ bool WalletBatch::WriteBestBlock(const CBlockLocator& locator)
 
 bool WalletBatch::ReadBestBlock(CBlockLocator& locator)
 {
-    if (m_batch.Read(DBKeys::BESTBLOCK, locator) && !locator.vHave.empty()) return true;
-    return m_batch.Read(DBKeys::BESTBLOCK_NOMERKLE, locator);
+    if (m_database.Read(DBKeys::BESTBLOCK, locator) && !locator.vHave.empty()) return true;
+    return m_database.Read(DBKeys::BESTBLOCK_NOMERKLE, locator);
 }
 
 bool WalletBatch::WriteOrderPosNext(int64_t nOrderPosNext)
@@ -167,7 +167,7 @@ bool WalletBatch::WriteOrderPosNext(int64_t nOrderPosNext)
 
 bool WalletBatch::ReadPool(int64_t nPool, CKeyPool& keypool)
 {
-    return m_batch.Read(std::make_pair(DBKeys::POOL, nPool), keypool);
+    return m_database.Read(std::make_pair(DBKeys::POOL, nPool), keypool);
 }
 
 bool WalletBatch::WritePool(int64_t nPool, const CKeyPool& keypool)
@@ -613,14 +613,14 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
     LOCK(pwallet->cs_wallet);
     try {
         int nMinVersion = 0;
-        if (m_batch.Read(DBKeys::MINVERSION, nMinVersion)) {
+        if (m_database.Read(DBKeys::MINVERSION, nMinVersion)) {
             if (nMinVersion > FEATURE_LATEST)
                 return DBErrors::TOO_NEW;
             pwallet->LoadMinVersion(nMinVersion);
         }
 
         // Get cursor
-        if (!m_batch.CreateCursor())
+        if (!m_database.CreateCursor())
         {
             pwallet->WalletLogPrintf("Error getting wallet database cursor\n");
             return DBErrors::CORRUPT;
@@ -632,7 +632,7 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
             CDataStream ssKey(SER_DISK, CLIENT_VERSION);
             CDataStream ssValue(SER_DISK, CLIENT_VERSION);
             bool complete;
-            bool ret = m_batch.ReadAtCursor(ssKey, ssValue, complete);
+            bool ret = m_database.ReadAtCursor(ssKey, ssValue, complete);
             if (complete)
                 break;
             else if (!ret)
@@ -708,7 +708,7 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
 
     // Last client version to open this wallet, was previously the file version number
     int last_client = CLIENT_VERSION;
-    m_batch.Read(DBKeys::VERSION, last_client);
+    m_database.Read(DBKeys::VERSION, last_client);
 
     int wallet_version = pwallet->GetVersion();
     pwallet->WalletLogPrintf("Wallet File Version = %d\n", wallet_version > 0 ? wallet_version : last_client);
@@ -733,7 +733,7 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
         return DBErrors::NEED_REWRITE;
 
     if (last_client < CLIENT_VERSION) // Update
-        m_batch.Write(DBKeys::VERSION, CLIENT_VERSION);
+        m_database.Write(DBKeys::VERSION, CLIENT_VERSION);
 
     if (wss.fAnyUnordered)
         result = pwallet->ReorderTransactions();
@@ -755,13 +755,13 @@ DBErrors WalletBatch::FindWalletTx(std::vector<uint256>& vTxHash, std::list<CWal
 
     try {
         int nMinVersion = 0;
-        if (m_batch.Read(DBKeys::MINVERSION, nMinVersion)) {
+        if (m_database.Read(DBKeys::MINVERSION, nMinVersion)) {
             if (nMinVersion > FEATURE_LATEST)
                 return DBErrors::TOO_NEW;
         }
 
         // Get cursor
-        if (!m_batch.CreateCursor())
+        if (!m_database.CreateCursor())
         {
             LogPrintf("Error getting wallet database cursor\n");
             return DBErrors::CORRUPT;
@@ -773,7 +773,7 @@ DBErrors WalletBatch::FindWalletTx(std::vector<uint256>& vTxHash, std::list<CWal
             CDataStream ssKey(SER_DISK, CLIENT_VERSION);
             CDataStream ssValue(SER_DISK, CLIENT_VERSION);
             bool complete;
-            bool ret = m_batch.ReadAtCursor(ssKey, ssValue, complete);
+            bool ret = m_database.ReadAtCursor(ssKey, ssValue, complete);
             if (complete)
                 break;
             else if (!ret)
@@ -800,7 +800,7 @@ DBErrors WalletBatch::FindWalletTx(std::vector<uint256>& vTxHash, std::list<CWal
         result = DBErrors::CORRUPT;
     }
 
-    m_batch.CloseCursor();
+    m_database.CloseCursor();
 
     return result;
 }
@@ -913,15 +913,15 @@ bool WalletBatch::WriteWalletFlags(const uint64_t flags)
 
 bool WalletBatch::TxnBegin()
 {
-    return m_batch.TxnBegin();
+    return m_database.TxnBegin();
 }
 
 bool WalletBatch::TxnCommit()
 {
-    return m_batch.TxnCommit();
+    return m_database.TxnCommit();
 }
 
 bool WalletBatch::TxnAbort()
 {
-    return m_batch.TxnAbort();
+    return m_database.TxnAbort();
 }

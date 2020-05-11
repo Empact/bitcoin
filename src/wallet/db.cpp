@@ -95,10 +95,6 @@ std::shared_ptr<BerkeleyEnvironment> GetWalletEnv(const fs::path& wallet_path, s
     return inserted.first->second.lock();
 }
 
-//
-// BerkeleyBatch
-//
-
 void BerkeleyEnvironment::Close()
 {
     if (!fDbEnvInit)
@@ -337,24 +333,6 @@ void BerkeleyEnvironment::CheckpointLSN(const std::string& strFile)
     dbenv->lsn_reset(strFile.c_str(), 0);
 }
 
-
-BerkeleyBatch::BerkeleyBatch(BerkeleyDatabase& database, const char* pszMode, bool fFlushOnCloseIn) : pdb(nullptr), activeTxn(nullptr), m_database(database)
-{
-    database.Open(pszMode);
-    database.Acquire();
-    fReadOnly = (!strchr(pszMode, '+') && !strchr(pszMode, 'w'));
-    fFlushOnClose = fFlushOnCloseIn;
-    env = database.env.get();
-    pdb = database.m_db.get();
-    strFile = database.strFile;
-    if (strchr(pszMode, 'c') != nullptr && !Exists(std::string("version"))) {
-        bool fTmp = fReadOnly;
-        fReadOnly = false;
-        Write(std::string("version"), CLIENT_VERSION);
-        fReadOnly = fTmp;
-    }
-}
-
 BerkeleyDatabase::~BerkeleyDatabase()
 {
     Close();
@@ -437,36 +415,19 @@ void BerkeleyDatabase::Open(const char* pszMode)
 
             m_db.reset(pdb_temp.release());
 
+            if (fCreate && !Exists(std::string("version"))) {
+                bool fTmp = m_read_only;
+                m_read_only = false;
+                Write(std::string("version"), CLIENT_VERSION);
+                m_read_only = fTmp;
+            }
         }
     }
-}
-
-void BerkeleyBatch::Flush()
-{
-    if (activeTxn)
-        return;
-
-    m_database.Flush();
 }
 
 void BerkeleyDatabase::IncrementUpdateCounter()
 {
     ++nUpdateCounter;
-}
-
-void BerkeleyBatch::Close()
-{
-    if (!pdb)
-        return;
-    if (activeTxn)
-        activeTxn->abort();
-    activeTxn = nullptr;
-    pdb = nullptr;
-
-    if (fFlushOnClose)
-        Flush();
-
-    m_database.Release();
 }
 
 void BerkeleyEnvironment::CloseDb(const std::string& strFile)
@@ -752,7 +713,9 @@ void BerkeleyDatabase::Release()
     }
 
     m_refcount--;
-    env->m_db_in_use.notify_all();
+    if (!IsDummy()) {
+        env->m_db_in_use.notify_all();
+    }
 }
 
 void BerkeleyDatabase::Acquire()

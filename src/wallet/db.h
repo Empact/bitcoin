@@ -107,8 +107,7 @@ std::shared_ptr<BerkeleyEnvironment> GetWalletEnv(const fs::path& wallet_path, s
  **/
 class BerkeleyDatabase
 {
-    friend class BerkeleyBatch;
-
+private:
     /** RAII class that automatically cleanses its data on destruction */
     class SafeDbt final
     {
@@ -392,85 +391,6 @@ private:
      * about this.
      */
     bool IsDummy() const { return env == nullptr; }
-};
-
-/** RAII class that provides access to a Berkeley database */
-class BerkeleyBatch
-{
-
-protected:
-    Db* pdb;
-    std::string strFile;
-    DbTxn* activeTxn;
-    bool fReadOnly;
-    bool fFlushOnClose;
-    BerkeleyEnvironment *env;
-    BerkeleyDatabase& m_database;
-
-public:
-    explicit BerkeleyBatch(BerkeleyDatabase& database, const char* pszMode = "r+", bool fFlushOnCloseIn=true);
-    ~BerkeleyBatch() { Close(); }
-
-    BerkeleyBatch(const BerkeleyBatch&) = delete;
-    BerkeleyBatch& operator=(const BerkeleyBatch&) = delete;
-
-    void Flush();
-    void Close();
-
-    template <typename K, typename T>
-    bool Read(const K& key, T& value)
-    {
-        return m_database.Read(key, value);
-    }
-
-    template <typename K, typename T>
-    bool Write(const K& key, const T& value, bool fOverwrite = true)
-    {
-        return m_database.Write(key, value, fOverwrite);
-    }
-
-    template <typename K>
-    bool Erase(const K& key)
-    {
-        return m_database.Erase(key);
-    }
-
-    template <typename K>
-    bool Exists(const K& key)
-    {
-        return m_database.Exists(key);
-    }
-
-    bool CreateCursor()
-    {
-        return m_database.CreateCursor();
-    }
-
-    bool ReadAtCursor(CDataStream& ssKey, CDataStream& ssValue, bool& complete)
-    {
-        return m_database.ReadAtCursor(ssKey, ssValue, complete);
-    }
-
-    void CloseCursor()
-    {
-        return m_database.CloseCursor();
-    }
-
-    bool TxnBegin()
-    {
-        return m_database.TxnBegin();
-    }
-
-    bool TxnCommit()
-    {
-        return m_database.TxnCommit();
-    }
-
-    bool TxnAbort()
-    {
-        return m_database.TxnAbort();
-    }
-
 };
 
 std::string BerkeleyDatabaseVersion();

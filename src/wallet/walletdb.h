@@ -184,12 +184,12 @@ private:
     template <typename K, typename T>
     bool WriteIC(const K& key, const T& value, bool fOverwrite = true)
     {
-        if (!m_batch.Write(key, value, fOverwrite)) {
+        if (!m_database.Write(key, value, fOverwrite)) {
             return false;
         }
         m_database.IncrementUpdateCounter();
         if (m_database.nUpdateCounter % 1000 == 0) {
-            m_batch.Flush();
+            m_database.Flush();
         }
         return true;
     }
@@ -197,22 +197,34 @@ private:
     template <typename K>
     bool EraseIC(const K& key)
     {
-        if (!m_batch.Erase(key)) {
+        if (!m_database.Erase(key)) {
             return false;
         }
         m_database.IncrementUpdateCounter();
         if (m_database.nUpdateCounter % 1000 == 0) {
-            m_batch.Flush();
+            m_database.Flush();
         }
         return true;
     }
 
+    bool m_flush_on_close;
 public:
     explicit WalletBatch(WalletDatabase& database, const char* pszMode = "r+", bool _fFlushOnClose = true) :
-        m_batch(database, pszMode, _fFlushOnClose),
+        m_flush_on_close(_fFlushOnClose),
         m_database(database)
     {
+        database.Open(pszMode);
+        database.Acquire();
     }
+
+    ~WalletBatch()
+    {
+        if (m_flush_on_close) {
+            m_database.Flush();
+        }
+        m_database.Release();
+    }
+
     WalletBatch(const WalletBatch&) = delete;
     WalletBatch& operator=(const WalletBatch&) = delete;
 
@@ -282,7 +294,6 @@ public:
     //! Abort current transaction
     bool TxnAbort();
 private:
-    BerkeleyBatch m_batch;
     WalletDatabase& m_database;
 };
 
