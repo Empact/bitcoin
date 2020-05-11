@@ -511,17 +511,15 @@ void BerkeleyEnvironment::ReloadDbEnv()
     Open(true);
 }
 
-bool BerkeleyBatch::Rewrite(BerkeleyDatabase& database, const char* pszSkip)
+bool BerkeleyDatabase::Rewrite(const char* pszSkip)
 {
-    if (database.IsDummy()) {
+    if (IsDummy()) {
         return true;
     }
-    BerkeleyEnvironment *env = database.env.get();
-    const std::string& strFile = database.strFile;
     while (true) {
         {
             LOCK(cs_db);
-            if (database.m_refcount == 0) {
+            if (m_refcount == 0) {
                 // Flush log data to the dat file
                 env->CloseDb(strFile);
                 env->CheckpointLSN(strFile);
@@ -530,7 +528,8 @@ bool BerkeleyBatch::Rewrite(BerkeleyDatabase& database, const char* pszSkip)
                 LogPrintf("BerkeleyBatch::Rewrite: Rewriting %s...\n", strFile);
                 std::string strFileRes = strFile + ".rewrite";
                 { // surround usage of db with extra {}
-                    BerkeleyBatch db(database, "r");
+                    Open("r");
+                    Acquire();
                     std::unique_ptr<Db> pdbCopy = MakeUnique<Db>(env->dbenv.get(), 0);
 
                     int ret = pdbCopy->open(nullptr,               // Txn pointer
@@ -544,17 +543,17 @@ bool BerkeleyBatch::Rewrite(BerkeleyDatabase& database, const char* pszSkip)
                         fSuccess = false;
                     }
 
-                    if (db.CreateCursor())
+                    if (CreateCursor())
                         while (fSuccess) {
                             CDataStream ssKey(SER_DISK, CLIENT_VERSION);
                             CDataStream ssValue(SER_DISK, CLIENT_VERSION);
                             bool complete;
-                            bool ret1 = db.ReadAtCursor(ssKey, ssValue, complete);
+                            bool ret1 = ReadAtCursor(ssKey, ssValue, complete);
                             if (complete) {
-                                db.CloseCursor();
+                                CloseCursor();
                                 break;
                             } else if (!ret1) {
-                                db.CloseCursor();
+                                CloseCursor();
                                 fSuccess = false;
                                 break;
                             }
@@ -573,8 +572,8 @@ bool BerkeleyBatch::Rewrite(BerkeleyDatabase& database, const char* pszSkip)
                                 fSuccess = false;
                         }
                     if (fSuccess) {
-                        db.Close();
-                        env->CloseDb(strFile);
+                        Release();
+                        Close();
                         if (pdbCopy->close(0))
                             fSuccess = false;
                     } else {
@@ -659,11 +658,6 @@ bool BerkeleyDatabase::PeriodicFlush()
     }
 
     return ret;
-}
-
-bool BerkeleyDatabase::Rewrite(const char* pszSkip)
-{
-    return BerkeleyBatch::Rewrite(*this, pszSkip);
 }
 
 bool BerkeleyDatabase::Backup(const std::string& strDest) const
