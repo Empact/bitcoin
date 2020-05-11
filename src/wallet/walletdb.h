@@ -39,9 +39,6 @@ class CWalletTx;
 class uint160;
 class uint256;
 
-/** Backend-agnostic database type. */
-using WalletDatabase = BerkeleyDatabase;
-
 /** Error statuses for the wallet database */
 enum class DBErrors
 {

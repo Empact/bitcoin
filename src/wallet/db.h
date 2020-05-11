@@ -103,109 +103,58 @@ fs::path WalletDataFilePath(const fs::path& wallet_path);
 std::shared_ptr<BerkeleyEnvironment> GetWalletEnv(const fs::path& wallet_path, std::string& database_filename);
 
 /** An instance of this class represents one database.
- * For BerkeleyDB this is just a (env, strFile) tuple.
  **/
-class BerkeleyDatabase
+class WalletDatabase
 {
 private:
-    /** RAII class that automatically cleanses its data on destruction */
-    class SafeDbt final
-    {
-        Dbt m_dbt;
-
-    public:
-        // construct Dbt with internally-managed data
-        SafeDbt();
-        // construct Dbt with provided data
-        SafeDbt(void* data, size_t size);
-        ~SafeDbt();
-
-        // delegate to Dbt
-        const void* get_data() const;
-        u_int32_t get_size() const;
-
-        // conversion operator to access the underlying Dbt
-        operator Dbt*();
-    };
-
-    bool m_read_only = false;
-    std::string m_file_path;
-    Dbc* m_cursor = nullptr;
-    DbTxn* m_active_txn = nullptr;
-
-    bool DBRead(CDataStream& key, CDataStream& value) const;
-    bool DBWrite(CDataStream& key, CDataStream& value, bool overwrite=true) const;
-    bool DBErase(CDataStream& key) const;
-    bool DBExists(CDataStream& key) const;
+    virtual bool DBRead(CDataStream& key, CDataStream& value) const = 0;
+    virtual bool DBWrite(CDataStream& key, CDataStream& value, bool overwrite=true) const = 0;
+    virtual bool DBErase(CDataStream& key) const = 0;
+    virtual bool DBExists(CDataStream& key) const = 0;
 
 public:
     /** Create dummy DB handle */
-    BerkeleyDatabase() : nUpdateCounter(0), nLastSeen(0), nLastFlushed(0), nLastWalletUpdate(0), env(nullptr)
-    {
-    }
-
-    /** Create DB handle to real database */
-    BerkeleyDatabase(std::shared_ptr<BerkeleyEnvironment> env, std::string filename) :
-        nUpdateCounter(0), nLastSeen(0), nLastFlushed(0), nLastWalletUpdate(0), env(std::move(env)), strFile(std::move(filename))
-    {
-        auto inserted = this->env->m_databases.emplace(strFile, std::ref(*this));
-        assert(inserted.second);
-    }
-
-    ~BerkeleyDatabase();
-
-    /** Open the database if it is not already opened. */
-    void Open(const char* mode);
-
-    //! Counts the number of active database users to be sure that the database is not closed while someone is using it
-    std::atomic<int> m_refcount{0};
-    /** Indicate the a new database user has began using the database. Increments m_refcount */
-    void Acquire();
-    /** Indicate that database user has stopped using the database. Decrement m_refcount */
-    void Release();
-
-    /** Rewrite the entire database on disk, with the exception of key pszSkip if non-zero
-     */
-    bool Rewrite(const char* pszSkip=nullptr);
-
-    /** Back up the entire database to a file.
-     */
-    bool Backup(const std::string& strDest) const;
-
-    /** Close the database and make sure all changes are flushed to disk.
-     */
-    void Close();
-    /** Just flush the changes to disk, but not necessarily clean up environment stuff like log files */
-    void Flush();
-    /* flush the wallet passively (TRY_LOCK)
-       ideal to be called periodically */
-    bool PeriodicFlush();
-
-    void IncrementUpdateCounter();
-
-    void ReloadDbEnv();
+    WalletDatabase() : nUpdateCounter(0), nLastSeen(0), nLastFlushed(0), nLastWalletUpdate(0) {}
+    virtual ~WalletDatabase() {}
 
     std::atomic<unsigned int> nUpdateCounter;
     unsigned int nLastSeen;
     unsigned int nLastFlushed;
     int64_t nLastWalletUpdate;
 
-    /* verifies the environment and database file */
-    bool Verify(std::vector<bilingual_str>& warnings, bilingual_str& errorStr);
+    /** Open the database if it is not already opened. */
+    virtual void Open(const char* mode) = 0;
 
-    /**
-     * Pointer to shared database environment.
-     *
-     * Normally there is only one BerkeleyDatabase object per
-     * BerkeleyEnvivonment, but in the special, backwards compatible case where
-     * multiple wallet BDB data files are loaded from the same directory, this
-     * will point to a shared instance that gets freed when the last data file
-     * is closed.
+    //! Counts the number of active database users to be sure that the database is not closed while someone is using it
+    std::atomic<int> m_refcount{0};
+    /** Indicate the a new database user has began using the database. Increments m_refcount */
+    virtual void Acquire() = 0;
+    /** Indicate that database user has stopped using the database. Decrement m_refcount */
+    virtual void Release() = 0;
+
+    /** Rewrite the entire database on disk, with the exception of key pszSkip if non-zero
      */
-    std::shared_ptr<BerkeleyEnvironment> env;
+    virtual bool Rewrite(const char* pszSkip=nullptr) = 0;
 
-    /** Database pointer. This is initialized lazily and reset during flushes, so it can be null. */
-    std::unique_ptr<Db> m_db;
+    /** Back up the entire database to a file.
+     */
+    virtual bool Backup(const std::string& strDest) const = 0;
+
+    /** Close the database and make sure all changes are flushed to disk.
+     */
+    virtual void Close() = 0;
+    /** Just flush the changes to disk, but not necessarily clean up environment stuff like log files */
+    virtual void Flush() = 0 ;
+    /* flush the wallet passively (TRY_LOCK)
+       ideal to be called periodically */
+    virtual bool PeriodicFlush() = 0;
+
+    void IncrementUpdateCounter();
+
+    virtual void ReloadDbEnv() = 0;
+
+    /* verifies the environment and database file */
+    virtual bool Verify(std::vector<bilingual_str>& warnings, bilingual_str& errorStr) = 0;
 
     template <typename K, typename T>
     bool Read(const K& key, T& value)
@@ -271,7 +220,121 @@ public:
         return DBExists(ssKey);
     }
 
-    bool CreateCursor()
+    virtual bool CreateCursor() = 0;
+    virtual bool ReadAtCursor(CDataStream& ssKey, CDataStream& ssValue, bool& complete) = 0;
+    virtual void CloseCursor() = 0;
+    virtual bool TxnBegin() = 0;
+    virtual bool TxnCommit() = 0;
+    virtual bool TxnAbort() = 0;
+};
+/** An instance of this class represents one database.
+ * For BerkeleyDB this is just a (env, strFile) tuple.
+ **/
+class BerkeleyDatabase : public WalletDatabase
+{
+private:
+    /** RAII class that automatically cleanses its data on destruction */
+    class SafeDbt final
+    {
+        Dbt m_dbt;
+
+    public:
+        // construct Dbt with internally-managed data
+        SafeDbt();
+        // construct Dbt with provided data
+        SafeDbt(void* data, size_t size);
+        ~SafeDbt();
+
+        // delegate to Dbt
+        const void* get_data() const;
+        u_int32_t get_size() const;
+
+        // conversion operator to access the underlying Dbt
+        operator Dbt*();
+    };
+
+    bool m_read_only = false;
+
+    Dbc* m_cursor = nullptr;
+    DbTxn* m_active_txn = nullptr;
+
+    /**
+     * Pointer to shared database environment.
+     *
+     * Normally there is only one BerkeleyDatabase object per
+     * BerkeleyEnvivonment, but in the special, backwards compatible case where
+     * multiple wallet BDB data files are loaded from the same directory, this
+     * will point to a shared instance that gets freed when the last data file
+     * is closed.
+     */
+    std::shared_ptr<BerkeleyEnvironment> env;
+
+    std::string strFile;
+    std::string m_file_path;
+
+    /** Return whether this database handle is a dummy for testing.
+     * Only to be used at a low level, application should ideally not care
+     * about this.
+     */
+    bool IsDummy() const { return env == nullptr; }
+
+    bool DBRead(CDataStream& key, CDataStream& value) const override;
+    bool DBWrite(CDataStream& key, CDataStream& value, bool overwrite=true) const override;
+    bool DBErase(CDataStream& key) const override;
+    bool DBExists(CDataStream& key) const override;
+
+public:
+    /** Create dummy DB handle */
+    BerkeleyDatabase() : WalletDatabase(), env(nullptr)
+    {
+    }
+
+    /** Create DB handle to real database */
+    BerkeleyDatabase(std::shared_ptr<BerkeleyEnvironment> env, std::string filename) :
+        WalletDatabase(), env(std::move(env)), strFile(std::move(filename))
+    {
+        auto inserted = this->env->m_databases.emplace(strFile, std::ref(*this));
+        assert(inserted.second);
+    }
+
+    ~BerkeleyDatabase();
+
+    /** Database pointer. This is initialized lazily and reset during flushes, so it can be null. */
+    std::unique_ptr<Db> m_db;
+
+
+    /** Open the database if it is not already opened */
+    void Open(const char* mode) override;
+
+    /** Close the database */
+    void Close() override;
+
+    /** Indicate the a new database user has began using the database. Increments m_refcount */
+    void Acquire() override;
+    /** Indicate that database user has stopped using the database. Decrement m_refcount */
+    void Release() override;
+
+    /** Rewrite the entire database on disk, with the exception of key pszSkip if non-zero
+     */
+    bool Rewrite(const char* pszSkip=nullptr) override;
+
+    /** Back up the entire database to a file.
+     */
+    bool Backup(const std::string& strDest) const override;
+
+    /** Make sure all changes are flushed to disk.
+     */
+    void Flush() override;
+    /* flush the wallet passively (TRY_LOCK)
+       ideal to be called periodically */
+    bool PeriodicFlush() override;
+
+    void ReloadDbEnv() override;
+
+    /* verifies the environment and database file */
+    bool Verify(std::vector<bilingual_str>& warnings, bilingual_str& errorStr) override;
+
+    bool CreateCursor() override
     {
         if (!m_db)
             return false;
@@ -282,7 +345,7 @@ public:
         return true;
     }
 
-    bool ReadAtCursor(CDataStream& ssKey, CDataStream& ssValue, bool& complete)
+    bool ReadAtCursor(CDataStream& ssKey, CDataStream& ssValue, bool& complete) override
     {
         complete = false;
         if (m_cursor == nullptr) return false;
@@ -308,13 +371,13 @@ public:
         return true;
     }
 
-    void CloseCursor()
+    void CloseCursor() override
     {
         m_cursor->close();
         m_cursor = nullptr;
     }
 
-    bool TxnBegin()
+    bool TxnBegin() override
     {
         if (!m_db || m_active_txn)
             return false;
@@ -325,7 +388,7 @@ public:
         return true;
     }
 
-    bool TxnCommit()
+    bool TxnCommit() override
     {
         if (!m_db || !m_active_txn)
             return false;
@@ -334,7 +397,7 @@ public:
         return (ret == 0);
     }
 
-    bool TxnAbort()
+    bool TxnAbort() override
     {
         if (!m_db || !m_active_txn)
             return false;
@@ -342,26 +405,17 @@ public:
         m_active_txn = nullptr;
         return (ret == 0);
     }
-
-private:
-    std::string strFile;
-
-    /** Return whether this database handle is a dummy for testing.
-     * Only to be used at a low level, application should ideally not care
-     * about this.
-     */
-    bool IsDummy() const { return env == nullptr; }
 };
 
 std::string BerkeleyDatabaseVersion();
 
 /** Return object for accessing database at specified path. */
-std::unique_ptr<BerkeleyDatabase> CreateWalletDatabase(const fs::path& path);
+std::unique_ptr<WalletDatabase> CreateWalletDatabase(const fs::path& path);
 
 /** Return object for accessing dummy database with no read/write capabilities. */
-std::unique_ptr<BerkeleyDatabase> CreateDummyWalletDatabase();
+std::unique_ptr<WalletDatabase> CreateDummyWalletDatabase();
 
 /** Return object for accessing temporary in-memory database. */
-std::unique_ptr<BerkeleyDatabase> CreateMockWalletDatabase();
+std::unique_ptr<WalletDatabase> CreateMockWalletDatabase();
 
 #endif // BITCOIN_WALLET_DB_H
