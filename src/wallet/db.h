@@ -222,6 +222,96 @@ public:
     /** Database pointer. This is initialized lazily and reset during flushes, so it can be null. */
     std::unique_ptr<Db> m_db;
 
+    template <typename K, typename T>
+    bool Read(const K& key, T& value)
+    {
+        if (!m_db)
+            return false;
+
+        // Key
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(1000);
+        ssKey << key;
+        SafeDbt datKey(ssKey.data(), ssKey.size());
+
+        // Read
+        SafeDbt datValue;
+        int ret = m_db->get(m_active_txn, datKey, datValue, 0);
+        bool success = false;
+        if (datValue.get_data() != nullptr) {
+            // Unserialize value
+            try {
+                CDataStream ssValue((char*)datValue.get_data(), (char*)datValue.get_data() + datValue.get_size(), SER_DISK, CLIENT_VERSION);
+                ssValue >> value;
+                success = true;
+            } catch (const std::exception&) {
+                // In this case success remains 'false'
+            }
+        }
+        return ret == 0 && success;
+    }
+
+    template <typename K, typename T>
+    bool Write(const K& key, const T& value, bool fOverwrite = true)
+    {
+        if (!m_db)
+            return true;
+        if (m_read_only)
+            assert(!"Write called on database in read-only mode");
+
+        // Key
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(1000);
+        ssKey << key;
+        SafeDbt datKey(ssKey.data(), ssKey.size());
+
+        // Value
+        CDataStream ssValue(SER_DISK, CLIENT_VERSION);
+        ssValue.reserve(10000);
+        ssValue << value;
+        SafeDbt datValue(ssValue.data(), ssValue.size());
+
+        // Write
+        int ret = m_db->put(m_active_txn, datKey, datValue, (fOverwrite ? 0 : DB_NOOVERWRITE));
+        return (ret == 0);
+    }
+
+    template <typename K>
+    bool Erase(const K& key)
+    {
+        if (!m_db)
+            return false;
+        if (m_read_only)
+            assert(!"Erase called on database in read-only mode");
+
+        // Key
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(1000);
+        ssKey << key;
+        SafeDbt datKey(ssKey.data(), ssKey.size());
+
+        // Erase
+        int ret = m_db->del(m_active_txn, datKey, 0);
+        return (ret == 0 || ret == DB_NOTFOUND);
+    }
+
+    template <typename K>
+    bool Exists(const K& key)
+    {
+        if (!m_db)
+            return false;
+
+        // Key
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(1000);
+        ssKey << key;
+        SafeDbt datKey(ssKey.data(), ssKey.size());
+
+        // Exists
+        int ret = m_db->exists(m_active_txn, datKey, 0);
+        return (ret == 0);
+    }
+
     bool CreateCursor()
     {
         if (!m_db)
@@ -330,91 +420,25 @@ public:
     template <typename K, typename T>
     bool Read(const K& key, T& value)
     {
-        if (!pdb)
-            return false;
-
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        BerkeleyDatabase::SafeDbt datKey(ssKey.data(), ssKey.size());
-
-        // Read
-        BerkeleyDatabase::SafeDbt datValue;
-        int ret = pdb->get(activeTxn, datKey, datValue, 0);
-        bool success = false;
-        if (datValue.get_data() != nullptr) {
-            // Unserialize value
-            try {
-                CDataStream ssValue((char*)datValue.get_data(), (char*)datValue.get_data() + datValue.get_size(), SER_DISK, CLIENT_VERSION);
-                ssValue >> value;
-                success = true;
-            } catch (const std::exception&) {
-                // In this case success remains 'false'
-            }
-        }
-        return ret == 0 && success;
+        return m_database.Read(key, value);
     }
 
     template <typename K, typename T>
     bool Write(const K& key, const T& value, bool fOverwrite = true)
     {
-        if (!pdb)
-            return true;
-        if (fReadOnly)
-            assert(!"Write called on database in read-only mode");
-
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        BerkeleyDatabase::SafeDbt datKey(ssKey.data(), ssKey.size());
-
-        // Value
-        CDataStream ssValue(SER_DISK, CLIENT_VERSION);
-        ssValue.reserve(10000);
-        ssValue << value;
-        BerkeleyDatabase::SafeDbt datValue(ssValue.data(), ssValue.size());
-
-        // Write
-        int ret = pdb->put(activeTxn, datKey, datValue, (fOverwrite ? 0 : DB_NOOVERWRITE));
-        return (ret == 0);
+        return m_database.Write(key, value, fOverwrite);
     }
 
     template <typename K>
     bool Erase(const K& key)
     {
-        if (!pdb)
-            return false;
-        if (fReadOnly)
-            assert(!"Erase called on database in read-only mode");
-
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        BerkeleyDatabase::SafeDbt datKey(ssKey.data(), ssKey.size());
-
-        // Erase
-        int ret = pdb->del(activeTxn, datKey, 0);
-        return (ret == 0 || ret == DB_NOTFOUND);
+        return m_database.Erase(key);
     }
 
     template <typename K>
     bool Exists(const K& key)
     {
-        if (!pdb)
-            return false;
-
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        BerkeleyDatabase::SafeDbt datKey(ssKey.data(), ssKey.size());
-
-        // Exists
-        int ret = pdb->exists(activeTxn, datKey, 0);
-        return (ret == 0);
+        return m_database.Exists(key);
     }
 
     bool CreateCursor()
