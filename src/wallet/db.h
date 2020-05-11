@@ -110,6 +110,8 @@ std::shared_ptr<BerkeleyEnvironment> GetWalletEnv(const fs::path& wallet_path, s
 class BerkeleyDatabase
 {
     friend class BerkeleyBatch;
+
+    bool m_read_only = false;
 public:
     /** Create dummy DB handle */
     BerkeleyDatabase() : nUpdateCounter(0), nLastSeen(0), nLastFlushed(0), nLastWalletUpdate(0), env(nullptr)
@@ -149,6 +151,9 @@ public:
     {
         return MakeUnique<BerkeleyDatabase>(std::make_shared<BerkeleyEnvironment>(), "");
     }
+
+    /** Open the database if it is not already opened */
+    void Open(const char* mode);
 
     /** Rewrite the entire database on disk, with the exception of key pszSkip if non-zero
      */
