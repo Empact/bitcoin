@@ -109,8 +109,30 @@ class BerkeleyDatabase
 {
     friend class BerkeleyBatch;
 
+    /** RAII class that automatically cleanses its data on destruction */
+    class SafeDbt final
+    {
+        Dbt m_dbt;
+
+    public:
+        // construct Dbt with internally-managed data
+        SafeDbt();
+        // construct Dbt with provided data
+        SafeDbt(void* data, size_t size);
+        ~SafeDbt();
+
+        // delegate to Dbt
+        const void* get_data() const;
+        u_int32_t get_size() const;
+
+        // conversion operator to access the underlying Dbt
+        operator Dbt*();
+    };
+
     bool m_read_only = false;
     std::string m_file_path;
+    Dbc* m_cursor = nullptr;
+
 public:
     /** Create dummy DB handle */
     BerkeleyDatabase() : nUpdateCounter(0), nLastSeen(0), nLastFlushed(0), nLastWalletUpdate(0), env(nullptr)
@@ -199,155 +221,12 @@ public:
     /** Database pointer. This is initialized lazily and reset during flushes, so it can be null. */
     std::unique_ptr<Db> m_db;
 
-private:
-    std::string strFile;
-
-    /** Return whether this database handle is a dummy for testing.
-     * Only to be used at a low level, application should ideally not care
-     * about this.
-     */
-    bool IsDummy() const { return env == nullptr; }
-};
-
-/** RAII class that provides access to a Berkeley database */
-class BerkeleyBatch
-{
-    /** RAII class that automatically cleanses its data on destruction */
-    class SafeDbt final
-    {
-        Dbt m_dbt;
-
-    public:
-        // construct Dbt with internally-managed data
-        SafeDbt();
-        // construct Dbt with provided data
-        SafeDbt(void* data, size_t size);
-        ~SafeDbt();
-
-        // delegate to Dbt
-        const void* get_data() const;
-        u_int32_t get_size() const;
-
-        // conversion operator to access the underlying Dbt
-        operator Dbt*();
-    };
-
-protected:
-    Db* pdb;
-    std::string strFile;
-    DbTxn* activeTxn;
-    bool fReadOnly;
-    bool fFlushOnClose;
-    BerkeleyEnvironment *env;
-    BerkeleyDatabase& m_database;
-    Dbc* m_cursor = nullptr;
-
-public:
-    explicit BerkeleyBatch(BerkeleyDatabase& database, const char* pszMode = "r+", bool fFlushOnCloseIn=true);
-    ~BerkeleyBatch() { Close(); }
-
-    BerkeleyBatch(const BerkeleyBatch&) = delete;
-    BerkeleyBatch& operator=(const BerkeleyBatch&) = delete;
-
-    void Flush();
-    void Close();
-
-    template <typename K, typename T>
-    bool Read(const K& key, T& value)
-    {
-        if (!pdb)
-            return false;
-
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        SafeDbt datKey(ssKey.data(), ssKey.size());
-
-        // Read
-        SafeDbt datValue;
-        int ret = pdb->get(activeTxn, datKey, datValue, 0);
-        bool success = false;
-        if (datValue.get_data() != nullptr) {
-            // Unserialize value
-            try {
-                CDataStream ssValue((char*)datValue.get_data(), (char*)datValue.get_data() + datValue.get_size(), SER_DISK, CLIENT_VERSION);
-                ssValue >> value;
-                success = true;
-            } catch (const std::exception&) {
-                // In this case success remains 'false'
-            }
-        }
-        return ret == 0 && success;
-    }
-
-    template <typename K, typename T>
-    bool Write(const K& key, const T& value, bool fOverwrite = true)
-    {
-        if (!pdb)
-            return true;
-        if (fReadOnly)
-            assert(!"Write called on database in read-only mode");
-
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        SafeDbt datKey(ssKey.data(), ssKey.size());
-
-        // Value
-        CDataStream ssValue(SER_DISK, CLIENT_VERSION);
-        ssValue.reserve(10000);
-        ssValue << value;
-        SafeDbt datValue(ssValue.data(), ssValue.size());
-
-        // Write
-        int ret = pdb->put(activeTxn, datKey, datValue, (fOverwrite ? 0 : DB_NOOVERWRITE));
-        return (ret == 0);
-    }
-
-    template <typename K>
-    bool Erase(const K& key)
-    {
-        if (!pdb)
-            return false;
-        if (fReadOnly)
-            assert(!"Erase called on database in read-only mode");
-
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        SafeDbt datKey(ssKey.data(), ssKey.size());
-
-        // Erase
-        int ret = pdb->del(activeTxn, datKey, 0);
-        return (ret == 0 || ret == DB_NOTFOUND);
-    }
-
-    template <typename K>
-    bool Exists(const K& key)
-    {
-        if (!pdb)
-            return false;
-
-        // Key
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
-        ssKey << key;
-        SafeDbt datKey(ssKey.data(), ssKey.size());
-
-        // Exists
-        int ret = pdb->exists(activeTxn, datKey, 0);
-        return (ret == 0);
-    }
-
     bool CreateCursor()
     {
-        if (!pdb)
+        if (!m_db)
             return false;
         m_cursor = nullptr;
-        int ret = pdb->cursor(nullptr, &m_cursor, 0);
+        int ret = m_db->cursor(nullptr, &m_cursor, 0);
         if (ret != 0)
             return false;
         return true;
@@ -383,6 +262,144 @@ public:
     {
         m_cursor->close();
         m_cursor = nullptr;
+    }
+
+private:
+    std::string strFile;
+
+    /** Return whether this database handle is a dummy for testing.
+     * Only to be used at a low level, application should ideally not care
+     * about this.
+     */
+    bool IsDummy() const { return env == nullptr; }
+};
+
+/** RAII class that provides access to a Berkeley database */
+class BerkeleyBatch
+{
+
+protected:
+    Db* pdb;
+    std::string strFile;
+    DbTxn* activeTxn;
+    bool fReadOnly;
+    bool fFlushOnClose;
+    BerkeleyEnvironment *env;
+    BerkeleyDatabase& m_database;
+
+public:
+    explicit BerkeleyBatch(BerkeleyDatabase& database, const char* pszMode = "r+", bool fFlushOnCloseIn=true);
+    ~BerkeleyBatch() { Close(); }
+
+    BerkeleyBatch(const BerkeleyBatch&) = delete;
+    BerkeleyBatch& operator=(const BerkeleyBatch&) = delete;
+
+    void Flush();
+    void Close();
+
+    template <typename K, typename T>
+    bool Read(const K& key, T& value)
+    {
+        if (!pdb)
+            return false;
+
+        // Key
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(1000);
+        ssKey << key;
+        BerkeleyDatabase::SafeDbt datKey(ssKey.data(), ssKey.size());
+
+        // Read
+        BerkeleyDatabase::SafeDbt datValue;
+        int ret = pdb->get(activeTxn, datKey, datValue, 0);
+        bool success = false;
+        if (datValue.get_data() != nullptr) {
+            // Unserialize value
+            try {
+                CDataStream ssValue((char*)datValue.get_data(), (char*)datValue.get_data() + datValue.get_size(), SER_DISK, CLIENT_VERSION);
+                ssValue >> value;
+                success = true;
+            } catch (const std::exception&) {
+                // In this case success remains 'false'
+            }
+        }
+        return ret == 0 && success;
+    }
+
+    template <typename K, typename T>
+    bool Write(const K& key, const T& value, bool fOverwrite = true)
+    {
+        if (!pdb)
+            return true;
+        if (fReadOnly)
+            assert(!"Write called on database in read-only mode");
+
+        // Key
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(1000);
+        ssKey << key;
+        BerkeleyDatabase::SafeDbt datKey(ssKey.data(), ssKey.size());
+
+        // Value
+        CDataStream ssValue(SER_DISK, CLIENT_VERSION);
+        ssValue.reserve(10000);
+        ssValue << value;
+        BerkeleyDatabase::SafeDbt datValue(ssValue.data(), ssValue.size());
+
+        // Write
+        int ret = pdb->put(activeTxn, datKey, datValue, (fOverwrite ? 0 : DB_NOOVERWRITE));
+        return (ret == 0);
+    }
+
+    template <typename K>
+    bool Erase(const K& key)
+    {
+        if (!pdb)
+            return false;
+        if (fReadOnly)
+            assert(!"Erase called on database in read-only mode");
+
+        // Key
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(1000);
+        ssKey << key;
+        BerkeleyDatabase::SafeDbt datKey(ssKey.data(), ssKey.size());
+
+        // Erase
+        int ret = pdb->del(activeTxn, datKey, 0);
+        return (ret == 0 || ret == DB_NOTFOUND);
+    }
+
+    template <typename K>
+    bool Exists(const K& key)
+    {
+        if (!pdb)
+            return false;
+
+        // Key
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(1000);
+        ssKey << key;
+        BerkeleyDatabase::SafeDbt datKey(ssKey.data(), ssKey.size());
+
+        // Exists
+        int ret = pdb->exists(activeTxn, datKey, 0);
+        return (ret == 0);
+    }
+
+    bool CreateCursor()
+    {
+        return m_database.CreateCursor();
+    }
+
+    bool ReadAtCursor(CDataStream& ssKey, CDataStream& ssValue, bool& complete)
+    {
+        return m_database.ReadAtCursor(ssKey, ssValue, complete);
+    }
+
+    void CloseCursor()
+    {
+        return m_database.CloseCursor();
     }
 
     bool TxnBegin()

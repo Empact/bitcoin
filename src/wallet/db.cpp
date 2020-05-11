@@ -264,17 +264,17 @@ bool BerkeleyEnvironment::Verify(const std::string& strFile)
     return result == 0;
 }
 
-BerkeleyBatch::SafeDbt::SafeDbt()
+BerkeleyDatabase::SafeDbt::SafeDbt()
 {
     m_dbt.set_flags(DB_DBT_MALLOC);
 }
 
-BerkeleyBatch::SafeDbt::SafeDbt(void* data, size_t size)
+BerkeleyDatabase::SafeDbt::SafeDbt(void* data, size_t size)
     : m_dbt(data, size)
 {
 }
 
-BerkeleyBatch::SafeDbt::~SafeDbt()
+BerkeleyDatabase::SafeDbt::~SafeDbt()
 {
     if (m_dbt.get_data() != nullptr) {
         // Clear memory, e.g. in case it was a private key
@@ -288,17 +288,17 @@ BerkeleyBatch::SafeDbt::~SafeDbt()
     }
 }
 
-const void* BerkeleyBatch::SafeDbt::get_data() const
+const void* BerkeleyDatabase::SafeDbt::get_data() const
 {
     return m_dbt.get_data();
 }
 
-u_int32_t BerkeleyBatch::SafeDbt::get_size() const
+u_int32_t BerkeleyDatabase::SafeDbt::get_size() const
 {
     return m_dbt.get_size();
 }
 
-BerkeleyBatch::SafeDbt::operator Dbt*()
+BerkeleyDatabase::SafeDbt::operator Dbt*()
 {
     return &m_dbt;
 }
