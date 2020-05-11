@@ -132,6 +132,7 @@ class BerkeleyDatabase
     bool m_read_only = false;
     std::string m_file_path;
     Dbc* m_cursor = nullptr;
+    DbTxn* m_active_txn = nullptr;
 
 public:
     /** Create dummy DB handle */
@@ -262,6 +263,35 @@ public:
     {
         m_cursor->close();
         m_cursor = nullptr;
+    }
+
+    bool TxnBegin()
+    {
+        if (!m_db || m_active_txn)
+            return false;
+        DbTxn* ptxn = env->TxnBegin();
+        if (!ptxn)
+            return false;
+        m_active_txn = ptxn;
+        return true;
+    }
+
+    bool TxnCommit()
+    {
+        if (!m_db || !m_active_txn)
+            return false;
+        int ret = m_active_txn->commit(0);
+        m_active_txn = nullptr;
+        return (ret == 0);
+    }
+
+    bool TxnAbort()
+    {
+        if (!m_db || !m_active_txn)
+            return false;
+        int ret = m_active_txn->abort();
+        m_active_txn = nullptr;
+        return (ret == 0);
     }
 
 private:
@@ -404,31 +434,17 @@ public:
 
     bool TxnBegin()
     {
-        if (!pdb || activeTxn)
-            return false;
-        DbTxn* ptxn = env->TxnBegin();
-        if (!ptxn)
-            return false;
-        activeTxn = ptxn;
-        return true;
+        return m_database.TxnBegin();
     }
 
     bool TxnCommit()
     {
-        if (!pdb || !activeTxn)
-            return false;
-        int ret = activeTxn->commit(0);
-        activeTxn = nullptr;
-        return (ret == 0);
+        return m_database.TxnCommit();
     }
 
     bool TxnAbort()
     {
-        if (!pdb || !activeTxn)
-            return false;
-        int ret = activeTxn->abort();
-        activeTxn = nullptr;
-        return (ret == 0);
+        return m_database.TxnAbort();
     }
 
 };

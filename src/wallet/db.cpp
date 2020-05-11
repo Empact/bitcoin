@@ -702,6 +702,10 @@ bool BerkeleyDatabase::Backup(const std::string& strDest) const
 
 void BerkeleyDatabase::Close()
 {
+    if (m_active_txn) {
+        m_active_txn->abort();
+    }
+
     if (!IsDummy()) {
         env->Flush();
         // TODO: To avoid g_dbenvs.erase erasing the environment prematurely after the
@@ -715,6 +719,10 @@ void BerkeleyDatabase::Close()
 
 void BerkeleyDatabase::Flush()
 {
+    if (m_active_txn) {
+        return;
+    }
+
     if (!IsDummy()) {
         // Flush database activity from memory pool to disk log
         unsigned int nMinutes = 0;
@@ -739,6 +747,10 @@ std::string BerkeleyDatabaseVersion()
 
 void BerkeleyDatabase::Release()
 {
+    if (m_active_txn) {
+       m_active_txn->abort();
+    }
+
     m_refcount--;
     env->m_db_in_use.notify_all();
 }
