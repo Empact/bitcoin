@@ -152,8 +152,11 @@ public:
         return MakeUnique<BerkeleyDatabase>(std::make_shared<BerkeleyEnvironment>(), "");
     }
 
-    /** Open the database if it is not already opened */
+    /** Open the database if it is not already opened. Increments mapFileUseCount */
     void Open(const char* mode);
+
+    /** Indicate that database user has stopped using the database. Decrement mapFileUseCount */
+    void Release();
 
     /** Rewrite the entire database on disk, with the exception of key pszSkip if non-zero
      */
@@ -236,6 +239,7 @@ protected:
     bool fReadOnly;
     bool fFlushOnClose;
     BerkeleyEnvironment *env;
+    BerkeleyDatabase& m_database;
 
 public:
     explicit BerkeleyBatch(BerkeleyDatabase& database, const char* pszMode = "r+", bool fFlushOnCloseIn=true);

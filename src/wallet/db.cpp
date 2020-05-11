@@ -335,7 +335,7 @@ void BerkeleyEnvironment::CheckpointLSN(const std::string& strFile)
 }
 
 
-BerkeleyBatch::BerkeleyBatch(BerkeleyDatabase& database, const char* pszMode, bool fFlushOnCloseIn) : pdb(nullptr), activeTxn(nullptr)
+BerkeleyBatch::BerkeleyBatch(BerkeleyDatabase& database, const char* pszMode, bool fFlushOnCloseIn) : pdb(nullptr), activeTxn(nullptr), m_database(database)
 {
     database.Open(pszMode);
     fReadOnly = (!strchr(pszMode, '+') && !strchr(pszMode, 'w'));
@@ -458,11 +458,7 @@ void BerkeleyBatch::Close()
     if (fFlushOnClose)
         Flush();
 
-    {
-        LOCK(cs_db);
-        --env->mapFileUseCount[strFile];
-    }
-    env->m_db_in_use.notify_all();
+    m_database.Release();
 }
 
 void BerkeleyEnvironment::CloseDb(const std::string& strFile)
@@ -752,4 +748,13 @@ void BerkeleyDatabase::ReloadDbEnv()
 std::string BerkeleyDatabaseVersion()
 {
     return DbEnv::version(nullptr, nullptr, nullptr);
+}
+
+void BerkeleyDatabase::Release()
+{
+    {
+        LOCK(cs_db);
+        --env->mapFileUseCount[strFile];
+    }
+    env->m_db_in_use.notify_all();
 }
