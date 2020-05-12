@@ -27,22 +27,7 @@ namespace {
 //! (https://docs.oracle.com/cd/E17275_01/html/programmer_reference/program_copy.html),
 //! so bitcoin should never create different databases with the same fileid, but
 //! this error can be triggered if users manually copy database files.
-void CheckUniqueFileid(const BerkeleyEnvironment& env, const std::string& filename, Db& db, WalletDatabaseFileId& fileid)
-{
-    if (env.IsMock()) return;
-
-    int ret = db.get_mpf()->get_fileid(fileid.value);
-    if (ret != 0) {
-        throw std::runtime_error(strprintf("BerkeleyBatch: Can't open database %s (get_fileid failed with %d)", filename, ret));
-    }
-
-    for (const auto& item : env.m_fileids) {
-        if (fileid == item.second && &fileid != &item.second) {
-            throw std::runtime_error(strprintf("BerkeleyBatch: Can't open database %s (duplicates fileid %s from %s)", filename,
-                HexStr(std::begin(item.second.value), std::end(item.second.value)), item.first));
-        }
-    }
-}
+std::unordered_map<std::string, WalletDatabaseFileId> g_fileids;
 
 RecursiveMutex cs_db;
 std::map<std::string, std::weak_ptr<BerkeleyEnvironment>> g_dbenvs GUARDED_BY(cs_db); //!< Map from directory name to db environment.
@@ -406,13 +391,12 @@ void BerkeleyDatabase::Open(const char* pszMode)
             if (ret != 0) {
                 throw std::runtime_error(strprintf("BerkeleyDatabase: Error %d, can't open database %s", ret, strFile));
             }
+            m_file_path = (env->Directory() / strFile).string();
 
-            // Call CheckUniqueFileid on the containing BDB environment to
-            // avoid BDB data consistency bugs that happen when different data
-            // files in the same environment have the same fileid.
-            //
-            // Also call CheckUniqueFileid on all the other g_dbenvs to prevent
-            // bitcoin from opening the same data file through another
+            // Check that the BDB file id has not already been loaded in any BDB environment
+            // to avoid BDB data consistency bugs that happen when different data
+            // files in the same environment have the same fileid. All BDB environments are
+            // checked to prevent bitcoin from opening the same data file through another
             // environment when the file is referenced through equivalent but
             // not obviously identical symlinked or hard linked or bind mounted
             // paths. In the future a more relaxed check for equal inode and
@@ -422,9 +406,18 @@ void BerkeleyDatabase::Open(const char* pszMode)
             // be implemented, so no equality checks are needed at all. (Newer
             // versions of BDB have an set_lk_exclusive method for this
             // purpose, but the older version we use does not.)
-            for (const auto& env : g_dbenvs) {
-                CheckUniqueFileid(*env.second.lock().get(), strFile, *pdb_temp, this->env->m_fileids[strFile]);
+            WalletDatabaseFileId fileid;
+            int fileid_ret = pdb_temp->get_mpf()->get_fileid(fileid.value);
+            if (fileid_ret != 0) {
+                throw std::runtime_error(strprintf("BerkeleyDatabase: Can't open database %s (get_fileid failed with %d)", strFile, fileid_ret));
             }
+            for (const auto& item : g_fileids) {
+                if (fileid == item.second && item.first != m_file_path) {
+                    throw std::runtime_error(strprintf("BerkeleyDatabase: Can't open database %s (duplicates fileid %s from %s)", strFile,
+                        HexStr(std::begin(item.second.value), std::end(item.second.value)), item.first));
+                }
+            }
+            g_fileids[m_file_path] = fileid;
 
             m_db.reset(pdb_temp.release());
 
@@ -744,7 +737,7 @@ void BerkeleyDatabase::Flush(bool shutdown)
             // environment, should replace raw database `env` pointers with shared or weak
             // pointers, or else separate the database and environment shutdowns so
             // environments can be shut down after databases.
-            env->m_fileids.erase(strFile);
+            g_fileids.erase(m_file_path);
         }
     }
 }
