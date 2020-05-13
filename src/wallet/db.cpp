@@ -54,7 +54,7 @@ static void SplitWalletPath(const fs::path& wallet_path, fs::path& env_directory
     }
 }
 
-bool IsWalletLoaded(const fs::path& wallet_path)
+bool IsBDBWalletLoaded(const fs::path& wallet_path)
 {
     fs::path env_directory;
     std::string database_filename;
@@ -64,6 +64,11 @@ bool IsWalletLoaded(const fs::path& wallet_path)
     if (env == g_dbenvs.end()) return false;
     auto database = env->second.lock();
     return database && database->IsDatabaseLoaded(database_filename);
+}
+
+bool IsWalletLoaded(const fs::path& wallet_path)
+{
+    return IsBDBWalletLoaded(wallet_path);
 }
 
 fs::path WalletDataFilePath(const fs::path& wallet_path)
