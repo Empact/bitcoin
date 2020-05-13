@@ -116,14 +116,19 @@ void BerkeleyEnvironment::Close()
         }
     }
 
+    char** listp;
+    dbenv->log_archive(&listp, DB_ARCH_REMOVE);
+
     FILE* error_file = nullptr;
     dbenv->get_errfile(&error_file);
 
     int ret = dbenv->close(0);
     if (ret != 0)
         LogPrintf("BerkeleyEnvironment::Close: Error %d closing database environment: %s\n", ret, DbEnv::strerror(ret));
-    if (!fMockDb)
+    if (!fMockDb) {
         DbEnv((u_int32_t)0).remove(strPath.c_str(), 0);
+        fs::remove_all(fs::path(strPath) / "database");
+    }
 
     if (error_file) fclose(error_file);
 
@@ -351,6 +356,18 @@ BerkeleyBatch::BerkeleyBatch(BerkeleyDatabase& database, const char* pszMode, bo
     }
 }
 
+BerkeleyDatabase::~BerkeleyDatabase()
+{
+    Close();
+    if (env) {
+        LOCK(cs_db);
+        size_t erased = env->m_databases.erase(strFile);
+        assert(erased == 1);
+        g_dbenvs.erase(env->Directory().string());
+        env = nullptr;
+    }
+}
+
 void BerkeleyDatabase::Open(const char* pszMode)
 {
     m_read_only = (!strchr(pszMode, '+') && !strchr(pszMode, 'w'));
@@ -497,7 +514,8 @@ void BerkeleyEnvironment::ReloadDbEnv()
         CloseDb(filename);
     }
     // Reset the environment
-    Flush(true); // This will flush and close the environment
+    Flush(); // This will flush and close the environment
+    Close();
     Reset();
     Open(true);
 }
@@ -591,11 +609,11 @@ bool BerkeleyBatch::Rewrite(BerkeleyDatabase& database, const char* pszSkip)
 }
 
 
-void BerkeleyEnvironment::Flush(bool fShutdown)
+void BerkeleyEnvironment::Flush()
 {
     int64_t nStart = GetTimeMillis();
     // Flush log data to the actual data file on all files that are not in use
-    LogPrint(BCLog::WALLETDB, "BerkeleyEnvironment::Flush: [%s] Flush(%s)%s\n", strPath, fShutdown ? "true" : "false", fDbEnvInit ? "" : " database not started");
+    LogPrint(BCLog::WALLETDB, "BerkeleyEnvironment::Flush: [%s] Flush%s\n", strPath, fDbEnvInit ? "" : " database not started");
     if (!fDbEnvInit)
         return;
     {
@@ -618,17 +636,7 @@ void BerkeleyEnvironment::Flush(bool fShutdown)
             } else
                 mi++;
         }
-        LogPrint(BCLog::WALLETDB, "BerkeleyEnvironment::Flush: Flush(%s)%s took %15dms\n", fShutdown ? "true" : "false", fDbEnvInit ? "" : " database not started", GetTimeMillis() - nStart);
-        if (fShutdown) {
-            char** listp;
-            if (mapFileUseCount.empty()) {
-                dbenv->log_archive(&listp, DB_ARCH_REMOVE);
-                Close();
-                if (!fMockDb) {
-                    fs::remove_all(fs::path(strPath) / "database");
-                }
-            }
-        }
+        LogPrint(BCLog::WALLETDB, "BerkeleyEnvironment::Flush: Flush%s took %15dms\n", fDbEnvInit ? "" : " database not started", GetTimeMillis() - nStart);
     }
 }
 
@@ -719,22 +727,16 @@ bool BerkeleyDatabase::Backup(const std::string& strDest) const
     }
 }
 
-void BerkeleyDatabase::Flush(bool shutdown)
+void BerkeleyDatabase::Close()
 {
     if (!IsDummy()) {
-        env->Flush(shutdown);
-        if (shutdown) {
-            LOCK(cs_db);
-            g_dbenvs.erase(env->Directory().string());
-            env = nullptr;
-        } else {
-            // TODO: To avoid g_dbenvs.erase erasing the environment prematurely after the
-            // first database shutdown when multiple databases are open in the same
-            // environment, should replace raw database `env` pointers with shared or weak
-            // pointers, or else separate the database and environment shutdowns so
-            // environments can be shut down after databases.
-            g_fileids.erase(m_file_path);
-        }
+        env->Flush();
+        // TODO: To avoid g_dbenvs.erase erasing the environment prematurely after the
+        // first database shutdown when multiple databases are open in the same
+        // environment, should replace raw database `env` pointers with shared or weak
+        // pointers, or else separate the database and environment shutdowns so
+        // environments can be shut down after databases.
+        g_fileids.erase(m_file_path);
     }
 }
 

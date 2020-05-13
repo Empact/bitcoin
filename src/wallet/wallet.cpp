@@ -113,7 +113,7 @@ static void ReleaseWallet(CWallet* wallet)
 {
     const std::string name = wallet->GetName();
     wallet->WalletLogPrintf("Releasing wallet\n");
-    wallet->Flush();
+    wallet->Flush(true);
     delete wallet;
     // Wallet is now released, notify UnloadWallet, if any.
     {
@@ -430,7 +430,12 @@ bool CWallet::HasWalletSpend(const uint256& txid) const
 
 void CWallet::Flush(bool shutdown)
 {
-    database->Flush(shutdown);
+    if (database) {
+        database->Close();
+        if (shutdown) {
+            database.reset();
+        }
+    }
 }
 
 void CWallet::SyncMetaData(std::pair<TxSpends::iterator, TxSpends::iterator> range)

@@ -78,7 +78,7 @@ public:
 
     bool Open(bool retry);
     void Close();
-    void Flush(bool fShutdown);
+    void Flush();
     void CheckpointLSN(const std::string& strFile);
 
     void CloseDb(const std::string& strFile);
@@ -126,12 +126,7 @@ public:
         assert(inserted.second);
     }
 
-    ~BerkeleyDatabase() {
-        if (env) {
-            size_t erased = env->m_databases.erase(strFile);
-            assert(erased == 1);
-        }
-    }
+    ~BerkeleyDatabase();
 
     /** Return object for accessing database at specified path. */
     static std::unique_ptr<BerkeleyDatabase> Create(const fs::path& path)
@@ -166,9 +161,9 @@ public:
      */
     bool Backup(const std::string& strDest) const;
 
-    /** Make sure all changes are flushed to disk.
+    /** Close the database and make sure all changes are flushed to disk.
      */
-    void Flush(bool shutdown);
+    void Close();
     /* flush the wallet passively (TRY_LOCK)
        ideal to be called periodically */
     bool PeriodicFlush();
