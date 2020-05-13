@@ -51,7 +51,6 @@ private:
 
 public:
     std::unique_ptr<DbEnv> dbenv;
-    std::map<std::string, int> mapFileUseCount;
     std::map<std::string, std::reference_wrapper<BerkeleyDatabase>> m_databases;
     std::condition_variable_any m_db_in_use;
 
@@ -147,10 +146,14 @@ public:
         return MakeUnique<BerkeleyDatabase>(std::make_shared<BerkeleyEnvironment>(), "");
     }
 
-    /** Open the database if it is not already opened. Increments mapFileUseCount */
+    /** Open the database if it is not already opened. */
     void Open(const char* mode);
 
-    /** Indicate that database user has stopped using the database. Decrement mapFileUseCount */
+    //! Counts the number of active database users to be sure that the database is not closed while someone is using it
+    std::atomic<int> m_refcount{0};
+    /** Indicate the a new database user has began using the database. Increments m_refcount */
+    void Acquire();
+    /** Indicate that database user has stopped using the database. Decrement m_refcount */
     void Release();
 
     /** Rewrite the entire database on disk, with the exception of key pszSkip if non-zero
