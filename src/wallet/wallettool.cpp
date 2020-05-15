@@ -108,21 +108,13 @@ static const char *HEADER_END = "HEADER=END";
 /* End of key/value data */
 static const char *DATA_END = "DATA=END";
 
-static bool SalvageDb(Db& db, const std::string& strFile, bool fAggressive, std::vector<BerkeleyEnvironment::KeyValPair>& vResult)
+static bool SalvageDb(Db& db, const std::string& strFile, std::vector<BerkeleyEnvironment::KeyValPair>& vResult)
 {
-    u_int32_t flags = DB_SALVAGE;
-    if (fAggressive)
-        flags |= DB_AGGRESSIVE;
-
     std::stringstream strDump;
 
-    int result = db.verify(strFile.c_str(), nullptr, &strDump, flags);
+    int result = db.verify(strFile.c_str(), nullptr, &strDump, DB_SALVAGE | DB_AGGRESSIVE);
     if (result == DB_VERIFY_BAD) {
         LogPrintf("Salvage: Database salvage found errors, all data may not be recoverable.\n");
-        if (!fAggressive) {
-            LogPrintf("Salvage: Rerun with aggressive mode to ignore errors and continue.\n");
-            return false;
-        }
     }
     if (result != 0 && result != DB_VERIFY_BAD) {
         LogPrintf("Salvage: Database salvage failed with result %d.\n", result);
@@ -192,7 +184,7 @@ static bool SalvageWallet(fs::path file_path)
 
     std::unique_ptr<Db> pdbCopy = MakeUnique<Db>(env->dbenv.get(), 0);
     std::vector<BerkeleyEnvironment::KeyValPair> salvagedData;
-    bool fSuccess = SalvageDb(*pdbCopy, newFilename, true, salvagedData);
+    bool fSuccess = SalvageDb(*pdbCopy, newFilename, salvagedData);
     if (salvagedData.empty())
     {
         LogPrintf("Salvage(aggressive) found no records in %s.\n", newFilename);
