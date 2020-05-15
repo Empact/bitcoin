@@ -108,7 +108,7 @@ static const char *HEADER_END = "HEADER=END";
 /* End of key/value data */
 static const char *DATA_END = "DATA=END";
 
-static bool SalvageDb(Db& db, const std::string& strFile, std::vector<BerkeleyEnvironment::KeyValPair>& vResult)
+static bool SalvageDb(Db& db, const std::string& strFile, std::vector<std::pair<std::vector<unsigned char>, std::vector<unsigned char>>>& vResult)
 {
     std::stringstream strDump;
 
@@ -183,7 +183,7 @@ static bool SalvageWallet(fs::path file_path)
     }
 
     std::unique_ptr<Db> pdbCopy = MakeUnique<Db>(env->dbenv.get(), 0);
-    std::vector<BerkeleyEnvironment::KeyValPair> salvagedData;
+    std::vector<std::pair<std::vector<unsigned char>, std::vector<unsigned char>>> salvagedData;
     bool fSuccess = SalvageDb(*pdbCopy, newFilename, salvagedData);
     if (salvagedData.empty())
     {
@@ -205,7 +205,7 @@ static bool SalvageWallet(fs::path file_path)
     }
 
     DbTxn* ptxn = env->TxnBegin();
-    for (BerkeleyEnvironment::KeyValPair& row : salvagedData)
+    for (std::pair<std::vector<unsigned char>, std::vector<unsigned char>>& row : salvagedData)
     {
         CDataStream ssKey(row.first, SER_DISK, CLIENT_VERSION);
         CDataStream ssValue(row.second, SER_DISK, CLIENT_VERSION);
