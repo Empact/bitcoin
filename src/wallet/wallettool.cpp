@@ -104,9 +104,8 @@ static void WalletShowInfo(CWallet* wallet_instance)
 }
 
 /* Recover filter (used as callback), will only let keys (cryptographical keys) as KV/key-type pass through */
-static bool RecoverKeysOnlyFilter(void *callbackData, CDataStream ssKey, CDataStream ssValue)
+static bool RecoverKeysOnlyFilter(CWallet *dummyWallet, CDataStream ssKey, CDataStream ssValue)
 {
-    CWallet *dummyWallet = reinterpret_cast<CWallet*>(callbackData);
     std::string strType, strErr;
     bool fReadOK = WalletBatch::ReadKeyValue(dummyWallet, ssKey, ssValue, strType, strErr);
     if (!WalletBatch::IsKeyType(strType) && strType != DBKeys::HDCHAIN) {
@@ -121,11 +120,71 @@ static bool RecoverKeysOnlyFilter(void *callbackData, CDataStream ssKey, CDataSt
     return true;
 }
 
-static bool SalvageWallet(fs::path path)
+static bool SalvageWallet(fs::path file_path)
 {
     CWallet dummy_wallet(nullptr, WalletLocation(), WalletDatabase::CreateDummy());
-    std::string backup_filename;
-    return BerkeleyBatch::Recover(path, (void*)&dummy_wallet, RecoverKeysOnlyFilter, backup_filename);
+    std::string filename;
+    std::shared_ptr<BerkeleyEnvironment> env = GetWalletEnv(file_path, filename);
+
+    // Recovery procedure:
+    // move wallet file to walletfilename.timestamp.bak
+    // Call Salvage with fAggressive=true to
+    // get as much data as possible.
+    // Rewrite salvaged data to fresh wallet file
+    // Set -rescan so any missing transactions will be
+    // found.
+    int64_t now = GetTime();
+    std::string newFilename = strprintf("%s.%d.bak", filename, now);
+
+    int result = env->dbenv->dbrename(nullptr, filename.c_str(), nullptr,
+                                       newFilename.c_str(), DB_AUTO_COMMIT);
+    if (result == 0)
+        LogPrintf("Renamed %s to %s\n", filename, newFilename);
+    else
+    {
+        LogPrintf("Failed to rename %s to %s\n", filename, newFilename);
+        return false;
+    }
+
+    std::vector<BerkeleyEnvironment::KeyValPair> salvagedData;
+    bool fSuccess = env->Salvage(newFilename, true, salvagedData);
+    if (salvagedData.empty())
+    {
+        LogPrintf("Salvage(aggressive) found no records in %s.\n", newFilename);
+        return false;
+    }
+    LogPrintf("Salvage(aggressive) found %u records\n", salvagedData.size());
+
+    std::unique_ptr<Db> pdbCopy = MakeUnique<Db>(env->dbenv.get(), 0);
+    int ret = pdbCopy->open(nullptr,               // Txn pointer
+                            filename.c_str(),   // Filename
+                            "main",             // Logical db name
+                            DB_BTREE,           // Database type
+                            DB_CREATE,          // Flags
+                            0);
+    if (ret > 0) {
+        LogPrintf("Cannot create database file %s\n", filename);
+        pdbCopy->close(0);
+        return false;
+    }
+
+    DbTxn* ptxn = env->TxnBegin();
+    for (BerkeleyEnvironment::KeyValPair& row : salvagedData)
+    {
+        CDataStream ssKey(row.first, SER_DISK, CLIENT_VERSION);
+        CDataStream ssValue(row.second, SER_DISK, CLIENT_VERSION);
+        if (!RecoverKeysOnlyFilter(&dummy_wallet, ssKey, ssValue))
+            continue;
+        Dbt datKey(&row.first[0], row.first.size());
+        Dbt datValue(&row.second[0], row.second.size());
+        int ret2 = pdbCopy->put(ptxn, &datKey, &datValue, DB_NOOVERWRITE);
+        if (ret2 > 0)
+            fSuccess = false;
+    }
+    ptxn->commit(0);
+    pdbCopy->close(0);
+
+    return fSuccess;
 }
 
 bool ExecuteWalletToolFunc(const std::string& command, const std::string& name)
