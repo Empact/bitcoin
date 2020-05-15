@@ -103,6 +103,67 @@ static void WalletShowInfo(CWallet* wallet_instance)
     tfm::format(std::cout, "Address Book: %zu\n", wallet_instance->m_address_book.size());
 }
 
+/* End of headers, beginning of key/value data */
+static const char *HEADER_END = "HEADER=END";
+/* End of key/value data */
+static const char *DATA_END = "DATA=END";
+
+static bool SalvageDb(Db& db, const std::string& strFile, bool fAggressive, std::vector<BerkeleyEnvironment::KeyValPair>& vResult)
+{
+    u_int32_t flags = DB_SALVAGE;
+    if (fAggressive)
+        flags |= DB_AGGRESSIVE;
+
+    std::stringstream strDump;
+
+    int result = db.verify(strFile.c_str(), nullptr, &strDump, flags);
+    if (result == DB_VERIFY_BAD) {
+        LogPrintf("Salvage: Database salvage found errors, all data may not be recoverable.\n");
+        if (!fAggressive) {
+            LogPrintf("Salvage: Rerun with aggressive mode to ignore errors and continue.\n");
+            return false;
+        }
+    }
+    if (result != 0 && result != DB_VERIFY_BAD) {
+        LogPrintf("Salvage: Database salvage failed with result %d.\n", result);
+        return false;
+    }
+
+    // Format of bdb dump is ascii lines:
+    // header lines...
+    // HEADER=END
+    //  hexadecimal key
+    //  hexadecimal value
+    //  ... repeated
+    // DATA=END
+
+    std::string strLine;
+    while (!strDump.eof() && strLine != HEADER_END)
+        getline(strDump, strLine); // Skip past header
+
+    std::string keyHex, valueHex;
+    while (!strDump.eof() && keyHex != DATA_END) {
+        getline(strDump, keyHex);
+        if (keyHex != DATA_END) {
+            if (strDump.eof())
+                break;
+            getline(strDump, valueHex);
+            if (valueHex == DATA_END) {
+                LogPrintf("Salvage: WARNING: Number of keys in data does not match number of values.\n");
+                break;
+            }
+            vResult.push_back(make_pair(ParseHex(keyHex), ParseHex(valueHex)));
+        }
+    }
+
+    if (keyHex != DATA_END) {
+        LogPrintf("Salvage: WARNING: Unexpected end of file while reading salvage output.\n");
+        return false;
+    }
+
+    return (result == 0);
+}
+
 static bool SalvageWallet(fs::path file_path)
 {
     CWallet dummy_wallet(nullptr, WalletLocation(), WalletDatabase::CreateDummy());
@@ -129,8 +190,9 @@ static bool SalvageWallet(fs::path file_path)
         return false;
     }
 
+    std::unique_ptr<Db> pdbCopy = MakeUnique<Db>(env->dbenv.get(), 0);
     std::vector<BerkeleyEnvironment::KeyValPair> salvagedData;
-    bool fSuccess = env->Salvage(newFilename, true, salvagedData);
+    bool fSuccess = SalvageDb(*pdbCopy, newFilename, true, salvagedData);
     if (salvagedData.empty())
     {
         LogPrintf("Salvage(aggressive) found no records in %s.\n", newFilename);
@@ -138,7 +200,6 @@ static bool SalvageWallet(fs::path file_path)
     }
     LogPrintf("Salvage(aggressive) found %u records\n", salvagedData.size());
 
-    std::unique_ptr<Db> pdbCopy = MakeUnique<Db>(env->dbenv.get(), 0);
     int ret = pdbCopy->open(nullptr,               // Txn pointer
                             filename.c_str(),   // Filename
                             "main",             // Logical db name
