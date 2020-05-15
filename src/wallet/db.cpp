@@ -544,17 +544,17 @@ bool BerkeleyBatch::Rewrite(BerkeleyDatabase& database, const char* pszSkip)
                         fSuccess = false;
                     }
 
-                    Dbc* pcursor = db.GetCursor();
-                    if (pcursor)
+                    if (db.CreateCursor())
                         while (fSuccess) {
                             CDataStream ssKey(SER_DISK, CLIENT_VERSION);
                             CDataStream ssValue(SER_DISK, CLIENT_VERSION);
-                            int ret1 = db.ReadAtCursor(pcursor, ssKey, ssValue);
-                            if (ret1 == DB_NOTFOUND) {
-                                pcursor->close();
+                            bool complete;
+                            bool ret1 = db.ReadAtCursor(ssKey, ssValue, complete);
+                            if (complete) {
+                                db.CloseCursor();
                                 break;
-                            } else if (ret1 != 0) {
-                                pcursor->close();
+                            } else if (!ret1) {
+                                db.CloseCursor();
                                 fSuccess = false;
                                 break;
                             }

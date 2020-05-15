@@ -240,6 +240,7 @@ protected:
     bool fFlushOnClose;
     BerkeleyEnvironment *env;
     BerkeleyDatabase& m_database;
+    Dbc* m_cursor = nullptr;
 
 public:
     explicit BerkeleyBatch(BerkeleyDatabase& database, const char* pszMode = "r+", bool fFlushOnCloseIn=true);
@@ -341,27 +342,32 @@ public:
         return (ret == 0);
     }
 
-    Dbc* GetCursor()
+    bool CreateCursor()
     {
         if (!pdb)
-            return nullptr;
-        Dbc* pcursor = nullptr;
-        int ret = pdb->cursor(nullptr, &pcursor, 0);
+            return false;
+        m_cursor = nullptr;
+        int ret = pdb->cursor(nullptr, &m_cursor, 0);
         if (ret != 0)
-            return nullptr;
-        return pcursor;
+            return false;
+        return true;
     }
 
-    int ReadAtCursor(Dbc* pcursor, CDataStream& ssKey, CDataStream& ssValue)
+    bool ReadAtCursor(CDataStream& ssKey, CDataStream& ssValue, bool& complete)
     {
+        complete = false;
+        if (m_cursor == nullptr) return false;
         // Read at cursor
         SafeDbt datKey;
         SafeDbt datValue;
-        int ret = pcursor->get(datKey, datValue, DB_NEXT);
+        int ret = m_cursor->get(datKey, datValue, DB_NEXT);
+        if (ret == DB_NOTFOUND) {
+            complete = true;
+        }
         if (ret != 0)
-            return ret;
+            return false;
         else if (datKey.get_data() == nullptr || datValue.get_data() == nullptr)
-            return 99999;
+            return false;
 
         // Convert to streams
         ssKey.SetType(SER_DISK);
@@ -370,7 +376,13 @@ public:
         ssValue.SetType(SER_DISK);
         ssValue.clear();
         ssValue.write((char*)datValue.get_data(), datValue.get_size());
-        return 0;
+        return true;
+    }
+
+    void CloseCursor()
+    {
+        m_cursor->close();
+        m_cursor = nullptr;
     }
 
     bool TxnBegin()
