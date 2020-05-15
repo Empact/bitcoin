@@ -107,7 +107,7 @@ static bool SalvageWallet(fs::path path)
 {
     CWallet dummy_wallet(nullptr, WalletLocation(), WalletDatabase::CreateDummy());
     std::string backup_filename;
-    return WalletBatch::Recover(path, (void*)&dummy_wallet, WalletBatch::RecoverKeysOnlyFilter, backup_filename);
+    return BerkeleyBatch::Recover(path, (void*)&dummy_wallet, WalletBatch::RecoverKeysOnlyFilter, backup_filename);
 }
 
 bool ExecuteWalletToolFunc(const std::string& command, const std::string& name)
