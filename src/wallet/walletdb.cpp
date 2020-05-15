@@ -594,6 +594,16 @@ bool WalletBatch::IsKeyType(const std::string& strType)
             strType == DBKeys::MASTER_KEY || strType == DBKeys::CRYPTED_KEY);
 }
 
+bool WalletBatch::ReadKeyValue(CWallet* dummyWallet, CDataStream& ssKey, CDataStream& ssValue,
+                              std::string& strType, std::string& strErr)
+{
+    CWalletScanState dummyWss;
+    // Required in LoadKeyMetadata():
+    LOCK(dummyWallet->cs_wallet);
+    return ::ReadKeyValue(dummyWallet, ssKey, ssValue,
+                           dummyWss, strType, strErr);
+}
+
 DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
 {
     CWalletScanState wss;
@@ -633,7 +643,7 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
 
             // Try to be tolerant of single corrupt records:
             std::string strType, strErr;
-            if (!ReadKeyValue(pwallet, ssKey, ssValue, wss, strType, strErr))
+            if (!::ReadKeyValue(pwallet, ssKey, ssValue, wss, strType, strErr))
             {
                 // losing keys is considered a catastrophic error, anything else
                 // we assume the user can live with:
@@ -876,30 +886,6 @@ void MaybeCompactWalletDB()
     }
 
     fOneThread = false;
-}
-
-bool WalletBatch::RecoverKeysOnlyFilter(void *callbackData, CDataStream ssKey, CDataStream ssValue)
-{
-    CWallet *dummyWallet = reinterpret_cast<CWallet*>(callbackData);
-    CWalletScanState dummyWss;
-    std::string strType, strErr;
-    bool fReadOK;
-    {
-        // Required in LoadKeyMetadata():
-        LOCK(dummyWallet->cs_wallet);
-        fReadOK = ReadKeyValue(dummyWallet, ssKey, ssValue,
-                               dummyWss, strType, strErr);
-    }
-    if (!IsKeyType(strType) && strType != DBKeys::HDCHAIN) {
-        return false;
-    }
-    if (!fReadOK)
-    {
-        LogPrintf("WARNING: SalvageWallet skipping %s: %s\n", strType, strErr);
-        return false;
-    }
-
-    return true;
 }
 
 bool WalletBatch::VerifyEnvironment(const fs::path& wallet_path, bilingual_str& errorStr)

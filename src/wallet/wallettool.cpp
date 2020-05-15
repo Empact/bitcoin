@@ -103,11 +103,29 @@ static void WalletShowInfo(CWallet* wallet_instance)
     tfm::format(std::cout, "Address Book: %zu\n", wallet_instance->m_address_book.size());
 }
 
+/* Recover filter (used as callback), will only let keys (cryptographical keys) as KV/key-type pass through */
+static bool RecoverKeysOnlyFilter(void *callbackData, CDataStream ssKey, CDataStream ssValue)
+{
+    CWallet *dummyWallet = reinterpret_cast<CWallet*>(callbackData);
+    std::string strType, strErr;
+    bool fReadOK = WalletBatch::ReadKeyValue(dummyWallet, ssKey, ssValue, strType, strErr);
+    if (!WalletBatch::IsKeyType(strType) && strType != DBKeys::HDCHAIN) {
+        return false;
+    }
+    if (!fReadOK)
+    {
+        LogPrintf("WARNING: WalletBatch::Recover skipping %s: %s\n", strType, strErr);
+        return false;
+    }
+
+    return true;
+}
+
 static bool SalvageWallet(fs::path path)
 {
     CWallet dummy_wallet(nullptr, WalletLocation(), WalletDatabase::CreateDummy());
     std::string backup_filename;
-    return BerkeleyBatch::Recover(path, (void*)&dummy_wallet, WalletBatch::RecoverKeysOnlyFilter, backup_filename);
+    return BerkeleyBatch::Recover(path, (void*)&dummy_wallet, RecoverKeysOnlyFilter, backup_filename);
 }
 
 bool ExecuteWalletToolFunc(const std::string& command, const std::string& name)

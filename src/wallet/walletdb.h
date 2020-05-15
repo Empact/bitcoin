@@ -263,8 +263,7 @@ public:
     DBErrors FindWalletTx(std::vector<uint256>& vTxHash, std::list<CWalletTx>& vWtx);
     DBErrors ZapWalletTx(std::list<CWalletTx>& vWtx);
     DBErrors ZapSelectTx(std::vector<uint256>& vHashIn, std::vector<uint256>& vHashOut);
-    /* Recover filter (used as callback), will only let keys (cryptographical keys) as KV/key-type pass through */
-    static bool RecoverKeysOnlyFilter(void *callbackData, CDataStream ssKey, CDataStream ssValue);
+    static bool ReadKeyValue(CWallet* dummyWallet, CDataStream& ssKey, CDataStream& ssValue, std::string& strType, std::string& strErr);
     /* Function to determine if a certain KV/key-type is a key (cryptographical key) type */
     static bool IsKeyType(const std::string& strType);
     /* verifies the database environment */
