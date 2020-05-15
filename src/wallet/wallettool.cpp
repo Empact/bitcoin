@@ -103,23 +103,6 @@ static void WalletShowInfo(CWallet* wallet_instance)
     tfm::format(std::cout, "Address Book: %zu\n", wallet_instance->m_address_book.size());
 }
 
-/* Recover filter (used as callback), will only let keys (cryptographical keys) as KV/key-type pass through */
-static bool RecoverKeysOnlyFilter(CWallet *dummyWallet, CDataStream ssKey, CDataStream ssValue)
-{
-    std::string strType, strErr;
-    bool fReadOK = WalletBatch::ReadKeyValue(dummyWallet, ssKey, ssValue, strType, strErr);
-    if (!WalletBatch::IsKeyType(strType) && strType != DBKeys::HDCHAIN) {
-        return false;
-    }
-    if (!fReadOK)
-    {
-        LogPrintf("WARNING: WalletBatch::Recover skipping %s: %s\n", strType, strErr);
-        return false;
-    }
-
-    return true;
-}
-
 static bool SalvageWallet(fs::path file_path)
 {
     CWallet dummy_wallet(nullptr, WalletLocation(), WalletDatabase::CreateDummy());
@@ -173,8 +156,17 @@ static bool SalvageWallet(fs::path file_path)
     {
         CDataStream ssKey(row.first, SER_DISK, CLIENT_VERSION);
         CDataStream ssValue(row.second, SER_DISK, CLIENT_VERSION);
-        if (!RecoverKeysOnlyFilter(&dummy_wallet, ssKey, ssValue))
+        std::string strType, strErr;
+        /* only let keys (cryptographical keys) as KV/key-type pass through */
+        bool fReadOK = WalletBatch::ReadKeyValue(&dummy_wallet, ssKey, ssValue, strType, strErr);
+        if (!WalletBatch::IsKeyType(strType) && strType != DBKeys::HDCHAIN) {
             continue;
+        }
+        if (!fReadOK)
+        {
+            LogPrintf("WARNING: SalvageWallet skipping %s: %s\n", strType, strErr);
+            continue;
+        }
         Dbt datKey(&row.first[0], row.first.size());
         Dbt datValue(&row.second[0], row.second.size());
         int ret2 = pdbCopy->put(ptxn, &datKey, &datValue, DB_NOOVERWRITE);
