@@ -41,7 +41,9 @@ std::string FormatScript(const CScript& script)
                 ret += strprintf("%i ", op - OP_1NEGATE - 1);
                 continue;
             } else if (op >= OP_NOP && op <= OP_NOP10) {
-                std::string str(GetOpName(op));
+                const char* opname = GetOpName(op);
+                assert(opname != nullptr);
+                std::string str(opname);
                 if (str.substr(0, 3) == std::string("OP_")) {
                     ret += str.substr(3, std::string::npos) + " ";
                     continue;
@@ -120,8 +122,10 @@ std::string ScriptToAsmStr(const CScript& script, const bool fAttemptSighashDeco
                     str += HexStr(vch);
                 }
             }
+        } else if (const char* opname = GetOpName(opcode)) {
+            str += opname;
         } else {
-            str += GetOpName(opcode);
+            str += "OP_UNKNOWN";
         }
     }
     return str;

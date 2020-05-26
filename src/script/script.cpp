@@ -7,9 +7,7 @@
 
 #include <util/strencodings.h>
 
-#include <string>
-
-std::string GetOpName(opcodetype opcode)
+const char* GetOpName(opcodetype opcode)
 {
     switch (opcode)
     {
@@ -143,7 +141,7 @@ std::string GetOpName(opcodetype opcode)
     case OP_INVALIDOPCODE          : return "OP_INVALIDOPCODE";
 
     default:
-        return "OP_UNKNOWN";
+        return nullptr;
     }
 }
 

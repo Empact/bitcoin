@@ -193,7 +193,8 @@ enum opcodetype
 // Maximum value that an opcode can be
 static const unsigned int MAX_OPCODE = OP_NOP10;
 
-std::string GetOpName(opcodetype opcode);
+/** @return a string describing opcode, or nullptr if unknown */
+const char* GetOpName(opcodetype opcode);
 
 class scriptnum_error : public std::runtime_error
 {
