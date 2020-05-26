@@ -450,6 +450,14 @@ std::string JSONPrettyPrint(const UniValue& univalue)
 }
 } // namespace
 
+BOOST_AUTO_TEST_CASE(script_GetOpName)
+{
+    // Ensure names for all ops used in FormatScript
+    for (unsigned int op = OP_NOP; op <= MAX_OPCODE; op++) {
+        BOOST_CHECK(GetOpName((opcodetype) op) != nullptr);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(script_build)
 {
     const KeyData keys;

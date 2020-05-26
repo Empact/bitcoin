@@ -41,9 +41,8 @@ std::string FormatScript(const CScript& script)
                 ret += strprintf("%i ", op - OP_1NEGATE - 1);
                 continue;
             } else if (op >= OP_NOP && op <= OP_NOP10) {
-                const char* opname = GetOpName(op);
-                assert(opname != nullptr);
-                std::string str(opname);
+                static_assert(OP_NOP10 == MAX_OPCODE, "Review FormatScript as MAX_OPCODE has changed");
+                std::string str(GetOpName(op));
                 if (str.substr(0, 3) == std::string("OP_")) {
                     ret += str.substr(3, std::string::npos) + " ";
                     continue;
