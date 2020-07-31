@@ -635,10 +635,14 @@ class TestNodeCLI():
                 raise JSONRPCException(dict(code=int(code), message=message))
             # Ignore cli_stdout, raise with cli_stderr
             raise subprocess.CalledProcessError(returncode, self.binary, output=cli_stderr)
-        try:
-            return json.loads(cli_stdout, parse_float=decimal.Decimal)
-        except (json.JSONDecodeError, decimal.InvalidOperation):
+        if not cli_stdout or "-version" in self.options or command in ["stop", "getbestblockhash", "getblock", "getnewaddress", "sendtoaddress", "submitblock", "createrawtransaction", "dumpprivkey", "encryptwallet", "getrawchangeaddress", "signmessage"]:
             return cli_stdout.rstrip("\n")
+        else:
+            try:
+                return json.loads(cli_stdout, parse_float=decimal.Decimal)
+            except decimal.InvalidOperation as e:
+                print(e)
+                raise
 
 class RPCOverloadWrapper():
     def __init__(self, rpc, cli=False, descriptors=False):
