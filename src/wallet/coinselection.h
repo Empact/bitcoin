@@ -197,6 +197,39 @@ struct OutputGroup
  */
 [[nodiscard]] CAmount GetSelectionWaste(const std::set<CInputCoin>& inputs, CAmount change_cost, CAmount target, bool use_effective_value = true);
 
+struct SelectionResult
+{
+    /** Set of inputs selected by the algorithm to use in the transaction */
+    std::set<CInputCoin> m_selected_inputs;
+    /** The target the algorithm selected for. Note that this may not be equal to the recipient amount as it can include non-input fees */
+    const CAmount m_target;
+    /** The cost of making a change output and spending it in the future. Since this is largely a static parameter
+     * independent of the selection algorithm, it is not cleared by Clear() */
+    const CAmount m_change_cost;
+    /** Whether the input values for calculations should be the effective value (true) or normal value (false) */
+    bool m_use_effective{false};
+
+    explicit SelectionResult(const CAmount target, const CAmount change_cost)
+        : m_target(target), m_change_cost(change_cost) {}
+
+    /** Get the sum of the input values */
+    CAmount GetSelectedValue() const;
+    /** Check if this selection is equivalent to another one. Equivalent means same input values, but maybe different inputs (i.e. same value, different prevout) */
+    bool EquivalentResult(const SelectionResult& other) const;
+    /** Check if this selection is equal to another one. Equal means same inputs (i.e same value and prevout) */
+    bool EqualResult(const SelectionResult& other) const;
+
+    void Clear();
+
+    void AddInput(const OutputGroup& group);
+
+    /** Calculates the waste for this selection via GetSelectionWaste */
+    CAmount GetWaste() const;
+
+    /** Get the vector of CInputCoins that will be used to fill in a CTransaction's vin */
+    std::vector<CInputCoin> GetInputVector() const;
+};
+
 bool SelectCoinsBnB(std::vector<OutputGroup>& utxo_pool, const CAmount& selection_target, const CAmount& cost_of_change, std::set<CInputCoin>& out_set, CAmount& value_ret);
 
 /** Select coins by Single Random Draw. OutputGroups are selected randomly from the eligible

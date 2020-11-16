@@ -369,6 +369,11 @@ CAmount OutputGroup::GetSelectionAmount() const
     return m_subtract_fee_outputs ? m_value : effective_value;
 }
 
+CAmount SelectionResult::GetWaste() const
+{
+    return GetSelectionWaste(m_selected_inputs, m_change_cost, m_target, m_use_effective);
+}
+
 CAmount GetSelectionWaste(const std::set<CInputCoin>& inputs, CAmount change_cost, CAmount target, bool use_effective_value)
 {
     // This function should not be called with empty inputs as that would mean the selection failed
@@ -394,4 +399,53 @@ CAmount GetSelectionWaste(const std::set<CInputCoin>& inputs, CAmount change_cos
     }
 
     return waste;
+}
+
+CAmount SelectionResult::GetSelectedValue() const
+{
+    CAmount ret = 0;
+    for (const auto& coin : m_selected_inputs) {
+        ret += coin.txout.nValue;
+    }
+    return ret;
+}
+
+bool SelectionResult::EquivalentResult(const SelectionResult& other) const
+{
+    std::vector<CAmount> this_amts;
+    std::vector<CAmount> other_amts;
+    for (const auto& coin : m_selected_inputs) {
+        this_amts.push_back(coin.txout.nValue);
+    }
+    for (const auto& coin : other.m_selected_inputs) {
+        other_amts.push_back(coin.txout.nValue);
+    }
+    std::sort(this_amts.begin(), this_amts.end());
+    std::sort(other_amts.begin(), other_amts.end());
+
+    std::pair<std::vector<CAmount>::iterator, std::vector<CAmount>::iterator> ret = mismatch(this_amts.begin(), this_amts.end(), other_amts.begin());
+    return ret.first == this_amts.end() && ret.second == other_amts.end();
+}
+
+bool SelectionResult::EqualResult(const SelectionResult& other) const
+{
+    std::pair<std::set<CInputCoin>::iterator, std::set<CInputCoin>::iterator> ret = mismatch(m_selected_inputs.begin(), m_selected_inputs.end(), other.m_selected_inputs.begin());
+    return ret.first == m_selected_inputs.end() && ret.second == other.m_selected_inputs.end();
+}
+
+void SelectionResult::Clear()
+{
+    m_selected_inputs.clear();
+}
+
+void SelectionResult::AddInput(const OutputGroup& group)
+{
+    util::insert(m_selected_inputs, group.m_outputs);
+}
+
+std::vector<CInputCoin> SelectionResult::GetInputVector() const
+{
+    std::vector<CInputCoin> coins(m_selected_inputs.begin(), m_selected_inputs.end());
+    Shuffle(coins.begin(), coins.end(), FastRandomContext());
+    return coins;
 }
