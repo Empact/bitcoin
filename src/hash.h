@@ -11,7 +11,7 @@
 #include <crypto/ripemd160.h>
 #include <crypto/sha256.h>
 #include <prevector.h>
-#include <serialize.h>
+#include <serialize.h> // For Serialize, Unserialize, SER_GETHASH
 #include <uint256.h>
 #include <version.h>
 
