@@ -25,6 +25,7 @@
 #include <streams.h>
 #include <sync.h>
 #include <threadinterrupt.h>
+#include <threadsafety.h>
 #include <uint256.h>
 #include <util/check.h>
 
@@ -831,7 +832,7 @@ public:
         bool m_i2p_accept_incoming;
     };
 
-    void Init(const Options& connOptions) {
+    void Init(const Options& connOptions) REQUIRES(!cs_totalBytesSent, !cs_vAddedNodes) {
         nLocalServices = connOptions.nLocalServices;
         nMaxConnections = connOptions.nMaxConnections;
         m_max_outbound_full_relay = std::min(connOptions.m_max_outbound_full_relay, connOptions.nMaxConnections);
@@ -882,7 +883,7 @@ public:
     void PushMessage(CNode* pnode, CSerializedNetMsg&& msg);
 
     using NodeFn = std::function<void(CNode*)>;
-    void ForEachNode(const NodeFn& func)
+    void ForEachNode(const NodeFn& func) REQUIRES(!cs_vNodes)
     {
         LOCK(cs_vNodes);
         for (auto&& node : vNodes) {
@@ -891,7 +892,7 @@ public:
         }
     };
 
-    void ForEachNode(const NodeFn& func) const
+    void ForEachNode(const NodeFn& func) const REQUIRES(!cs_vNodes)
     {
         LOCK(cs_vNodes);
         for (auto&& node : vNodes) {
@@ -901,7 +902,7 @@ public:
     };
 
     template<typename Callable, typename CallableAfter>
-    void ForEachNodeThen(Callable&& pre, CallableAfter&& post)
+    void ForEachNodeThen(Callable&& pre, CallableAfter&& post) REQUIRES(!cs_vNodes)
     {
         LOCK(cs_vNodes);
         for (auto&& node : vNodes) {
@@ -912,7 +913,7 @@ public:
     };
 
     template<typename Callable, typename CallableAfter>
-    void ForEachNodeThen(Callable&& pre, CallableAfter&& post) const
+    void ForEachNodeThen(Callable&& pre, CallableAfter&& post) const REQUIRES(!cs_vNodes)
     {
         LOCK(cs_vNodes);
         for (auto&& node : vNodes) {

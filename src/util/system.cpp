@@ -315,7 +315,7 @@ bool ArgsManager::ParseParameters(int argc, const char* const argv[], std::strin
         if (key[0] != '-') {
             if (!m_accept_any_command && m_command.empty()) {
                 // The first non-dash arg is a registered command
-                std::optional<unsigned int> flags = GetArgFlags(key);
+                std::optional<unsigned int> flags = _GetArgFlags(key);
                 if (!flags || !(*flags & ArgsManager::COMMAND)) {
                     error = strprintf("Invalid command '%s'", argv[i]);
                     return false;
@@ -337,7 +337,7 @@ bool ArgsManager::ParseParameters(int argc, const char* const argv[], std::strin
         key.erase(0, 1);
         std::string section;
         util::SettingsValue value = InterpretOption(section, key, val);
-        std::optional<unsigned int> flags = GetArgFlags('-' + key);
+        std::optional<unsigned int> flags = _GetArgFlags('-' + key);
 
         // Unknown command line options and command line options with dot
         // characters (which are returned from InterpretOption with nonempty
@@ -366,6 +366,11 @@ bool ArgsManager::ParseParameters(int argc, const char* const argv[], std::strin
 std::optional<unsigned int> ArgsManager::GetArgFlags(const std::string& name) const
 {
     LOCK(cs_args);
+    return _GetArgFlags(name);
+}
+
+std::optional<unsigned int> ArgsManager::_GetArgFlags(const std::string& name) const
+{
     for (const auto& arg_map : m_available_args) {
         const auto search = arg_map.second.find(name);
         if (search != arg_map.second.end()) {
@@ -468,7 +473,7 @@ bool ArgsManager::ReadSettingsFile(std::vector<std::string>* errors)
         std::string section;
         std::string key = setting.first;
         (void)InterpretOption(section, key, /* value */ {}); // Split setting key into section and argname
-        if (!GetArgFlags('-' + key)) {
+        if (!_GetArgFlags('-' + key)) {
             LogPrintf("Ignoring unknown rw_settings value %s\n", setting.first);
         }
     }
@@ -520,7 +525,6 @@ bool ArgsManager::GetBoolArg(const std::string& strArg, bool fDefault) const
 
 bool ArgsManager::SoftSetArg(const std::string& strArg, const std::string& strValue)
 {
-    LOCK(cs_args);
     if (IsArgSet(strArg)) return false;
     ForceSetArg(strArg, strValue);
     return true;
@@ -874,7 +878,7 @@ bool ArgsManager::ReadConfigStream(std::istream& stream, const std::string& file
         std::string section;
         std::string key = option.first;
         util::SettingsValue value = InterpretOption(section, key, option.second);
-        std::optional<unsigned int> flags = GetArgFlags('-' + key);
+        std::optional<unsigned int> flags = _GetArgFlags('-' + key);
         if (flags) {
             if (!CheckValid(key, value, *flags, error)) {
                 return false;
@@ -1034,7 +1038,7 @@ void ArgsManager::logArgsPrefix(
     std::string section_str = section.empty() ? "" : "[" + section + "] ";
     for (const auto& arg : args) {
         for (const auto& value : arg.second) {
-            std::optional<unsigned int> flags = GetArgFlags('-' + arg.first);
+            std::optional<unsigned int> flags = _GetArgFlags('-' + arg.first);
             if (flags) {
                 std::string value_str = (*flags & SENSITIVE) ? "****" : value.write();
                 LogPrintf("%s %s%s=%s\n", prefix, section_str, arg.first, value_str);

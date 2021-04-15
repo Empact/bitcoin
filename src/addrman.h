@@ -12,6 +12,7 @@
 #include <protocol.h>
 #include <random.h>
 #include <sync.h>
+#include <threadsafety.h>
 #include <timedata.h>
 #include <tinyformat.h>
 #include <util/system.h>
@@ -356,7 +357,7 @@ public:
      * very little in common.
      */
     template <typename Stream>
-    void Serialize(Stream& s_) const
+    void Serialize(Stream& s_) const REQUIRES(!cs)
     {
         LOCK(cs);
 
@@ -421,7 +422,7 @@ public:
     }
 
     template <typename Stream>
-    void Unserialize(Stream& s_)
+    void Unserialize(Stream& s_) REQUIRES(!cs)
     {
         LOCK(cs);
 
@@ -577,7 +578,7 @@ public:
         Check();
     }
 
-    void Clear()
+    void Clear() REQUIRES(!cs)
     {
         LOCK(cs);
         std::vector<int>().swap(vRandom);
@@ -612,27 +613,24 @@ public:
     }
 
     //! Return the number of (unique) addresses in all tables.
-    size_t size() const
+    size_t size() const REQUIRES(!cs)
     {
         LOCK(cs); // TODO: Cache this in an atomic to avoid this overhead
         return vRandom.size();
     }
 
     //! Consistency check
-    void Check()
+    void Check() REQUIRES(cs)
     {
 #ifdef DEBUG_ADDRMAN
-        {
-            LOCK(cs);
-            int err;
-            if ((err=Check_()))
-                LogPrintf("ADDRMAN CONSISTENCY CHECK FAILED!!! err=%i\n", err);
-        }
+        int err;
+        if ((err=Check_()))
+            LogPrintf("ADDRMAN CONSISTENCY CHECK FAILED!!! err=%i\n", err);
 #endif
     }
 
     //! Add a single address.
-    bool Add(const CAddress &addr, const CNetAddr& source, int64_t nTimePenalty = 0)
+    bool Add(const CAddress &addr, const CNetAddr& source, int64_t nTimePenalty = 0) REQUIRES(!cs)
     {
         LOCK(cs);
         bool fRet = false;
@@ -646,7 +644,7 @@ public:
     }
 
     //! Add multiple addresses.
-    bool Add(const std::vector<CAddress> &vAddr, const CNetAddr& source, int64_t nTimePenalty = 0)
+    bool Add(const std::vector<CAddress> &vAddr, const CNetAddr& source, int64_t nTimePenalty = 0) REQUIRES(!cs)
     {
         LOCK(cs);
         int nAdd = 0;
@@ -661,7 +659,7 @@ public:
     }
 
     //! Mark an entry as accessible.
-    void Good(const CService &addr, bool test_before_evict = true, int64_t nTime = GetAdjustedTime())
+    void Good(const CService &addr, bool test_before_evict = true, int64_t nTime = GetAdjustedTime()) REQUIRES(!cs)
     {
         LOCK(cs);
         Check();
@@ -670,7 +668,7 @@ public:
     }
 
     //! Mark an entry as connection attempted to.
-    void Attempt(const CService &addr, bool fCountFailure, int64_t nTime = GetAdjustedTime())
+    void Attempt(const CService &addr, bool fCountFailure, int64_t nTime = GetAdjustedTime()) REQUIRES(!cs)
     {
         LOCK(cs);
         Check();
@@ -679,7 +677,7 @@ public:
     }
 
     //! See if any to-be-evicted tried table entries have been tested and if so resolve the collisions.
-    void ResolveCollisions()
+    void ResolveCollisions() REQUIRES(!cs)
     {
         LOCK(cs);
         Check();
@@ -688,7 +686,7 @@ public:
     }
 
     //! Randomly select an address in tried that another address is attempting to evict.
-    CAddrInfo SelectTriedCollision()
+    CAddrInfo SelectTriedCollision() REQUIRES(!cs)
     {
         CAddrInfo ret;
         {
@@ -703,7 +701,7 @@ public:
     /**
      * Choose an address to connect to.
      */
-    CAddrInfo Select(bool newOnly = false)
+    CAddrInfo Select(bool newOnly = false) REQUIRES(!cs)
     {
         CAddrInfo addrRet;
         {
@@ -716,20 +714,20 @@ public:
     }
 
     //! Return a bunch of addresses, selected at random.
-    std::vector<CAddress> GetAddr(size_t max_addresses, size_t max_pct)
+    std::vector<CAddress> GetAddr(size_t max_addresses, size_t max_pct) REQUIRES(!cs)
     {
-        Check();
         std::vector<CAddress> vAddr;
         {
             LOCK(cs);
+            Check();
             GetAddr_(vAddr, max_addresses, max_pct);
+            Check();
         }
-        Check();
         return vAddr;
     }
 
     //! Outer function for Connected_()
-    void Connected(const CService &addr, int64_t nTime = GetAdjustedTime())
+    void Connected(const CService &addr, int64_t nTime = GetAdjustedTime()) REQUIRES(!cs)
     {
         LOCK(cs);
         Check();
@@ -737,7 +735,7 @@ public:
         Check();
     }
 
-    void SetServices(const CService &addr, ServiceFlags nServices)
+    void SetServices(const CService &addr, ServiceFlags nServices) REQUIRES(!cs)
     {
         LOCK(cs);
         Check();

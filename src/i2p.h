@@ -10,6 +10,7 @@
 #include <netaddress.h>
 #include <sync.h>
 #include <threadinterrupt.h>
+#include <threadsafety.h>
 #include <util/sock.h>
 
 #include <memory>
@@ -84,7 +85,7 @@ public:
      * to the listening socket and address.
      * @return true on success
      */
-    bool Listen(Connection& conn);
+    bool Listen(Connection& conn) REQUIRES(!m_mutex);
 
     /**
      * Wait for and accept a new incoming connection.
@@ -103,7 +104,7 @@ public:
      * it is set to `false`. Only set if `false` is returned.
      * @return true on success
      */
-    bool Connect(const CService& to, Connection& conn, bool& proxy_error);
+    bool Connect(const CService& to, Connection& conn, bool& proxy_error) REQUIRES(!m_mutex);
 
 private:
     /**
@@ -172,7 +173,7 @@ private:
     /**
      * Check the control socket for errors and possibly disconnect.
      */
-    void CheckControlSock();
+    void CheckControlSock() REQUIRES(!m_mutex);
 
     /**
      * Generate a new destination with the SAM proxy and set `m_private_key` to it.

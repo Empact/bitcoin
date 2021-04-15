@@ -161,9 +161,9 @@ bool BanMan::Unban(const CSubNet& sub_net)
 
 void BanMan::GetBanned(banmap_t& banmap)
 {
-    LOCK(m_cs_banned);
     // Sweep the banlist so expired bans are not returned
     SweepBanned();
+    LOCK(m_cs_banned);
     banmap = m_banned; //create a thread safe copy
 }
 

@@ -20,6 +20,7 @@
 #include <fs.h>
 #include <logging.h>
 #include <sync.h>
+#include <threadsafety.h>
 #include <tinyformat.h>
 #include <util/settings.h>
 #include <util/threadnames.h>
@@ -201,7 +202,7 @@ protected:
     bool m_accept_any_command GUARDED_BY(cs_args){true};
     std::list<SectionInfo> m_config_sections GUARDED_BY(cs_args);
 
-    [[nodiscard]] bool ReadConfigStream(std::istream& stream, const std::string& filepath, std::string& error, bool ignore_invalid_keys = false);
+    [[nodiscard]] bool ReadConfigStream(std::istream& stream, const std::string& filepath, std::string& error, bool ignore_invalid_keys = false) REQUIRES(!cs_args);
 
     /**
      * Returns true if settings values from the default section should be used,
@@ -217,12 +218,12 @@ protected:
      * false if "-nosetting" argument was passed, and a string if a "-setting=value"
      * argument was passed.
      */
-    util::SettingsValue GetSetting(const std::string& arg) const;
+    util::SettingsValue GetSetting(const std::string& arg) const REQUIRES(!cs_args);
 
     /**
      * Get list of setting values.
      */
-    std::vector<util::SettingsValue> GetSettingsList(const std::string& arg) const;
+    std::vector<util::SettingsValue> GetSettingsList(const std::string& arg) const REQUIRES(!cs_args);
 
 public:
     ArgsManager();
@@ -231,10 +232,10 @@ public:
     /**
      * Select the network in use
      */
-    void SelectConfigNetwork(const std::string& network);
+    void SelectConfigNetwork(const std::string& network) REQUIRES(!cs_args);
 
-    [[nodiscard]] bool ParseParameters(int argc, const char* const argv[], std::string& error);
-    [[nodiscard]] bool ReadConfigFiles(std::string& error, bool ignore_invalid_keys = false);
+    [[nodiscard]] bool ParseParameters(int argc, const char* const argv[], std::string& error) REQUIRES(!cs_args);
+    [[nodiscard]] bool ReadConfigFiles(std::string& error, bool ignore_invalid_keys = false) REQUIRES(!cs_args);
 
     /**
      * Log warnings for options in m_section_only_args when
@@ -242,12 +243,12 @@ public:
      * on the command line or in a network-specific section in the
      * config file.
      */
-    const std::set<std::string> GetUnsuitableSectionOnlyArgs() const;
+    const std::set<std::string> GetUnsuitableSectionOnlyArgs() const REQUIRES(!cs_args);
 
     /**
      * Log warnings for unrecognized section names in the config file.
      */
-    const std::list<SectionInfo> GetUnrecognizedSections() const;
+    const std::list<SectionInfo> GetUnrecognizedSections() const REQUIRES(!cs_args);
 
     struct Command {
         /** The command (if one has been registered with AddCommand), or empty */
@@ -261,7 +262,7 @@ public:
     /**
      * Get the command and command args (returns std::nullopt if no command provided)
      */
-    std::optional<const Command> GetCommand() const;
+    std::optional<const Command> GetCommand() const REQUIRES(!cs_args);
 
     /**
      * Return a vector of strings of the given argument
@@ -269,7 +270,7 @@ public:
      * @param strArg Argument to get (e.g. "-foo")
      * @return command-line arguments
      */
-    std::vector<std::string> GetArgs(const std::string& strArg) const;
+    std::vector<std::string> GetArgs(const std::string& strArg) const REQUIRES(!cs_args);
 
     /**
      * Return true if the given argument has been manually set
@@ -277,7 +278,7 @@ public:
      * @param strArg Argument to get (e.g. "-foo")
      * @return true if the argument has been set
      */
-    bool IsArgSet(const std::string& strArg) const;
+    bool IsArgSet(const std::string& strArg) const REQUIRES(!cs_args);
 
     /**
      * Return true if the argument was originally passed as a negated option,
@@ -286,7 +287,7 @@ public:
      * @param strArg Argument to get (e.g. "-foo")
      * @return true if the argument was passed negated
      */
-    bool IsArgNegated(const std::string& strArg) const;
+    bool IsArgNegated(const std::string& strArg) const REQUIRES(!cs_args);
 
     /**
      * Return string argument or default value
@@ -295,7 +296,7 @@ public:
      * @param strDefault (e.g. "1")
      * @return command-line argument or default value
      */
-    std::string GetArg(const std::string& strArg, const std::string& strDefault) const;
+    std::string GetArg(const std::string& strArg, const std::string& strDefault) const REQUIRES(!cs_args);
 
     /**
      * Return integer argument or default value
@@ -304,7 +305,7 @@ public:
      * @param nDefault (e.g. 1)
      * @return command-line argument (0 if invalid number) or default value
      */
-    int64_t GetArg(const std::string& strArg, int64_t nDefault) const;
+    int64_t GetArg(const std::string& strArg, int64_t nDefault) const REQUIRES(!cs_args);
 
     /**
      * Return boolean argument or default value
@@ -313,7 +314,7 @@ public:
      * @param fDefault (true or false)
      * @return command-line argument or default value
      */
-    bool GetBoolArg(const std::string& strArg, bool fDefault) const;
+    bool GetBoolArg(const std::string& strArg, bool fDefault) const REQUIRES(!cs_args);
 
     /**
      * Set an argument if it doesn't already have a value
@@ -322,7 +323,7 @@ public:
      * @param strValue Value (e.g. "1")
      * @return true if argument gets set, false if it already had a value
      */
-    bool SoftSetArg(const std::string& strArg, const std::string& strValue);
+    bool SoftSetArg(const std::string& strArg, const std::string& strValue) REQUIRES(!cs_args);
 
     /**
      * Set a boolean argument if it doesn't already have a value
@@ -331,37 +332,37 @@ public:
      * @param fValue Value (e.g. false)
      * @return true if argument gets set, false if it already had a value
      */
-    bool SoftSetBoolArg(const std::string& strArg, bool fValue);
+    bool SoftSetBoolArg(const std::string& strArg, bool fValue) REQUIRES(!cs_args);
 
     // Forces an arg setting. Called by SoftSetArg() if the arg hasn't already
     // been set. Also called directly in testing.
-    void ForceSetArg(const std::string& strArg, const std::string& strValue);
+    void ForceSetArg(const std::string& strArg, const std::string& strValue) REQUIRES(!cs_args);
 
     /**
      * Returns the appropriate chain name from the program arguments.
      * @return CBaseChainParams::MAIN by default; raises runtime error if an invalid combination is given.
      */
-    std::string GetChainName() const;
+    std::string GetChainName() const REQUIRES(!cs_args);
 
     /**
      * Add argument
      */
-    void AddArg(const std::string& name, const std::string& help, unsigned int flags, const OptionsCategory& cat);
+    void AddArg(const std::string& name, const std::string& help, unsigned int flags, const OptionsCategory& cat) REQUIRES(!cs_args);
 
     /**
      * Add subcommand
      */
-    void AddCommand(const std::string& cmd, const std::string& help, const OptionsCategory& cat);
+    void AddCommand(const std::string& cmd, const std::string& help, const OptionsCategory& cat) REQUIRES(!cs_args);
 
     /**
      * Add many hidden arguments
      */
-    void AddHiddenArgs(const std::vector<std::string>& args);
+    void AddHiddenArgs(const std::vector<std::string>& args) REQUIRES(!cs_args);
 
     /**
      * Clear available arguments
      */
-    void ClearArgs() {
+    void ClearArgs() REQUIRES(!cs_args) {
         LOCK(cs_args);
         m_available_args.clear();
         m_network_only_args.clear();
@@ -370,42 +371,42 @@ public:
     /**
      * Get the help string
      */
-    std::string GetHelpMessage() const;
+    std::string GetHelpMessage() const REQUIRES(!cs_args);
 
     /**
      * Return Flags for known arg.
      * Return nullopt for unknown arg.
      */
-    std::optional<unsigned int> GetArgFlags(const std::string& name) const;
+    std::optional<unsigned int> GetArgFlags(const std::string& name) const REQUIRES(!cs_args);
 
     /**
      * Read and update settings file with saved settings. This needs to be
      * called after SelectParams() because the settings file location is
      * network-specific.
      */
-    bool InitSettings(std::string& error);
+    bool InitSettings(std::string& error) REQUIRES(!cs_args);
 
     /**
      * Get settings file path, or return false if read-write settings were
      * disabled with -nosettings.
      */
-    bool GetSettingsPath(fs::path* filepath = nullptr, bool temp = false) const;
+    bool GetSettingsPath(fs::path* filepath = nullptr, bool temp = false) const REQUIRES(!cs_args);
 
     /**
      * Read settings file. Push errors to vector, or log them if null.
      */
-    bool ReadSettingsFile(std::vector<std::string>* errors = nullptr);
+    bool ReadSettingsFile(std::vector<std::string>* errors = nullptr) REQUIRES(!cs_args);
 
     /**
      * Write settings file. Push errors to vector, or log them if null.
      */
-    bool WriteSettingsFile(std::vector<std::string>* errors = nullptr) const;
+    bool WriteSettingsFile(std::vector<std::string>* errors = nullptr) const REQUIRES(!cs_args);
 
     /**
      * Access settings with lock held.
      */
     template <typename Fn>
-    void LockSettings(Fn&& fn)
+    void LockSettings(Fn&& fn) REQUIRES(!cs_args)
     {
         LOCK(cs_args);
         fn(m_settings);
@@ -415,14 +416,20 @@ public:
      * Log the config file options and the command line arguments,
      * useful for troubleshooting.
      */
-    void LogArgs() const;
+    void LogArgs() const REQUIRES(!cs_args);
 
 private:
+    /**
+     * Return Flags for known arg.
+     * Return nullopt for unknown arg.
+     */
+    std::optional<unsigned int> _GetArgFlags(const std::string& name) const REQUIRES(cs_args);
+
     // Helper function for LogArgs().
     void logArgsPrefix(
         const std::string& prefix,
         const std::string& section,
-        const std::map<std::string, std::vector<util::SettingsValue>>& args) const;
+        const std::map<std::string, std::vector<util::SettingsValue>>& args) const REQUIRES(cs_args);
 };
 
 extern ArgsManager gArgs;

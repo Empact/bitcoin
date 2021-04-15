@@ -21,6 +21,8 @@
 #define PT_GUARDED_BY(x) __attribute__((pt_guarded_by(x)))
 #define ACQUIRED_AFTER(...) __attribute__((acquired_after(__VA_ARGS__)))
 #define ACQUIRED_BEFORE(...) __attribute__((acquired_before(__VA_ARGS__)))
+#define REQUIRES(...) __attribute__((requires_capability(__VA_ARGS__)))
+#define REQUIRES_SHARED(...) __attribute__((requires_shared_capability(__VA_ARGS__)))
 #define EXCLUSIVE_LOCK_FUNCTION(...) __attribute__((exclusive_lock_function(__VA_ARGS__)))
 #define SHARED_LOCK_FUNCTION(...) __attribute__((shared_lock_function(__VA_ARGS__)))
 #define EXCLUSIVE_TRYLOCK_FUNCTION(...) __attribute__((exclusive_trylock_function(__VA_ARGS__)))

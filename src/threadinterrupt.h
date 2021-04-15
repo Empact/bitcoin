@@ -6,6 +6,7 @@
 #define BITCOIN_THREADINTERRUPT_H
 
 #include <sync.h>
+#include <threadsafety.h>
 
 #include <atomic>
 #include <chrono>
@@ -21,11 +22,11 @@ class CThreadInterrupt
 public:
     CThreadInterrupt();
     explicit operator bool() const;
-    void operator()();
+    void operator()() REQUIRES(!mut);
     void reset();
-    bool sleep_for(std::chrono::milliseconds rel_time);
-    bool sleep_for(std::chrono::seconds rel_time);
-    bool sleep_for(std::chrono::minutes rel_time);
+    bool sleep_for(std::chrono::milliseconds rel_time) REQUIRES(!mut);
+    bool sleep_for(std::chrono::seconds rel_time) REQUIRES(!mut);
+    bool sleep_for(std::chrono::minutes rel_time) REQUIRES(!mut);
 
 private:
     std::condition_variable cond;

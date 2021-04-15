@@ -58,9 +58,12 @@ BOOST_AUTO_TEST_CASE(SimpleRoundTripTest)
     TestMemPoolEntryHelper entry;
     CBlock block(BuildBlockTestCase());
 
-    LOCK2(cs_main, pool.cs);
-    pool.addUnchecked(entry.FromTx(block.vtx[2]));
-    BOOST_CHECK_EQUAL(pool.mapTx.find(block.vtx[2]->GetHash())->GetSharedTx().use_count(), SHARED_TX_OFFSET + 0);
+    LOCK(cs_main);
+    {
+        LOCK(pool.cs);
+        pool.addUnchecked(entry.FromTx(block.vtx[2]));
+        BOOST_CHECK_EQUAL(pool.mapTx.find(block.vtx[2]->GetHash())->GetSharedTx().use_count(), SHARED_TX_OFFSET + 0);
+    }
 
     // Do a simple ShortTxIDs RT
     {
@@ -78,10 +81,16 @@ BOOST_AUTO_TEST_CASE(SimpleRoundTripTest)
         BOOST_CHECK(!partialBlock.IsTxAvailable(1));
         BOOST_CHECK( partialBlock.IsTxAvailable(2));
 
-        BOOST_CHECK_EQUAL(pool.mapTx.find(block.vtx[2]->GetHash())->GetSharedTx().use_count(), SHARED_TX_OFFSET + 1);
+        {
+            LOCK(pool.cs);
+            BOOST_CHECK_EQUAL(pool.mapTx.find(block.vtx[2]->GetHash())->GetSharedTx().use_count(), SHARED_TX_OFFSET + 1);
+        }
 
         size_t poolSize = pool.size();
-        pool.removeRecursive(*block.vtx[2], MemPoolRemovalReason::REPLACED);
+        {
+            LOCK(pool.cs);
+            pool.removeRecursive(*block.vtx[2], MemPoolRemovalReason::REPLACED);
+        }
         BOOST_CHECK_EQUAL(pool.size(), poolSize - 1);
 
         CBlock block2;

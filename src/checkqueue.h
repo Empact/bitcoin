@@ -6,6 +6,7 @@
 #define BITCOIN_CHECKQUEUE_H
 
 #include <sync.h>
+#include <threadsafety.h>
 #include <tinyformat.h>
 #include <util/threadnames.h>
 
@@ -65,7 +66,7 @@ private:
     bool m_request_stop GUARDED_BY(m_mutex){false};
 
     /** Internal function that does bulk of the verification work. */
-    bool Loop(bool fMaster)
+    bool Loop(bool fMaster) REQUIRES(!m_mutex)
     {
         std::condition_variable& cond = fMaster ? m_master_cv : m_worker_cv;
         std::vector<T> vChecks;
@@ -139,7 +140,7 @@ public:
     }
 
     //! Create a pool of new worker threads.
-    void StartWorkerThreads(const int threads_num)
+    void StartWorkerThreads(const int threads_num) REQUIRES(!m_mutex)
     {
         {
             LOCK(m_mutex);
@@ -157,13 +158,13 @@ public:
     }
 
     //! Wait until execution finishes, and return whether all evaluations were successful.
-    bool Wait()
+    bool Wait() REQUIRES(!m_mutex)
     {
         return Loop(true /* master thread */);
     }
 
     //! Add a batch of checks to the queue
-    void Add(std::vector<T>& vChecks)
+    void Add(std::vector<T>& vChecks) REQUIRES(!m_mutex)
     {
         LOCK(m_mutex);
         for (T& check : vChecks) {

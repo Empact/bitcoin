@@ -10,6 +10,7 @@
 #include <fs.h>
 #include <net_types.h> // For banmap_t
 #include <sync.h>
+#include <threadsafety.h>
 
 #include <chrono>
 #include <cstdint>
@@ -59,32 +60,32 @@ class BanMan
 public:
     ~BanMan();
     BanMan(fs::path ban_file, CClientUIInterface* client_interface, int64_t default_ban_time);
-    void Ban(const CNetAddr& net_addr, int64_t ban_time_offset = 0, bool since_unix_epoch = false);
-    void Ban(const CSubNet& sub_net, int64_t ban_time_offset = 0, bool since_unix_epoch = false);
-    void Discourage(const CNetAddr& net_addr);
-    void ClearBanned();
+    void Ban(const CNetAddr& net_addr, int64_t ban_time_offset = 0, bool since_unix_epoch = false) REQUIRES(!m_cs_banned);
+    void Ban(const CSubNet& sub_net, int64_t ban_time_offset = 0, bool since_unix_epoch = false) REQUIRES(!m_cs_banned);
+    void Discourage(const CNetAddr& net_addr) REQUIRES(!m_cs_banned);
+    void ClearBanned() REQUIRES(!m_cs_banned);
 
     //! Return whether net_addr is banned
-    bool IsBanned(const CNetAddr& net_addr);
+    bool IsBanned(const CNetAddr& net_addr) REQUIRES(!m_cs_banned);
 
     //! Return whether sub_net is exactly banned
-    bool IsBanned(const CSubNet& sub_net);
+    bool IsBanned(const CSubNet& sub_net) REQUIRES(!m_cs_banned);
 
     //! Return whether net_addr is discouraged.
-    bool IsDiscouraged(const CNetAddr& net_addr);
+    bool IsDiscouraged(const CNetAddr& net_addr) REQUIRES(!m_cs_banned);
 
-    bool Unban(const CNetAddr& net_addr);
-    bool Unban(const CSubNet& sub_net);
-    void GetBanned(banmap_t& banmap);
-    void DumpBanlist();
+    bool Unban(const CNetAddr& net_addr) REQUIRES(!m_cs_banned);
+    bool Unban(const CSubNet& sub_net) REQUIRES(!m_cs_banned);
+    void GetBanned(banmap_t& banmap) REQUIRES(!m_cs_banned);
+    void DumpBanlist() REQUIRES(!m_cs_banned);
 
 private:
-    void SetBanned(const banmap_t& banmap);
-    bool BannedSetIsDirty();
+    void SetBanned(const banmap_t& banmap) REQUIRES(!m_cs_banned);
+    bool BannedSetIsDirty() REQUIRES(!m_cs_banned);
     //!set the "dirty" flag for the banlist
-    void SetBannedSetDirty(bool dirty = true);
+    void SetBannedSetDirty(bool dirty = true) REQUIRES(!m_cs_banned);
     //!clean unused entries (if bantime has expired)
-    void SweepBanned();
+    void SweepBanned() REQUIRES(!m_cs_banned);
 
     RecursiveMutex m_cs_banned;
     banmap_t m_banned GUARDED_BY(m_cs_banned);

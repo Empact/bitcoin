@@ -715,7 +715,7 @@ public:
     /** Sets the current loaded state */
     void SetIsLoaded(bool loaded);
 
-    unsigned long size() const
+    unsigned long size() const REQUIRES(!cs)
     {
         LOCK(cs);
         return mapTx.size();
@@ -733,7 +733,7 @@ public:
         return m_total_fee;
     }
 
-    bool exists(const GenTxid& gtxid) const
+    bool exists(const GenTxid& gtxid) const REQUIRES(!cs)
     {
         LOCK(cs);
         if (gtxid.IsWtxid()) {
@@ -741,7 +741,10 @@ public:
         }
         return (mapTx.count(gtxid.GetHash()) != 0);
     }
-    bool exists(const uint256& txid) const { return exists(GenTxid{false, txid}); }
+
+    bool exists(const uint256& txid) const REQUIRES(!cs) {
+        return exists(GenTxid{false, txid});
+    }
 
     CTransactionRef get(const uint256& hash) const;
     txiter get_iter_from_wtxid(const uint256& wtxid) const EXCLUSIVE_LOCKS_REQUIRED(cs)
@@ -756,19 +759,21 @@ public:
     size_t DynamicMemoryUsage() const;
 
     /** Adds a transaction to the unbroadcast set */
-    void AddUnbroadcastTx(const uint256& txid)
+    void AddUnbroadcastTx(const uint256& txid) REQUIRES(!cs)
     {
-        LOCK(cs);
         // Sanity check the transaction is in the mempool & insert into
         // unbroadcast set.
-        if (exists(txid)) m_unbroadcast_txids.insert(txid);
+        if (exists(txid)) {
+            LOCK(cs);
+            m_unbroadcast_txids.insert(txid);
+        }
     };
 
     /** Removes a transaction from the unbroadcast set */
     void RemoveUnbroadcastTx(const uint256& txid, const bool unchecked = false);
 
     /** Returns transactions in unbroadcast set */
-    std::set<uint256> GetUnbroadcastTxs() const
+    std::set<uint256> GetUnbroadcastTxs() const REQUIRES(!cs)
     {
         LOCK(cs);
         return m_unbroadcast_txids;

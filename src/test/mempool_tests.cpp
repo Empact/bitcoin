@@ -57,60 +57,91 @@ BOOST_AUTO_TEST_CASE(MempoolRemoveTest)
 
 
     CTxMemPool testPool;
-    LOCK2(cs_main, testPool.cs);
+    LOCK(cs_main);
 
     // Nothing in pool, remove should do nothing:
     unsigned int poolSize = testPool.size();
-    testPool.removeRecursive(CTransaction(txParent), REMOVAL_REASON_DUMMY);
+    {
+        LOCK(testPool.cs);
+        testPool.removeRecursive(CTransaction(txParent), REMOVAL_REASON_DUMMY);
+    }
     BOOST_CHECK_EQUAL(testPool.size(), poolSize);
 
     // Just the parent:
-    testPool.addUnchecked(entry.FromTx(txParent));
+    {
+        LOCK(testPool.cs);
+        testPool.addUnchecked(entry.FromTx(txParent));
+    }
     poolSize = testPool.size();
-    testPool.removeRecursive(CTransaction(txParent), REMOVAL_REASON_DUMMY);
+    {
+        LOCK(testPool.cs);
+        testPool.removeRecursive(CTransaction(txParent), REMOVAL_REASON_DUMMY);
+    }
     BOOST_CHECK_EQUAL(testPool.size(), poolSize - 1);
 
     // Parent, children, grandchildren:
-    testPool.addUnchecked(entry.FromTx(txParent));
-    for (int i = 0; i < 3; i++)
     {
-        testPool.addUnchecked(entry.FromTx(txChild[i]));
-        testPool.addUnchecked(entry.FromTx(txGrandChild[i]));
+        LOCK(testPool.cs);
+        testPool.addUnchecked(entry.FromTx(txParent));
+        for (int i = 0; i < 3; i++)
+        {
+            testPool.addUnchecked(entry.FromTx(txChild[i]));
+            testPool.addUnchecked(entry.FromTx(txGrandChild[i]));
+        }
     }
     // Remove Child[0], GrandChild[0] should be removed:
     poolSize = testPool.size();
-    testPool.removeRecursive(CTransaction(txChild[0]), REMOVAL_REASON_DUMMY);
+    {
+        LOCK(testPool.cs);
+        testPool.removeRecursive(CTransaction(txChild[0]), REMOVAL_REASON_DUMMY);
+    }
     BOOST_CHECK_EQUAL(testPool.size(), poolSize - 2);
     // ... make sure grandchild and child are gone:
     poolSize = testPool.size();
-    testPool.removeRecursive(CTransaction(txGrandChild[0]), REMOVAL_REASON_DUMMY);
+    {
+        LOCK(testPool.cs);
+        testPool.removeRecursive(CTransaction(txGrandChild[0]), REMOVAL_REASON_DUMMY);
+    }
     BOOST_CHECK_EQUAL(testPool.size(), poolSize);
     poolSize = testPool.size();
-    testPool.removeRecursive(CTransaction(txChild[0]), REMOVAL_REASON_DUMMY);
+    {
+        LOCK(testPool.cs);
+        testPool.removeRecursive(CTransaction(txChild[0]), REMOVAL_REASON_DUMMY);
+    }
     BOOST_CHECK_EQUAL(testPool.size(), poolSize);
     // Remove parent, all children/grandchildren should go:
     poolSize = testPool.size();
-    testPool.removeRecursive(CTransaction(txParent), REMOVAL_REASON_DUMMY);
+    {
+        LOCK(testPool.cs);
+        testPool.removeRecursive(CTransaction(txParent), REMOVAL_REASON_DUMMY);
+    }
     BOOST_CHECK_EQUAL(testPool.size(), poolSize - 5);
     BOOST_CHECK_EQUAL(testPool.size(), 0U);
 
     // Add children and grandchildren, but NOT the parent (simulate the parent being in a block)
-    for (int i = 0; i < 3; i++)
     {
-        testPool.addUnchecked(entry.FromTx(txChild[i]));
-        testPool.addUnchecked(entry.FromTx(txGrandChild[i]));
+        LOCK(testPool.cs);
+        for (int i = 0; i < 3; i++)
+        {
+            testPool.addUnchecked(entry.FromTx(txChild[i]));
+            testPool.addUnchecked(entry.FromTx(txGrandChild[i]));
+        }
     }
     // Now remove the parent, as might happen if a block-re-org occurs but the parent cannot be
     // put into the mempool (maybe because it is non-standard):
     poolSize = testPool.size();
-    testPool.removeRecursive(CTransaction(txParent), REMOVAL_REASON_DUMMY);
+    {
+        LOCK(testPool.cs);
+        testPool.removeRecursive(CTransaction(txParent), REMOVAL_REASON_DUMMY);
+    }
     BOOST_CHECK_EQUAL(testPool.size(), poolSize - 6);
     BOOST_CHECK_EQUAL(testPool.size(), 0U);
 }
 
 template<typename name>
-static void CheckSort(CTxMemPool &pool, std::vector<std::string> &sortedOrder) EXCLUSIVE_LOCKS_REQUIRED(pool.cs)
+static void CheckSort(CTxMemPool &pool, std::vector<std::string> &sortedOrder) REQUIRES(!pool.cs)
 {
+    LOCK(pool.cs);
     BOOST_CHECK_EQUAL(pool.size(), sortedOrder.size());
     typename CTxMemPool::indexed_transaction_set::index<name>::type::iterator it = pool.mapTx.get<name>().begin();
     int count=0;
@@ -122,7 +153,7 @@ static void CheckSort(CTxMemPool &pool, std::vector<std::string> &sortedOrder) E
 BOOST_AUTO_TEST_CASE(MempoolIndexingTest)
 {
     CTxMemPool pool;
-    LOCK2(cs_main, pool.cs);
+    LOCK(cs_main);
     TestMemPoolEntryHelper entry;
 
     /* 3rd highest fee */
@@ -130,28 +161,40 @@ BOOST_AUTO_TEST_CASE(MempoolIndexingTest)
     tx1.vout.resize(1);
     tx1.vout[0].scriptPubKey = CScript() << OP_11 << OP_EQUAL;
     tx1.vout[0].nValue = 10 * COIN;
-    pool.addUnchecked(entry.Fee(10000LL).FromTx(tx1));
+    {
+        LOCK(pool.cs);
+        pool.addUnchecked(entry.Fee(10000LL).FromTx(tx1));
+    }
 
     /* highest fee */
     CMutableTransaction tx2 = CMutableTransaction();
     tx2.vout.resize(1);
     tx2.vout[0].scriptPubKey = CScript() << OP_11 << OP_EQUAL;
     tx2.vout[0].nValue = 2 * COIN;
-    pool.addUnchecked(entry.Fee(20000LL).FromTx(tx2));
+    {
+        LOCK(pool.cs);
+        pool.addUnchecked(entry.Fee(20000LL).FromTx(tx2));
+    }
 
     /* lowest fee */
     CMutableTransaction tx3 = CMutableTransaction();
     tx3.vout.resize(1);
     tx3.vout[0].scriptPubKey = CScript() << OP_11 << OP_EQUAL;
     tx3.vout[0].nValue = 5 * COIN;
-    pool.addUnchecked(entry.Fee(0LL).FromTx(tx3));
+    {
+        LOCK(pool.cs);
+        pool.addUnchecked(entry.Fee(0LL).FromTx(tx3));
+    }
 
     /* 2nd highest fee */
     CMutableTransaction tx4 = CMutableTransaction();
     tx4.vout.resize(1);
     tx4.vout[0].scriptPubKey = CScript() << OP_11 << OP_EQUAL;
     tx4.vout[0].nValue = 6 * COIN;
-    pool.addUnchecked(entry.Fee(15000LL).FromTx(tx4));
+    {
+        LOCK(pool.cs);
+        pool.addUnchecked(entry.Fee(15000LL).FromTx(tx4));
+    }
 
     /* equal fee rate to tx1, but newer */
     CMutableTransaction tx5 = CMutableTransaction();
@@ -159,7 +202,10 @@ BOOST_AUTO_TEST_CASE(MempoolIndexingTest)
     tx5.vout[0].scriptPubKey = CScript() << OP_11 << OP_EQUAL;
     tx5.vout[0].nValue = 11 * COIN;
     entry.nTime = 1;
-    pool.addUnchecked(entry.Fee(10000LL).FromTx(tx5));
+    {
+        LOCK(pool.cs);
+        pool.addUnchecked(entry.Fee(10000LL).FromTx(tx5));
+    }
     BOOST_CHECK_EQUAL(pool.size(), 5U);
 
     std::vector<std::string> sortedOrder;
@@ -177,14 +223,20 @@ BOOST_AUTO_TEST_CASE(MempoolIndexingTest)
     tx6.vout.resize(1);
     tx6.vout[0].scriptPubKey = CScript() << OP_11 << OP_EQUAL;
     tx6.vout[0].nValue = 20 * COIN;
-    pool.addUnchecked(entry.Fee(0LL).FromTx(tx6));
+    {
+        LOCK(pool.cs);
+        pool.addUnchecked(entry.Fee(0LL).FromTx(tx6));
+    }
     BOOST_CHECK_EQUAL(pool.size(), 6U);
     // Check that at this point, tx6 is sorted low
     sortedOrder.insert(sortedOrder.begin(), tx6.GetHash().ToString());
     CheckSort<descendant_score>(pool, sortedOrder);
 
     CTxMemPool::setEntries setAncestors;
-    setAncestors.insert(pool.mapTx.find(tx6.GetHash()));
+    {
+        LOCK(pool.cs);
+        setAncestors.insert(pool.mapTx.find(tx6.GetHash()));
+    }
     CMutableTransaction tx7 = CMutableTransaction();
     tx7.vin.resize(1);
     tx7.vin[0].prevout = COutPoint(tx6.GetHash(), 0);
@@ -197,10 +249,12 @@ BOOST_AUTO_TEST_CASE(MempoolIndexingTest)
 
     CTxMemPool::setEntries setAncestorsCalculated;
     std::string dummy;
-    BOOST_CHECK_EQUAL(pool.CalculateMemPoolAncestors(entry.Fee(2000000LL).FromTx(tx7), setAncestorsCalculated, 100, 1000000, 1000, 1000000, dummy), true);
-    BOOST_CHECK(setAncestorsCalculated == setAncestors);
-
-    pool.addUnchecked(entry.FromTx(tx7), setAncestors);
+    {
+        LOCK(pool.cs);
+        BOOST_CHECK_EQUAL(pool.CalculateMemPoolAncestors(entry.Fee(2000000LL).FromTx(tx7), setAncestorsCalculated, 100, 1000000, 1000, 1000000, dummy), true);
+        BOOST_CHECK(setAncestorsCalculated == setAncestors);
+        pool.addUnchecked(entry.FromTx(tx7), setAncestors);
+    }
     BOOST_CHECK_EQUAL(pool.size(), 7U);
 
     // Now tx6 should be sorted higher (high fee child): tx7, tx6, tx2, ...
@@ -217,8 +271,11 @@ BOOST_AUTO_TEST_CASE(MempoolIndexingTest)
     tx8.vout.resize(1);
     tx8.vout[0].scriptPubKey = CScript() << OP_11 << OP_EQUAL;
     tx8.vout[0].nValue = 10 * COIN;
-    setAncestors.insert(pool.mapTx.find(tx7.GetHash()));
-    pool.addUnchecked(entry.Fee(0LL).Time(2).FromTx(tx8), setAncestors);
+    {
+        LOCK(pool.cs);
+        setAncestors.insert(pool.mapTx.find(tx7.GetHash()));
+        pool.addUnchecked(entry.Fee(0LL).Time(2).FromTx(tx8), setAncestors);
+    }
 
     // Now tx8 should be sorted low, but tx6/tx both high
     sortedOrder.insert(sortedOrder.begin(), tx8.GetHash().ToString());
@@ -232,7 +289,10 @@ BOOST_AUTO_TEST_CASE(MempoolIndexingTest)
     tx9.vout.resize(1);
     tx9.vout[0].scriptPubKey = CScript() << OP_11 << OP_EQUAL;
     tx9.vout[0].nValue = 1 * COIN;
-    pool.addUnchecked(entry.Fee(0LL).Time(3).FromTx(tx9), setAncestors);
+    {
+        LOCK(pool.cs);
+        pool.addUnchecked(entry.Fee(0LL).Time(3).FromTx(tx9), setAncestors);
+    }
 
     // tx9 should be sorted low
     BOOST_CHECK_EQUAL(pool.size(), 9U);
@@ -241,8 +301,11 @@ BOOST_AUTO_TEST_CASE(MempoolIndexingTest)
 
     std::vector<std::string> snapshotOrder = sortedOrder;
 
-    setAncestors.insert(pool.mapTx.find(tx8.GetHash()));
-    setAncestors.insert(pool.mapTx.find(tx9.GetHash()));
+    {
+        LOCK(pool.cs);
+        setAncestors.insert(pool.mapTx.find(tx8.GetHash()));
+        setAncestors.insert(pool.mapTx.find(tx9.GetHash()));
+    }
     /* tx10 depends on tx8 and tx9 and has a high fee*/
     CMutableTransaction tx10 = CMutableTransaction();
     tx10.vin.resize(2);

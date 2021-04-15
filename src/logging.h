@@ -98,17 +98,17 @@ namespace BCLog {
         std::atomic<bool> m_reopen_file{false};
 
         /** Send a string to the log output */
-        void LogPrintStr(const std::string& str, const std::string& logging_function, const std::string& source_file, const int source_line);
+        void LogPrintStr(const std::string& str, const std::string& logging_function, const std::string& source_file, const int source_line) REQUIRES(!m_cs);
 
         /** Returns whether logs will be written to any output */
-        bool Enabled() const
+        bool Enabled() const REQUIRES(!m_cs)
         {
             StdLockGuard scoped_lock(m_cs);
             return m_buffering || m_print_to_console || m_print_to_file || !m_print_callbacks.empty();
         }
 
         /** Connect a slot to the print signal and return the connection */
-        std::list<std::function<void(const std::string&)>>::iterator PushBackCallback(std::function<void(const std::string&)> fun)
+        std::list<std::function<void(const std::string&)>>::iterator PushBackCallback(std::function<void(const std::string&)> fun) REQUIRES(!m_cs)
         {
             StdLockGuard scoped_lock(m_cs);
             m_print_callbacks.push_back(std::move(fun));
@@ -116,16 +116,16 @@ namespace BCLog {
         }
 
         /** Delete a connection */
-        void DeleteCallback(std::list<std::function<void(const std::string&)>>::iterator it)
+        void DeleteCallback(std::list<std::function<void(const std::string&)>>::iterator it) REQUIRES(!m_cs)
         {
             StdLockGuard scoped_lock(m_cs);
             m_print_callbacks.erase(it);
         }
 
         /** Start logging (and flush all buffered messages) */
-        bool StartLogging();
+        bool StartLogging() REQUIRES(!m_cs);
         /** Only for testing */
-        void DisconnectTestLogger();
+        void DisconnectTestLogger() REQUIRES(!m_cs);
 
         void ShrinkDebugFile();
 
