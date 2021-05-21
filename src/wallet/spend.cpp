@@ -373,11 +373,9 @@ std::vector<OutputGroup> GroupOutputs(const CWallet& wallet, const std::vector<C
     return groups_out;
 }
 
-bool AttemptSelection(const CWallet& wallet, const CAmount& nTargetValue, const CoinEligibilityFilter& eligibility_filter, std::vector<COutput> coins,
-                                 std::set<CInputCoin>& setCoinsRet, CAmount& nValueRet, const CoinSelectionParams& coin_selection_params)
+std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAmount& nTargetValue, const CoinEligibilityFilter& eligibility_filter, std::vector<COutput> coins,
+                               const CoinSelectionParams& coin_selection_params)
 {
-    setCoinsRet.clear();
-    nValueRet = 0;
     // Vector of results. We will choose the best one based on waste.
     std::vector<SelectionResult> results;
 
@@ -407,19 +405,17 @@ bool AttemptSelection(const CWallet& wallet, const CAmount& nTargetValue, const 
 
     if (results.size() == 0) {
         // No solution found
-        return false;
+        return std::nullopt;
     }
 
     // Choose the result with the least waste
     // If the waste is the same, choose the one which spends more inputs.
-    const auto& best_result = std::min_element(results.begin(), results.end(), [](const auto& a, const auto& b){
+    SelectionResult selection_result = *std::min_element(results.begin(), results.end(), [](const auto& a, const auto& b){
         CAmount a_waste = a.GetWaste();
         CAmount b_waste = b.GetWaste();
         return a_waste < b_waste || (a_waste == b_waste && a.m_selected_inputs.size() > b.m_selected_inputs.size());
     });
-    setCoinsRet = best_result->m_selected_inputs;
-    nValueRet = best_result->GetSelectedValue();
-    return true;
+    return selection_result;
 }
 
 bool SelectCoins(const CWallet& wallet, const std::vector<COutput>& vAvailableCoins, const CAmount& nTargetValue, std::set<CInputCoin>& setCoinsRet, CAmount& nValueRet, const CCoinControl& coin_control, CoinSelectionParams& coin_selection_params)
@@ -515,62 +511,65 @@ bool SelectCoins(const CWallet& wallet, const std::vector<COutput>& vAvailableCo
     // Coin Selection attempts to select inputs from a pool of eligible UTXOs to fund the
     // transaction at a target feerate. If an attempt fails, more attempts may be made using a more
     // permissive CoinEligibilityFilter.
-    const bool res = [&] {
+    std::optional<SelectionResult> res = [&] {
         // Pre-selected inputs already cover the target amount.
-        if (value_to_select <= 0) return true;
+        if (value_to_select <= 0) return std::make_optional(SelectionResult(nTargetValue, CAmount(0)));
 
         // If possible, fund the transaction with confirmed UTXOs only. Prefer at least six
         // confirmations on outputs received from other wallets and only spend confirmed change.
-        if (AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(1, 6, 0), vCoins, setCoinsRet, nValueRet, coin_selection_params)) return true;
-        if (AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(1, 1, 0), vCoins, setCoinsRet, nValueRet, coin_selection_params)) return true;
+        std::optional<SelectionResult> r1 = AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(1, 6, 0), vCoins, coin_selection_params);
+        if (r1) return r1;
+        std::optional<SelectionResult> r2 = AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(1, 1, 0), vCoins, coin_selection_params);
+        if (r2) return r2;
 
         // Fall back to using zero confirmation change (but with as few ancestors in the mempool as
         // possible) if we cannot fund the transaction otherwise.
         if (wallet.m_spend_zero_conf_change) {
-            if (AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(0, 1, 2), vCoins, setCoinsRet, nValueRet, coin_selection_params)) return true;
-            if (AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(0, 1, std::min((size_t)4, max_ancestors/3), std::min((size_t)4, max_descendants/3)),
-                                   vCoins, setCoinsRet, nValueRet, coin_selection_params)) {
-                return true;
-            }
-            if (AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(0, 1, max_ancestors/2, max_descendants/2),
-                                   vCoins, setCoinsRet, nValueRet, coin_selection_params)) {
-                return true;
-            }
+            std::optional<SelectionResult> r3 = AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(0, 1, 2), vCoins, coin_selection_params);
+            if (r3) return r3;
+            std::optional<SelectionResult> r4 = AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(0, 1, std::min((size_t)4, max_ancestors/3), std::min((size_t)4, max_descendants/3)),
+                                   vCoins, coin_selection_params);
+            if (r4) return r4;
+            std::optional<SelectionResult> r5 = AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(0, 1, max_ancestors/2, max_descendants/2),
+                                   vCoins, coin_selection_params);
+            if (r5) return r5;
             // If partial groups are allowed, relax the requirement of spending OutputGroups (groups
             // of UTXOs sent to the same address, which are obviously controlled by a single wallet)
             // in their entirety.
-            if (AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(0, 1, max_ancestors-1, max_descendants-1, true /* include_partial_groups */),
-                                   vCoins, setCoinsRet, nValueRet, coin_selection_params)) {
-                return true;
-            }
+            std::optional<SelectionResult> r6 = AttemptSelection(wallet, value_to_select, CoinEligibilityFilter(0, 1, max_ancestors-1, max_descendants-1, true /* include_partial_groups */),
+                                   vCoins, coin_selection_params);
+            if (r6) return r6;
             // Try with unsafe inputs if they are allowed. This may spend unconfirmed outputs
             // received from other wallets.
-            if (coin_control.m_include_unsafe_inputs
-                && AttemptSelection(wallet, value_to_select,
+            if (coin_control.m_include_unsafe_inputs) {
+                std::optional<SelectionResult> r7 = AttemptSelection(wallet, value_to_select,
                     CoinEligibilityFilter(0 /* conf_mine */, 0 /* conf_theirs */, max_ancestors-1, max_descendants-1, true /* include_partial_groups */),
-                    vCoins, setCoinsRet, nValueRet, coin_selection_params)) {
-                return true;
+                    vCoins, coin_selection_params);
+                if (r7) return r7;
             }
             // Try with unlimited ancestors/descendants. The transaction will still need to meet
             // mempool ancestor/descendant policy to be accepted to mempool and broadcasted, but
             // OutputGroups use heuristics that may overestimate ancestor/descendant counts.
-            if (!fRejectLongChains && AttemptSelection(wallet, value_to_select,
+            if (!fRejectLongChains) {
+                std::optional<SelectionResult> r8 = AttemptSelection(wallet, value_to_select,
                                       CoinEligibilityFilter(0, 1, std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::max(), true /* include_partial_groups */),
-                                      vCoins, setCoinsRet, nValueRet, coin_selection_params)) {
-                return true;
+                                      vCoins, coin_selection_params);
+                if (r8) return r8;
             }
         }
         // Coin Selection failed.
-        return false;
+        return std::optional<SelectionResult>();
     }();
 
-    // AttemptSelection clears setCoinsRet, so add the preset inputs from coin_control to the coinset
-    util::insert(setCoinsRet, setPresetCoins);
+    if (!res) return false;
 
-    // add preset inputs to the total value selected
-    nValueRet += nValueFromPresetInputs;
+    // Add preset inputs to result
+    res->AddInput(preset_inputs);
 
-    return res;
+    setCoinsRet = res->m_selected_inputs;
+    nValueRet = res->GetSelectedValue();
+
+    return true;
 }
 
 static bool IsCurrentForAntiFeeSniping(interfaces::Chain& chain, const uint256& block_hash)

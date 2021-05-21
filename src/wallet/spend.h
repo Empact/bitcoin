@@ -111,8 +111,8 @@ std::vector<OutputGroup> GroupOutputs(const CWallet& wallet, const std::vector<C
  * param@[out]  setCoinsRet     Populated with the coins selected if successful.
  * param@[out]  nValueRet       Used to return the total value of selected coins.
  */
-bool AttemptSelection(const CWallet& wallet, const CAmount& nTargetValue, const CoinEligibilityFilter& eligibility_filter, std::vector<COutput> coins,
-                        std::set<CInputCoin>& setCoinsRet, CAmount& nValueRet, const CoinSelectionParams& coin_selection_params);
+std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAmount& nTargetValue, const CoinEligibilityFilter& eligibility_filter, std::vector<COutput> coins,
+                        const CoinSelectionParams& coin_selection_params);
 
 /**
  * Select a set of coins such that nValueRet >= nTargetValue and at least
