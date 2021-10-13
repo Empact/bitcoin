@@ -15,6 +15,7 @@
 #include <wallet/wallet.h>
 
 #include <boost/test/unit_test.hpp>
+#include <algorithm> // for mismatch, sort
 #include <random>
 
 BOOST_FIXTURE_TEST_SUITE(coinselector_tests, WalletTestingSetup)
@@ -145,6 +146,31 @@ inline std::vector<OutputGroup>& KnapsackGroupOutputs(const CoinEligibilityFilte
     return static_groups;
 }
 
+/** Check if this selection is equivalent to another one. Equivalent means same input values, but maybe different inputs (i.e. same value, different prevout) */
+bool EquivalentResult(const SelectionResult& a, const SelectionResult& b)
+{
+    std::vector<CAmount> a_amts;
+    std::vector<CAmount> b_amts;
+    for (const auto& coin : a.m_selected_inputs) {
+        a_amts.push_back(coin.txout.nValue);
+    }
+    for (const auto& coin : b.m_selected_inputs) {
+        b_amts.push_back(coin.txout.nValue);
+    }
+    std::sort(a_amts.begin(), a_amts.end());
+    std::sort(b_amts.begin(), b_amts.end());
+
+    std::pair<std::vector<CAmount>::iterator, std::vector<CAmount>::iterator> ret = std::mismatch(a_amts.begin(), a_amts.end(), b_amts.begin());
+    return ret.first == a_amts.end() && ret.second == b_amts.end();
+}
+
+/** Check if this selection is equal to another one. Equal means same inputs (i.e same value and prevout) */
+bool EqualResult(const SelectionResult& a, const SelectionResult& b)
+{
+    std::pair<std::set<CInputCoin>::iterator, std::set<CInputCoin>::iterator> ret = std::mismatch(a.m_selected_inputs.begin(), a.m_selected_inputs.end(), b.m_selected_inputs.begin());
+    return ret.first == a.m_selected_inputs.end() && ret.second == b.m_selected_inputs.end();
+}
+
 // Branch and bound coin selection tests
 BOOST_AUTO_TEST_CASE(bnb_search_test)
 {
@@ -173,7 +199,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     add_coin(1 * CENT, 1, expected_result.m_selected_inputs);
     const auto result1 = SelectCoinsBnB(GroupCoins(utxo_pool), 1 * CENT, 0.5 * CENT);
     BOOST_CHECK(result1);
-    BOOST_CHECK(expected_result.EquivalentResult(*result1));
+    BOOST_CHECK(EquivalentResult(expected_result, *result1));
     BOOST_CHECK_EQUAL(result1->GetSelectedValue(), 1 * CENT);
     expected_result.m_selected_inputs.clear();
 
@@ -181,7 +207,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     add_coin(2 * CENT, 2, expected_result.m_selected_inputs);
     const auto result2 = SelectCoinsBnB(GroupCoins(utxo_pool), 2 * CENT, 0.5 * CENT);
     BOOST_CHECK(result2);
-    BOOST_CHECK(expected_result.EquivalentResult(*result2));
+    BOOST_CHECK(EquivalentResult(expected_result, *result2));
     BOOST_CHECK_EQUAL(result2->GetSelectedValue(), 2 * CENT);
     expected_result.m_selected_inputs.clear();
 
@@ -190,7 +216,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     add_coin(1 * CENT, 1, expected_result.m_selected_inputs);
     const auto result3 = SelectCoinsBnB(GroupCoins(utxo_pool), 5 * CENT, 0.5 * CENT);
     BOOST_CHECK(result3);
-    BOOST_CHECK(expected_result.EquivalentResult(*result3));
+    BOOST_CHECK(EquivalentResult(expected_result, *result3));
     BOOST_CHECK_EQUAL(result3->GetSelectedValue(), 5 * CENT);
     expected_result.m_selected_inputs.clear();
 
@@ -203,7 +229,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     const auto result4 = SelectCoinsBnB(GroupCoins(utxo_pool), 0.9 * CENT, 0.5 * CENT);
     BOOST_CHECK(result4);
     BOOST_CHECK_EQUAL(result4->GetSelectedValue(), 1 * CENT);
-    BOOST_CHECK(expected_result.EquivalentResult(*result4));
+    BOOST_CHECK(EquivalentResult(expected_result, *result4));
     expected_result.m_selected_inputs.clear();
 
     // Cost of change is less than the difference between target value and utxo sum
@@ -217,7 +243,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     add_coin(1 * CENT, 1, expected_result.m_selected_inputs);
     const auto result5 = SelectCoinsBnB(GroupCoins(utxo_pool), 10 * CENT, 0.5 * CENT);
     BOOST_CHECK(result5);
-    BOOST_CHECK(expected_result.EquivalentResult(*result5));
+    BOOST_CHECK(EquivalentResult(expected_result, *result5));
     BOOST_CHECK_EQUAL(result5->GetSelectedValue(), 10 * CENT);
     expected_result.m_selected_inputs.clear();
 
@@ -230,7 +256,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     BOOST_CHECK(result6);
     BOOST_CHECK_EQUAL(result6->GetSelectedValue(), 10 * CENT);
     // FIXME: this test is redundant with the above, because 1 Cent is selected, not "too small"
-    // BOOST_CHECK(expected_result.EquivalentResult(*result));
+    // BOOST_CHECK(EquivalentResult(expected_result, *result));
 
     // Select 0.25 Cent, not possible
     BOOST_CHECK(!SelectCoinsBnB(GroupCoins(utxo_pool), 0.25 * CENT, 0.5 * CENT));
@@ -261,7 +287,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     const auto result8 = SelectCoinsBnB(GroupCoins(utxo_pool), 30 * CENT, 5000);
     BOOST_CHECK(result8);
     BOOST_CHECK_EQUAL(result8->GetSelectedValue(), 30 * CENT);
-    BOOST_CHECK(expected_result.EquivalentResult(*result8));
+    BOOST_CHECK(EquivalentResult(expected_result, *result8));
 
     ////////////////////
     // Behavior tests //
@@ -574,7 +600,7 @@ BOOST_AUTO_TEST_CASE(knapsack_solver_test)
             BOOST_CHECK(result25);
             const auto result26 = KnapsackSolver(GroupCoins(vCoins), 50 * COIN);
             BOOST_CHECK(result26);
-            BOOST_CHECK(!result25->EqualResult(*result26));
+            BOOST_CHECK(!EqualResult(*result25, *result26));
 
             int fails = 0;
             for (int j = 0; j < RANDOM_REPEATS; j++)
@@ -587,7 +613,7 @@ BOOST_AUTO_TEST_CASE(knapsack_solver_test)
                 BOOST_CHECK(result27);
                 const auto result28 = KnapsackSolver(GroupCoins(vCoins), COIN);
                 BOOST_CHECK(result28);
-                if (result27->EqualResult(*result28))
+                if (EqualResult(*result27, *result28))
                     fails++;
             }
             BOOST_CHECK_NE(fails, RANDOM_REPEATS);
@@ -610,7 +636,7 @@ BOOST_AUTO_TEST_CASE(knapsack_solver_test)
                 BOOST_CHECK(result29);
                 const auto result30 = KnapsackSolver(GroupCoins(vCoins), 90 * CENT);
                 BOOST_CHECK(result30);
-                if (result29->EqualResult(*result30))
+                if (EqualResult(*result29, *result30))
                     fails++;
             }
             BOOST_CHECK_NE(fails, RANDOM_REPEATS);

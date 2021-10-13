@@ -397,29 +397,6 @@ CAmount SelectionResult::GetSelectedValue() const
     return ret;
 }
 
-bool SelectionResult::EquivalentResult(const SelectionResult& other) const
-{
-    std::vector<CAmount> this_amts;
-    std::vector<CAmount> other_amts;
-    for (const auto& coin : m_selected_inputs) {
-        this_amts.push_back(coin.txout.nValue);
-    }
-    for (const auto& coin : other.m_selected_inputs) {
-        other_amts.push_back(coin.txout.nValue);
-    }
-    std::sort(this_amts.begin(), this_amts.end());
-    std::sort(other_amts.begin(), other_amts.end());
-
-    std::pair<std::vector<CAmount>::iterator, std::vector<CAmount>::iterator> ret = mismatch(this_amts.begin(), this_amts.end(), other_amts.begin());
-    return ret.first == this_amts.end() && ret.second == other_amts.end();
-}
-
-bool SelectionResult::EqualResult(const SelectionResult& other) const
-{
-    std::pair<std::set<CInputCoin>::iterator, std::set<CInputCoin>::iterator> ret = mismatch(m_selected_inputs.begin(), m_selected_inputs.end(), other.m_selected_inputs.begin());
-    return ret.first == m_selected_inputs.end() && ret.second == other.m_selected_inputs.end();
-}
-
 void SelectionResult::Clear()
 {
     m_selected_inputs.clear();

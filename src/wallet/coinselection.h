@@ -213,10 +213,6 @@ struct SelectionResult
 
     /** Get the sum of the input values */
     CAmount GetSelectedValue() const;
-    /** Check if this selection is equivalent to another one. Equivalent means same input values, but maybe different inputs (i.e. same value, different prevout) */
-    bool EquivalentResult(const SelectionResult& other) const;
-    /** Check if this selection is equal to another one. Equal means same inputs (i.e same value and prevout) */
-    bool EqualResult(const SelectionResult& other) const;
 
     void Clear();
 
