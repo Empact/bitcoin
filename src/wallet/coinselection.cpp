@@ -63,7 +63,7 @@ static const size_t TOTAL_TRIES = 100000;
 
 std::optional<SelectionResult> SelectCoinsBnB(std::vector<OutputGroup>& utxo_pool, const CAmount& selection_target, const CAmount& cost_of_change)
 {
-    SelectionResult result(selection_target, CAmount(0));
+    SelectionResult result(selection_target);
     CAmount curr_value = 0;
 
     std::vector<bool> curr_selection; // select the utxo at this index
@@ -166,9 +166,9 @@ std::optional<SelectionResult> SelectCoinsBnB(std::vector<OutputGroup>& utxo_poo
     return std::make_optional(result);
 }
 
-std::optional<SelectionResult> SelectCoinsSRD(const std::vector<OutputGroup>& utxo_pool, CAmount target_value, CAmount cost_of_change)
+std::optional<SelectionResult> SelectCoinsSRD(const std::vector<OutputGroup>& utxo_pool, CAmount target_value)
 {
-    SelectionResult result(target_value, cost_of_change);
+    SelectionResult result(target_value);
 
     std::vector<size_t> indexes;
     indexes.resize(utxo_pool.size());
@@ -234,9 +234,9 @@ static void ApproximateBestSubset(const std::vector<OutputGroup>& groups, const 
     }
 }
 
-std::optional<SelectionResult> KnapsackSolver(std::vector<OutputGroup>& groups, const CAmount& nTargetValue, const CAmount& cost_of_change)
+std::optional<SelectionResult> KnapsackSolver(std::vector<OutputGroup>& groups, const CAmount& nTargetValue)
 {
-    SelectionResult result(nTargetValue, cost_of_change);
+    SelectionResult result(nTargetValue);
 
     // List of values less than target
     std::optional<OutputGroup> lowest_larger;
@@ -356,9 +356,9 @@ CAmount OutputGroup::GetSelectionAmount() const
     return m_subtract_fee_outputs ? m_value : effective_value;
 }
 
-CAmount SelectionResult::GetWaste() const
+CAmount SelectionResult::GetWaste(const CAmount& change_cost) const
 {
-    return GetSelectionWaste(m_selected_inputs, m_change_cost, m_target, m_use_effective);
+    return GetSelectionWaste(m_selected_inputs, change_cost, m_target, m_use_effective);
 }
 
 CAmount GetSelectionWaste(const std::set<CInputCoin>& inputs, CAmount change_cost, CAmount target, bool use_effective_value)

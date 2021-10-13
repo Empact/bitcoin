@@ -205,14 +205,11 @@ struct SelectionResult
     std::set<CInputCoin> m_selected_inputs;
     /** The target the algorithm selected for. Note that this may not be equal to the recipient amount as it can include non-input fees */
     const CAmount m_target;
-    /** The cost of making a change output and spending it in the future. Since this is largely a static parameter
-     * independent of the selection algorithm, it is not cleared by Clear() */
-    const CAmount m_change_cost;
     /** Whether the input values for calculations should be the effective value (true) or normal value (false) */
     bool m_use_effective{false};
 
-    explicit SelectionResult(const CAmount target, const CAmount change_cost)
-        : m_target(target), m_change_cost(change_cost) {}
+    explicit SelectionResult(const CAmount target)
+        : m_target(target) {}
 
     /** Get the sum of the input values */
     CAmount GetSelectedValue() const;
@@ -225,8 +222,12 @@ struct SelectionResult
 
     void AddInput(const OutputGroup& group);
 
-    /** Calculates the waste for this selection via GetSelectionWaste */
-    CAmount GetWaste() const;
+    /**
+     * Calculates the waste for this selection via GetSelectionWaste
+     *
+     * param[in] change_cost The cost of making a change output and spending it in the future.
+     */
+    CAmount GetWaste(const CAmount& change_cost) const;
 
     /** Get the vector of CInputCoins that will be used to fill in a CTransaction's vin */
     std::vector<CInputCoin> GetInputVector() const;
@@ -241,9 +242,9 @@ std::optional<SelectionResult> SelectCoinsBnB(std::vector<OutputGroup>& utxo_poo
  * @param[in]  target_value The target value to select for
  * @returns If successful, a SelectionResult, otherwise, std::nullopt
  */
-std::optional<SelectionResult> SelectCoinsSRD(const std::vector<OutputGroup>& utxo_pool, CAmount target_value, const CAmount cost_of_change);
+std::optional<SelectionResult> SelectCoinsSRD(const std::vector<OutputGroup>& utxo_pool, CAmount target_value);
 
 // Original coin selection algorithm as a fallback
-std::optional<SelectionResult> KnapsackSolver(std::vector<OutputGroup>& groups, const CAmount& nTargetValue, const CAmount& cost_of_change);
+std::optional<SelectionResult> KnapsackSolver(std::vector<OutputGroup>& groups, const CAmount& nTargetValue);
 
 #endif // BITCOIN_WALLET_COINSELECTION_H

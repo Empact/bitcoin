@@ -377,30 +377,30 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
                                const CoinSelectionParams& coin_selection_params)
 {
     // Vector of results. We will choose the best one based on waste.
-    std::vector<SelectionResult> results;
+    std::vector<std::tuple<SelectionResult, CAmount>> results;
 
     // Note that unlike KnapsackSolver, we do not include the fee for creating a change output as BnB will not create a change output.
     std::vector<OutputGroup> positive_groups = GroupOutputs(wallet, coins, coin_selection_params, eligibility_filter, true /* positive_only */);
     std::optional<SelectionResult> bnb_result = SelectCoinsBnB(positive_groups, nTargetValue, coin_selection_params.m_cost_of_change);
     if (bnb_result) {
-        results.push_back(*bnb_result);
+        results.push_back(std::make_tuple(*bnb_result, CAmount(0)));
     }
 
     // The knapsack solver has some legacy behavior where it will spend dust outputs. We retain this behavior, so don't filter for positive only here.
     std::vector<OutputGroup> all_groups = GroupOutputs(wallet, coins, coin_selection_params, eligibility_filter, false /* positive_only */);
     // While nTargetValue includes the transaction fees for non-input things, it does not include the fee for creating a change output.
     // So we need to include that for KnapsackSolver as well, as we are expecting to create a change output.
-    std::optional<SelectionResult> knapsack_result = KnapsackSolver(all_groups, nTargetValue + coin_selection_params.m_change_fee, coin_selection_params.m_cost_of_change);
+    std::optional<SelectionResult> knapsack_result = KnapsackSolver(all_groups, nTargetValue + coin_selection_params.m_change_fee);
     if (knapsack_result) {
-        results.push_back(*knapsack_result);
+        results.push_back(std::make_tuple(*knapsack_result, coin_selection_params.m_cost_of_change));
     }
 
     // We include the minimum final change for SRD as we do want to avoid making really small change.
     // KnapsackSolver does not need this because it includes MIN_CHANGE internally.
     const CAmount srd_target = nTargetValue + coin_selection_params.m_change_fee + MIN_FINAL_CHANGE;
-    auto srd_result = SelectCoinsSRD(positive_groups, srd_target, coin_selection_params.m_cost_of_change);
+    auto srd_result = SelectCoinsSRD(positive_groups, srd_target);
     if (srd_result != std::nullopt) {
-        results.push_back(*srd_result);
+        results.push_back(std::make_tuple(*srd_result, coin_selection_params.m_cost_of_change));
     }
 
     if (results.size() == 0) {
@@ -410,9 +410,11 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
 
     // Choose the result with the least waste
     // If the waste is the same, choose the one which spends more inputs.
-    SelectionResult selection_result = *std::min_element(results.begin(), results.end(), [](const auto& a, const auto& b){
-        CAmount a_waste = a.GetWaste();
-        CAmount b_waste = b.GetWaste();
+    auto [ selection_result, change_cost ] = *std::min_element(results.begin(), results.end(), [](const auto& a_tuple, const auto& b_tuple){
+        const auto [ a, a_change_cost ] = a_tuple;
+        const auto [ b, b_change_cost ] = b_tuple;
+        CAmount a_waste = a.GetWaste(a_change_cost);
+        CAmount b_waste = b.GetWaste(b_change_cost);
         return a_waste < b_waste || (a_waste == b_waste && a.m_selected_inputs.size() > b.m_selected_inputs.size());
     });
     return selection_result;
@@ -435,7 +437,7 @@ std::optional<SelectionResult> SelectCoins(const CWallet& wallet, const std::vec
              */
             preset_inputs.Insert(out.GetInputCoin(), 0, false, 0, 0, false);
         }
-        SelectionResult result(nTargetValue, CAmount(0));
+        SelectionResult result(nTargetValue);
         result.AddInput(preset_inputs);
         if (result.GetSelectedValue() >= nTargetValue) return std::nullopt;
         return result;
@@ -517,7 +519,7 @@ std::optional<SelectionResult> SelectCoins(const CWallet& wallet, const std::vec
     // permissive CoinEligibilityFilter.
     std::optional<SelectionResult> res = [&] {
         // Pre-selected inputs already cover the target amount.
-        if (value_to_select <= 0) return std::make_optional(SelectionResult(nTargetValue, CAmount(0)));
+        if (value_to_select <= 0) return std::make_optional(SelectionResult(nTargetValue));
 
         // If possible, fund the transaction with confirmed UTXOs only. Prefer at least six
         // confirmations on outputs received from other wallets and only spend confirmed change.
