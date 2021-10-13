@@ -383,7 +383,7 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
     std::vector<OutputGroup> positive_groups = GroupOutputs(wallet, coins, coin_selection_params, eligibility_filter, true /* positive_only */);
     std::optional<SelectionResult> bnb_result = SelectCoinsBnB(positive_groups, nTargetValue, coin_selection_params.m_cost_of_change);
     if (bnb_result) {
-        results.push_back(std::make_tuple(*bnb_result, CAmount(0)));
+        results.push_back(std::make_tuple(*bnb_result, bnb_result->GetWaste(CAmount(0))));
     }
 
     // The knapsack solver has some legacy behavior where it will spend dust outputs. We retain this behavior, so don't filter for positive only here.
@@ -392,7 +392,7 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
     // So we need to include that for KnapsackSolver as well, as we are expecting to create a change output.
     std::optional<SelectionResult> knapsack_result = KnapsackSolver(all_groups, nTargetValue + coin_selection_params.m_change_fee);
     if (knapsack_result) {
-        results.push_back(std::make_tuple(*knapsack_result, coin_selection_params.m_cost_of_change));
+        results.push_back(std::make_tuple(*knapsack_result, knapsack_result->GetWaste(coin_selection_params.m_cost_of_change)));
     }
 
     // We include the minimum final change for SRD as we do want to avoid making really small change.
@@ -400,7 +400,7 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
     const CAmount srd_target = nTargetValue + coin_selection_params.m_change_fee + MIN_FINAL_CHANGE;
     auto srd_result = SelectCoinsSRD(positive_groups, srd_target);
     if (srd_result != std::nullopt) {
-        results.push_back(std::make_tuple(*srd_result, coin_selection_params.m_cost_of_change));
+        results.push_back(std::make_tuple(*srd_result, srd_result->GetWaste(coin_selection_params.m_cost_of_change)));
     }
 
     if (results.size() == 0) {
@@ -411,10 +411,8 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
     // Choose the result with the least waste
     // If the waste is the same, choose the one which spends more inputs.
     auto [ selection_result, change_cost ] = *std::min_element(results.begin(), results.end(), [](const auto& a_tuple, const auto& b_tuple){
-        const auto [ a, a_change_cost ] = a_tuple;
-        const auto [ b, b_change_cost ] = b_tuple;
-        CAmount a_waste = a.GetWaste(a_change_cost);
-        CAmount b_waste = b.GetWaste(b_change_cost);
+        const auto [ a, a_waste ] = a_tuple;
+        const auto [ b, b_waste ] = b_tuple;
         return a_waste < b_waste || (a_waste == b_waste && a.m_selected_inputs.size() > b.m_selected_inputs.size());
     });
     return selection_result;
