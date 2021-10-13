@@ -622,8 +622,6 @@ BOOST_AUTO_TEST_CASE(knapsack_solver_test)
 
 BOOST_AUTO_TEST_CASE(ApproximateBestSubset)
 {
-    SelectionResult knapsack_result(CAmount(0), true);
-
     LOCK(testWallet.cs_wallet);
     testWallet.SetupLegacyScriptPubKeyMan();
 
