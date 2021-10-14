@@ -30,6 +30,12 @@
     "description": ""
   },
   { "exec": "./bitcoin-tx",
+    "args": [],
+    "return_code": 1,
+    "error_txt": "too few parameters",
+    "description": "Fails on missing parameters"
+  },
+  { "exec": "./bitcoin-tx",
     "args": ["-create", "nversion=1"],
     "output_cmp": "blanktxv1.hex",
     "description": "Creates a blank v1 transaction"
@@ -44,6 +50,11 @@
     "input": "blanktxv2.hex",
     "output_cmp": "blanktxv2.hex",
     "description": "Creates a blank transaction when nothing is piped into bitcoin-tx"
+  },
+  { "exec": "./bitcoin-tx",
+    "args": ["-create"],
+    "output_cmp": "blanktxv2.hex",
+    "description": "Creates a blank v2 transaction without version"
   },
   { "exec": "./bitcoin-tx",
     "args": ["-json","-create"],
