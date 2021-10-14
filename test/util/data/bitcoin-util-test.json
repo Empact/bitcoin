@@ -442,6 +442,20 @@
   },
   { "exec": "./bitcoin-tx",
     "args":
+    ["-json", "-create", "outpubkey=:02a5613bd857b7048924264d1e70e08fb2a7e6527d32b7ab1bb993ac59964ff397:W", "nversion=1"],
+    "return_code": 1,
+    "error_txt": "error: invalid TX output value",
+    "description": "Creates a new transaction with missing TX output value"
+  },
+  { "exec": "./bitcoin-tx",
+    "args":
+    ["-json", "-create", "outpubkey=AAA0:02a5613bd857b7048924264d1e70e08fb2a7e6527d32b7ab1bb993ac59964ff397:W", "nversion=1"],
+    "return_code": 1,
+    "error_txt": "error: invalid TX output value",
+    "description": "Creates a new transaction with invalid TX output value"
+  },
+  { "exec": "./bitcoin-tx",
+    "args":
     ["-create", "outpubkey=0:02a5613bd857b7048924264d1e70e08fb2a7e6527d32b7ab1bb993ac59964ff397:WS", "nversion=1"],
     "output_cmp": "txcreateoutpubkey3.hex",
     "description": "Creates a new transaction with a single pay-to-witness-pubkey, wrapped in P2SH output"
