@@ -3,10 +3,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <memory>
 #include <fs.h>
 #include <streams.h>
 #include <util/translation.h>
 #include <wallet/bdb.h>
+#include <wallet/db.h>
 #include <wallet/salvage.h>
 #include <wallet/wallet.h>
 #include <wallet/walletdb.h>
@@ -134,7 +136,7 @@ bool RecoverDatabaseFile(const fs::path& file_path, bilingual_str& error, std::v
     }
 
     DbTxn* ptxn = env->TxnBegin();
-    CWallet dummyWallet(nullptr, "", gArgs, CreateDummyWalletDatabase());
+    CWallet dummyWallet(nullptr, "", gArgs, std::make_unique<DummyDatabase>());
     for (KeyValPair& row : salvagedData)
     {
         /* Filter for only private key type KV pairs to be added to the salvaged wallet */

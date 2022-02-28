@@ -1179,10 +1179,4 @@ std::unique_ptr<WalletDatabase> MakeDatabase(const fs::path& path, const Databas
     status = DatabaseStatus::FAILED_BAD_FORMAT;
     return nullptr;
 }
-
-/** Return object for accessing dummy database with no read/write capabilities. */
-std::unique_ptr<WalletDatabase> CreateDummyWalletDatabase()
-{
-    return std::make_unique<DummyDatabase>();
-}
 } // namespace wallet
