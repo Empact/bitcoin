@@ -8,6 +8,7 @@
 #include <test/util/mining.h>
 #include <test/util/setup_common.h>
 #include <test/util/wallet.h>
+#include <test/util/walletdb.h>
 #include <validationinterface.h>
 #include <wallet/receive.h>
 #include <wallet/wallet.h>
@@ -15,7 +16,6 @@
 #include <optional>
 
 using wallet::CWallet;
-using wallet::CreateMockWalletDatabase;
 using wallet::DBErrors;
 using wallet::GetBalance;
 using wallet::WALLET_FLAG_DESCRIPTORS;

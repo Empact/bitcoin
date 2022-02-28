@@ -5,6 +5,7 @@
 #include <qt/test/addressbooktests.h>
 #include <qt/test/util.h>
 #include <test/util/setup_common.h>
+#include <test/util/walletdb.h>
 
 #include <interfaces/chain.h>
 #include <interfaces/node.h>
@@ -28,7 +29,6 @@
 
 using wallet::AddWallet;
 using wallet::CWallet;
-using wallet::CreateMockWalletDatabase;
 using wallet::RemoveWallet;
 using wallet::WALLET_FLAG_DESCRIPTORS;
 using wallet::WalletContext;

@@ -19,6 +19,7 @@
 #include <qt/walletmodel.h>
 #include <key_io.h>
 #include <test/util/setup_common.h>
+#include <test/util/walletdb.h>
 #include <validation.h>
 #include <wallet/wallet.h>
 #include <qt/overviewpage.h>
@@ -42,7 +43,6 @@
 
 using wallet::AddWallet;
 using wallet::CWallet;
-using wallet::CreateMockWalletDatabase;
 using wallet::RemoveWallet;
 using wallet::WALLET_FLAG_DESCRIPTORS;
 using wallet::WalletContext;

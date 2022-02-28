@@ -7,6 +7,7 @@
 #include <primitives/transaction.h>
 #include <random.h>
 #include <test/util/setup_common.h>
+#include <test/util/walletdb.h>
 #include <util/translation.h>
 #include <wallet/coincontrol.h>
 #include <wallet/coinselection.h>
