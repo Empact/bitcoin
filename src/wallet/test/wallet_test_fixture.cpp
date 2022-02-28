@@ -4,6 +4,8 @@
 
 #include <wallet/test/wallet_test_fixture.h>
 
+#include <test/util/walletdb.h>
+
 #include <scheduler.h>
 
 namespace wallet {
