@@ -10,6 +10,11 @@
 #  include <wallet/bdb.h>
 #endif
 
+std::unique_ptr<wallet::WalletDatabase> CreateDummyWalletDatabase()
+{
+    return std::make_unique<wallet::DummyDatabase>();
+}
+
 std::unique_ptr<wallet::WalletDatabase> CreateMockWalletDatabase()
 {
     wallet::DatabaseOptions options;

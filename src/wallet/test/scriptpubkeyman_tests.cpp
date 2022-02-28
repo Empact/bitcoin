@@ -5,6 +5,7 @@
 #include <key.h>
 #include <script/standard.h>
 #include <test/util/setup_common.h>
+#include <test/util/walletdb.h>
 #include <wallet/scriptpubkeyman.h>
 #include <wallet/wallet.h>
 

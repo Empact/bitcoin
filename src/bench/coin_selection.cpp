@@ -9,6 +9,8 @@
 #include <wallet/spend.h>
 #include <wallet/wallet.h>
 
+#include <test/util/walletdb.h>
+
 #include <set>
 
 using node::NodeContext;
@@ -19,7 +21,6 @@ using wallet::CWallet;
 using wallet::CWalletTx;
 using wallet::CoinEligibilityFilter;
 using wallet::CoinSelectionParams;
-using wallet::CreateDummyWalletDatabase;
 using wallet::OutputGroup;
 using wallet::SelectCoinsBnB;
 using wallet::TxStateInactive;

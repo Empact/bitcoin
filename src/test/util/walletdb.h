@@ -9,6 +9,9 @@
 
 #include <wallet/db.h>
 
+/** Return object for accessing dummy database with no read/write capabilities. */
+std::unique_ptr<wallet::WalletDatabase> CreateDummyWalletDatabase();
+
 /** Return object for accessing temporary in-memory database. */
 std::unique_ptr<wallet::WalletDatabase> CreateMockWalletDatabase();
 
