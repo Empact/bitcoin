@@ -8,10 +8,11 @@
 #include <index/coinstatsindex.h>
 #include <logging.h>
 #include <node/blockstorage.h>
+#include <util/args.h>
 #include <serialize.h>
 #include <txdb.h>
 #include <undo.h>
-#include <util/system.h>
+#include <util/args.h>
 #include <validation.h>
 
 using node::CCoinsStats;
