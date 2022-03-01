@@ -18,6 +18,7 @@
 
 #include <key.h>
 #include <key_io.h>
+#include <util/args.h>
 #include <wallet/wallet.h>
 #include <walletinitinterface.h>
 
