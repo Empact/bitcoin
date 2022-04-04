@@ -23,19 +23,15 @@ BOOST_AUTO_TEST_CASE(base32_testvectors)
         strEnc = EncodeBase32(vstrIn[i], false);
         BOOST_CHECK_EQUAL(strEnc, vstrOutNoPadding[i]);
         auto dec = DecodeBase32(vstrOut[i]);
-        BOOST_CHECK_MESSAGE(MakeByteSpan(dec) == MakeByteSpan(vstrIn[i]), vstrOut[i]);
+        BOOST_REQUIRE(dec);
+        BOOST_CHECK_MESSAGE(MakeByteSpan(*dec) == MakeByteSpan(vstrIn[i]), vstrOut[i]);
     }
 
     // Decoding strings with embedded NUL characters should fail
-    bool failure;
-    (void)DecodeBase32("invalid\0"s, &failure); // correct size, invalid due to \0
-    BOOST_CHECK(failure);
-    (void)DecodeBase32("AWSX3VPP"s, &failure); // valid
-    BOOST_CHECK(!failure);
-    (void)DecodeBase32("AWSX3VPP\0invalid"s, &failure); // correct size, invalid due to \0
-    BOOST_CHECK(failure);
-    (void)DecodeBase32("AWSX3VPPinvalid"s, &failure); // invalid size
-    BOOST_CHECK(failure);
+    BOOST_CHECK(!DecodeBase32("invalid\0"s)); // correct size, invalid due to \0
+    BOOST_CHECK(DecodeBase32("AWSX3VPP"s)); // valid
+    BOOST_CHECK(!DecodeBase32("AWSX3VPP\0invalid"s)); // correct size, invalid due to \0
+    BOOST_CHECK(!DecodeBase32("AWSX3VPPinvalid"s)); // invalid size
 }
 
 BOOST_AUTO_TEST_SUITE_END()
