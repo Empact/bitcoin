@@ -63,6 +63,7 @@ BOOST_AUTO_TEST_CASE(subsidy_limit_test)
 BOOST_AUTO_TEST_CASE(signet_parse_tests)
 {
     ArgsManager signet_argsman;
+    SetupChainParamsBaseOptions(signet_argsman); // add -signetchallenge
     signet_argsman.ForceSetArg("-signetchallenge", "51"); // set challenge to OP_TRUE
     const auto signet_params = CreateChainParams(signet_argsman, CBaseChainParams::SIGNET);
     CBlock block;

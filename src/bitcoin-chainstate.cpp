@@ -32,6 +32,8 @@ const std::function<std::string(const char*)> G_TRANSLATION_FUN = nullptr;
 
 int main(int argc, char* argv[])
 {
+    gArgs.AddArg("-datadir=<dir>", "Specify data directory", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+
     // SETUP: Argument parsing and handling
     if (argc != 2) {
         std::cerr

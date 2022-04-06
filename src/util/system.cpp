@@ -189,11 +189,6 @@ static bool InterpretBool(const std::string& strValue)
     return (LocaleIndependentAtoi<int>(strValue) != 0);
 }
 
-static std::string SettingName(const std::string& arg)
-{
-    return arg.size() > 0 && arg[0] == '-' ? arg.substr(1) : arg;
-}
-
 struct KeyInfo {
     std::string name;
     std::string section;
@@ -429,6 +424,19 @@ const fs::path& ArgsManager::GetBlocksDirPath() const
     path /= "blocks";
     fs::create_directories(path);
     return path;
+}
+
+std::string ArgsManager::SettingName(const std::string& arg) const
+{
+    // Throw if arg is not present in m_available_args
+    for (const auto& arg_map : m_available_args) {
+        const auto search = arg_map.second.find(arg);
+        if (search == arg_map.second.end()) {
+            throw std::runtime_error(strprintf("Attempt to access setting '%s', but it is not a configured setting.", arg));
+        }
+    }
+
+    return arg.size() > 0 && arg[0] == '-' ? arg.substr(1) : arg;
 }
 
 const fs::path& ArgsManager::GetDataDir(bool net_specific) const

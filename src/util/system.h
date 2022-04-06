@@ -466,6 +466,16 @@ protected:
 
 private:
     /**
+     * Return a valid setting name, from the incoming arg
+     *
+     * @param arg The arg to interpret
+     * @return The normalized setting name
+     * @throws std::runtime_error if the setting name has not been configured,
+     *                            e.g. via AddArg
+     */
+    std::string SettingName(const std::string& arg) const EXCLUSIVE_LOCKS_REQUIRED(cs_args);
+
+    /**
      * Get data directory path
      *
      * @param net_specific Append network identifier to the returned path
