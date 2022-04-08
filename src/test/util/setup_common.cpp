@@ -89,6 +89,8 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::ve
       m_args{}
 {
     m_node.args = &gArgs;
+    SetupServerArgs(*m_node.args);
+    SetupChainParamsBaseOptions(*m_node.args);
     std::vector<const char*> arguments = Cat(
         {
             "dummy",
