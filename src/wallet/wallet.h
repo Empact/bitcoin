@@ -384,7 +384,7 @@ public:
     bool Lock();
 
     /** Interface to assert chain access */
-    bool HaveChain() const { return m_chain ? true : false; }
+    bool HaveChain() const { return m_chain; }
 
     /** Map from txid to CWalletTx for all transactions this wallet is
      * interested in, including received and sent transactions. */

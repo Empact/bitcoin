@@ -342,8 +342,8 @@ static RPCHelpMan decoderawtransaction()
 
     CMutableTransaction mtx;
 
-    bool try_witness = request.params[1].isNull() ? true : request.params[1].get_bool();
-    bool try_no_witness = request.params[1].isNull() ? true : !request.params[1].get_bool();
+    bool try_witness = request.params[1].isNull() || request.params[1].get_bool();
+    bool try_no_witness = request.params[1].isNull() || !request.params[1].get_bool();
 
     if (!DecodeHexTx(mtx, request.params[0].get_str(), try_no_witness, try_witness)) {
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");

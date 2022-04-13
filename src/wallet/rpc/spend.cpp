@@ -827,8 +827,8 @@ RPCHelpMan fundrawtransaction()
 
     // parse hex string from parameter
     CMutableTransaction tx;
-    bool try_witness = request.params[2].isNull() ? true : request.params[2].get_bool();
-    bool try_no_witness = request.params[2].isNull() ? true : !request.params[2].get_bool();
+    bool try_witness = request.params[2].isNull() || request.params[2].get_bool();
+    bool try_no_witness = request.params[2].isNull() || !request.params[2].get_bool();
     if (!DecodeHexTx(tx, request.params[0].get_str(), try_no_witness, try_witness)) {
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
     }
@@ -1528,9 +1528,9 @@ RPCHelpMan walletprocesspsbt()
     int nHashType = ParseSighashString(request.params[2]);
 
     // Fill transaction with our data and also sign
-    bool sign = request.params[1].isNull() ? true : request.params[1].get_bool();
-    bool bip32derivs = request.params[3].isNull() ? true : request.params[3].get_bool();
-    bool finalize = request.params[4].isNull() ? true : request.params[4].get_bool();
+    bool sign = request.params[1].isNull() || request.params[1].get_bool();
+    bool bip32derivs = request.params[3].isNull() || request.params[3].get_bool();
+    bool finalize = request.params[4].isNull() || request.params[4].get_bool();
     bool complete = true;
 
     if (sign) EnsureWalletIsUnlocked(*pwallet);
@@ -1673,7 +1673,7 @@ RPCHelpMan walletcreatefundedpsbt()
     PartiallySignedTransaction psbtx(rawTx);
 
     // Fill transaction with out data but don't sign
-    bool bip32derivs = request.params[4].isNull() ? true : request.params[4].get_bool();
+    bool bip32derivs = request.params[4].isNull() || request.params[4].get_bool();
     bool complete = true;
     const TransactionError err{wallet.FillPSBT(psbtx, complete, 1, false, bip32derivs)};
     if (err != TransactionError::OK) {
