@@ -198,9 +198,9 @@ std::optional<SelectionResult> SelectCoinsSRD(const std::vector<OutputGroup>& ut
  * param@[out]  nBest           Total amount of subset chosen that is closest to nTargetValue.
  * param@[in]   iterations      Maximum number of tries.
  */
-static void ApproximateBestSubset(FastRandomContext& insecure_rand, const std::vector<OutputGroup>& groups,
+static std::optional<std::vector<char>> ApproximateBestSubset(FastRandomContext& insecure_rand, const std::vector<OutputGroup>& groups,
                                   const CAmount& nTotalLower, const CAmount& nTargetValue,
-                                  std::vector<char>& vfBest, CAmount& nBest, int iterations = 1000)
+                                  CAmount& nBest, int iterations = 1000)
 {
     std::vector<char> vfIncluded;
 
