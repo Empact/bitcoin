@@ -5,7 +5,7 @@
 #include <util/error.h>
 
 #include <tinyformat.h>
-#include <util/system.h>
+
 #include <util/translation.h>
 
 bilingual_str TransactionErrorString(const TransactionError err)

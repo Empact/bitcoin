@@ -7,7 +7,7 @@
 #include <threadinterrupt.h>
 #include <tinyformat.h>
 #include <util/sock.h>
-#include <util/system.h>
+
 #include <util/time.h>
 
 #include <memory>

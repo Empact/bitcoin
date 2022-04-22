@@ -7,7 +7,7 @@
 
 #include <sync.h>
 #include <util/string.h>
-#include <util/system.h>
+
 #include <util/translation.h>
 
 #include <vector>

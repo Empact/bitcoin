@@ -24,7 +24,7 @@
 #include <streams.h>
 #include <test/util/setup_common.h>
 #include <undo.h>
-#include <util/system.h>
+
 #include <version.h>
 
 #include <exception>

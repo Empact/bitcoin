@@ -8,7 +8,7 @@
 #include <chainparamsbase.h>
 #include <fs.h>
 #include <key.h>
-#include <util/system.h>
+
 #include <node/caches.h>
 #include <node/context.h>
 #include <pubkey.h>

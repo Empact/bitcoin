@@ -12,7 +12,7 @@
 #include <serialize.h>
 #include <uint256.h>
 #include <util/overflow.h>
-#include <util/system.h>
+
 #include <validation.h>
 
 #include <map>

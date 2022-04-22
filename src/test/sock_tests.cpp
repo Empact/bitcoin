@@ -6,7 +6,7 @@
 #include <test/util/setup_common.h>
 #include <threadinterrupt.h>
 #include <util/sock.h>
-#include <util/system.h>
+
 
 #include <boost/test/unit_test.hpp>
 

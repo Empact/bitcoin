@@ -11,7 +11,7 @@
 #include <node/blockstorage.h>
 #include <rpc/server.h>
 #include <streams.h>
-#include <util/system.h>
+
 #include <validation.h> // For cs_main
 #include <zmq/zmqutil.h>
 
