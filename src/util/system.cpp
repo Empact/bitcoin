@@ -20,6 +20,7 @@
 
 #include <chainparamsbase.h>
 #include <fs.h>
+#include <logging.h>
 #include <sync.h>
 #include <util/getuniquepath.h>
 #include <util/string.h>

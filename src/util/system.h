@@ -18,7 +18,6 @@
 #include <compat.h>
 #include <compat/assumptions.h>
 #include <fs.h>
-#include <logging.h>
 #include <util/time.h>
 
 #include <any>
