@@ -10,6 +10,7 @@
 #include <logging.h>
 #include <util/args.h>
 #include <util/strencodings.h>
+#include <util/system.h>
 #include <util/translation.h>
 
 #include <stdint.h>
