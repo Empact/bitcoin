@@ -5,6 +5,7 @@
 
 #include <rpc/server.h>
 
+#include <logging.h>
 #include <rpc/util.h>
 #include <shutdown.h>
 #include <sync.h>

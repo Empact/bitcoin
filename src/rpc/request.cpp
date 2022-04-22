@@ -7,6 +7,7 @@
 
 #include <fs.h>
 
+#include <logging.h>
 #include <random.h>
 #include <rpc/protocol.h>
 #include <util/args.h>
