@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 //
 #include <test/util/setup_common.h>
-#include <util/system.h>
+#include <util/shell.h>
 #include <univalue.h>
 
 #ifdef ENABLE_EXTERNAL_SIGNER
@@ -26,7 +26,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_FIXTURE_TEST_SUITE(system_tests, BasicTestingSetup)
+BOOST_FIXTURE_TEST_SUITE(shell_tests, BasicTestingSetup)
 
 // At least one test is required (in case ENABLE_EXTERNAL_SIGNER is not defined).
 // Workaround for https://github.com/bitcoin/bitcoin/issues/19128

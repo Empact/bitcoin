@@ -5,6 +5,7 @@
 #include <chainparams.h>
 #include <core_io.h>
 #include <psbt.h>
+#include <util/shell.h>
 #include <util/strencodings.h>
 #include <util/system.h>
 #include <external_signer.h>
