@@ -9,6 +9,7 @@
 #include <crypto/muhash.h>
 #include <hash.h>
 #include <index/coinstatsindex.h>
+#include <logging.h>
 #include <serialize.h>
 #include <uint256.h>
 #include <util/overflow.h>
