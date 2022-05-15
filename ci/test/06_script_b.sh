@@ -58,6 +58,7 @@ if [ "${RUN_TIDY}" = "true" ]; then
           " src/util/bip32.cpp"\
           " src/util/bytevectorhash.cpp"\
           " src/util/error.cpp"\
+          " src/util/exception.cpp"\
           " src/util/getuniquepath.cpp"\
           " src/util/hasher.cpp"\
           " src/util/message.cpp"\
