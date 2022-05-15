@@ -10,10 +10,6 @@
 #ifndef BITCOIN_UTIL_SYSTEM_H
 #define BITCOIN_UTIL_SYSTEM_H
 
-#if defined(HAVE_CONFIG_H)
-#include <config/bitcoin-config.h>
-#endif
-
 #include <attributes.h>
 #include <compat.h>
 #include <compat/assumptions.h>
@@ -32,8 +28,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-class UniValue;
 
 // Application startup time (used for uptime calculation)
 int64_t GetStartupTime();
@@ -99,20 +93,6 @@ fs::path GetConfigFile(const std::string& confPath);
 #ifdef WIN32
 fs::path GetSpecialFolderPath(int nFolder, bool fCreate = true);
 #endif
-#ifndef WIN32
-std::string ShellEscape(const std::string& arg);
-#endif
-#if HAVE_SYSTEM
-void runCommand(const std::string& strCommand);
-#endif
-/**
- * Execute a command which returns JSON, and parse the result.
- *
- * @param str_command The command to execute, including any arguments
- * @param str_std_in string to pass to stdin
- * @return parsed JSON
- */
-UniValue RunCommandParseJSON(const std::string& str_command, const std::string& str_std_in="");
 
 /**
  * Most paths passed as configuration arguments are treated as relative to

@@ -132,13 +132,13 @@ BITCOIN_TESTS =\
   test/serfloat_tests.cpp \
   test/serialize_tests.cpp \
   test/settings_tests.cpp \
+  test/shell_tests.cpp \
   test/sighash_tests.cpp \
   test/sigopcount_tests.cpp \
   test/skiplist_tests.cpp \
   test/sock_tests.cpp \
   test/streams_tests.cpp \
   test/sync_tests.cpp \
-  test/system_tests.cpp \
   test/timedata_tests.cpp \
   test/torcontrol_tests.cpp \
   test/transaction_tests.cpp \
