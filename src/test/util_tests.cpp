@@ -13,6 +13,7 @@
 #include <test/util/setup_common.h>
 #include <test/util/str.h>
 #include <uint256.h>
+#include <util/fs.h>
 #include <util/getuniquepath.h>
 #include <util/message.h> // For MessageSign(), MessageVerify(), MESSAGE_MAGIC
 #include <util/moneystr.h>
