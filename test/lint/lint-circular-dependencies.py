@@ -12,8 +12,6 @@ import subprocess
 import sys
 
 EXPECTED_CIRCULAR_DEPENDENCIES = (
-    "chainparamsbase -> util/args -> chainparamsbase",
-    "chainparamsbase -> util/args -> util/fs -> chainparamsbase",
     "node/blockstorage -> validation -> node/blockstorage",
     "index/coinstatsindex -> node/coinstats -> index/coinstatsindex",
     "policy/fees -> txmempool -> policy/fees",

@@ -421,6 +421,12 @@ std::string HelpMessageGroup(const std::string& message);
  */
 std::string HelpMessageOpt(const std::string& option, const std::string& message);
 
+/**
+ * Set the arguments for chainparams
+ * @see chainparamsbase.h
+ */
+void SetupChainParamsBaseOptions(ArgsManager& argsman);
+
 namespace util {
 
 #ifdef WIN32
