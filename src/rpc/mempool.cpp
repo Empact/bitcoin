@@ -19,6 +19,7 @@
 #include <rpc/util.h>
 #include <txmempool.h>
 #include <univalue.h>
+#include <util/args.h>
 #include <util/moneystr.h>
 #include <util/time.h>
 
