@@ -5,6 +5,7 @@
 
 #include <util/fs.h>
 
+#include <chainparamsbase.h>
 #include <logging.h>
 #include <sync.h>
 #include <util/getuniquepath.h>

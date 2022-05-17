@@ -14,6 +14,7 @@
 #include <policy/feerate.h>
 #include <psbt.h>
 #include <tinyformat.h>
+#include <util/args.h>
 #include <util/message.h>
 #include <util/strencodings.h>
 #include <util/string.h>
