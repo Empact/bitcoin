@@ -4,6 +4,8 @@
 
 #include <dbwrapper.h>
 
+#include <util/fs.h>
+
 #include <memory>
 #include <random.h>
 

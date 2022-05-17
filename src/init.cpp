@@ -61,6 +61,7 @@
 #include <txorphanage.h>
 #include <util/asmap.h>
 #include <util/check.h>
+#include <util/fs.h>
 #include <util/moneystr.h>
 #include <util/shell.h>
 #include <util/strencodings.h>
