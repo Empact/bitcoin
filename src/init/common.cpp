@@ -16,6 +16,7 @@
 #include <pubkey.h>
 #include <random.h>
 #include <tinyformat.h>
+#include <util/args.h>
 #include <util/system.h>
 #include <util/time.h>
 #include <util/translation.h>

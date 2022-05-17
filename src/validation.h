@@ -41,6 +41,7 @@
 #include <utility>
 #include <vector>
 
+class ArgsManager;
 class CChainState;
 class CBlockTreeDB;
 class CTxMemPool;

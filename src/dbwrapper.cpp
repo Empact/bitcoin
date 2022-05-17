@@ -4,6 +4,7 @@
 
 #include <dbwrapper.h>
 
+#include <util/args.h>
 #include <util/fs.h>
 
 #include <memory>
