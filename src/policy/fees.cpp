@@ -18,6 +18,7 @@
 #include <tinyformat.h>
 #include <txmempool.h>
 #include <uint256.h>
+#include <util/args.h>
 #include <util/serfloat.h>
 #include <util/system.h>
 #include <util/time.h>
