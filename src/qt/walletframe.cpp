@@ -207,12 +207,14 @@ void WalletFrame::gotoLoadPSBT(bool from_clipboard)
             tr("Load Transaction Data"), QString(),
             tr("Partially Signed Transaction (*.psbt)"), nullptr);
         if (filename.isEmpty()) return;
-        if (GetFileSize(filename.toLocal8Bit().data(), MAX_FILE_SIZE_PSBT) == MAX_FILE_SIZE_PSBT) {
+
+        std::ifstream in{filename.toLocal8Bit().data(), std::ios::binary};
+        in.ignore(MAX_FILE_SIZE_PSBT);
+        if (in.gcount() == MAX_FILE_SIZE_PSBT) {
             Q_EMIT message(tr("Error"), tr("PSBT file must be smaller than 100 MiB"), CClientUIInterface::MSG_ERROR);
             return;
         }
-        std::ifstream in{filename.toLocal8Bit().data(), std::ios::binary};
-        data.assign(std::istream_iterator<unsigned char>{in}, {});
+        data.assign(std::istream_iterator<unsigned char>{in.seekg(0)}, {});
     }
 
     std::string error;
