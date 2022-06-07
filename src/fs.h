@@ -20,6 +20,8 @@ namespace fs {
 
 using namespace std::filesystem;
 
+constexpr size_t MIB_BYTES = 1024 * 1024; // one mebibyte in bytes
+
 /**
  * Path class wrapper to block calls to the fs::path(std::string) implicit
  * constructor and the fs::path::string() method, which have unsafe and

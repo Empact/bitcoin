@@ -948,7 +948,7 @@ bool AppInitParameterInteraction(const ArgsManager& args, bool use_syscall_sandb
     if (nPruneArg < 0) {
         return InitError(_("Prune cannot be configured with a negative value."));
     }
-    nPruneTarget = (uint64_t) nPruneArg * 1024 * 1024;
+    nPruneTarget = (uint64_t) nPruneArg * fs::MIB_BYTES;
     if (nPruneArg == 1) {  // manual pruning: -prune=1
         LogPrintf("Block pruning enabled.  Use RPC call pruneblockchain(height) to manually prune block and undo files.\n");
         nPruneTarget = std::numeric_limits<uint64_t>::max();

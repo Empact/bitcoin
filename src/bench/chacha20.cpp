@@ -9,7 +9,7 @@
 /* Number of bytes to process per iteration */
 static const uint64_t BUFFER_SIZE_TINY  = 64;
 static const uint64_t BUFFER_SIZE_SMALL = 256;
-static const uint64_t BUFFER_SIZE_LARGE = 1024*1024;
+static const uint64_t BUFFER_SIZE_LARGE = fs::MIB_BYTES;
 
 static void CHACHA20(benchmark::Bench& bench, size_t buffersize)
 {

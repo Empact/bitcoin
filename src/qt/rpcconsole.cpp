@@ -10,6 +10,7 @@
 #include <qt/forms/ui_debugwindow.h>
 
 #include <chainparams.h>
+#include <fs.h>
 #include <interfaces/node.h>
 #include <netbase.h>
 #include <qt/bantablemodel.h>
@@ -547,7 +548,7 @@ RPCConsole::RPCConsole(interfaces::Node& node, const PlatformStyle *_platformSty
 
     // Install event filter for up and down arrow
     ui->lineEdit->installEventFilter(this);
-    ui->lineEdit->setMaxLength(16 * 1024 * 1024);
+    ui->lineEdit->setMaxLength(16 * fs::MIB_BYTES);
     ui->messagesWidget->installEventFilter(this);
 
     connect(ui->clearButton, &QAbstractButton::clicked, [this] { clear(); });

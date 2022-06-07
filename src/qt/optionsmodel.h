@@ -6,6 +6,7 @@
 #define BITCOIN_QT_OPTIONSMODEL_H
 
 #include <cstdint>
+#include <fs.h>
 #include <qt/bitcoinunits.h>
 #include <qt/guiconstants.h>
 
@@ -23,7 +24,7 @@ static constexpr uint16_t DEFAULT_GUI_PROXY_PORT = 9050;
 /**
  * Convert configured prune target MiB to displayed GB. Round up to avoid underestimating max disk usage.
  */
-static inline int PruneMiBtoGB(int64_t mib) { return (mib * 1024 * 1024 + GB_BYTES - 1) / GB_BYTES; }
+static inline int PruneMiBtoGB(int64_t mib) { return (mib * fs::MIB_BYTES + GB_BYTES - 1) / GB_BYTES; }
 
 /**
  * Convert displayed prune target GB to configured MiB. Round down so roundtrip GB -> MiB -> GB conversion is stable.
