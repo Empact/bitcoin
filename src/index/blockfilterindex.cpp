@@ -30,9 +30,9 @@ constexpr uint8_t DB_BLOCK_HASH{'s'};
 constexpr uint8_t DB_BLOCK_HEIGHT{'t'};
 constexpr uint8_t DB_FILTER_POS{'P'};
 
-constexpr unsigned int MAX_FLTR_FILE_SIZE = 0x1000000; // 16 MiB
+constexpr unsigned int MAX_FLTR_FILE_SIZE = 16 * fs::MIB_BYTES;
 /** The pre-allocation chunk size for fltr?????.dat files */
-constexpr unsigned int FLTR_FILE_CHUNK_SIZE = 0x100000; // 1 MiB
+constexpr unsigned int FLTR_FILE_CHUNK_SIZE = fs::MIB_BYTES;
 /** Maximum size of the cfheaders cache
  *  We have a limit to prevent a bug in filling this cache
  *  potentially turning into an OOM. At 2000 entries, this cache
