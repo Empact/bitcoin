@@ -1628,7 +1628,17 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
         InitError(strprintf(_("Error: Disk space is low for %s"), fs::quoted(fs::PathToString(gArgs.GetDataDirNet()))));
         return false;
     }
-    if (!CheckDiskSpace(gArgs.GetBlocksDirPath())) {
+
+    size_t additional_bytes_needed = 0;
+    if (!fReindex) {
+        int height;
+        WITH_LOCK(cs_main, height = node.chainman->ActiveHeight());
+        if (height <= 1) { // If first startup
+          additional_bytes_needed = fPruneMode ? nPruneTarget
+            : chainparams.AssumedBlockchainSize() * fs::GIB_BYTES;
+        }
+    }
+    if (!CheckDiskSpace(gArgs.GetBlocksDirPath(), additional_bytes_needed)) {
         InitError(strprintf(_("Error: Disk space is low for %s"), fs::quoted(fs::PathToString(gArgs.GetBlocksDirPath()))));
         return false;
     }
