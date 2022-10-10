@@ -15,7 +15,6 @@
 #include <netbase.h>
 #include <threadinterrupt.h>
 #include <util/syscall_sandbox.h>
-#include <util/system.h>
 #include <util/thread.h>
 
 #ifdef USE_NATPMP

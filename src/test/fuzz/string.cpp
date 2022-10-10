@@ -27,7 +27,6 @@
 #include <util/shell.h>
 #include <util/strencodings.h>
 #include <util/string.h>
-#include <util/system.h>
 #include <util/translation.h>
 #include <util/url.h>
 #include <version.h>

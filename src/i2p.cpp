@@ -17,7 +17,6 @@
 #include <util/sock.h>
 #include <util/spanparsing.h>
 #include <util/strencodings.h>
-#include <util/system.h>
 
 #include <chrono>
 #include <memory>
