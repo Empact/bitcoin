@@ -8,6 +8,7 @@
 #endif
 
 #include <chainparamsbase.h>
+#include <chainparamsbaseargs.h>
 #include <clientversion.h>
 #include <compat/compat.h>
 #include <compat/stdin.h>
@@ -171,6 +172,7 @@ static int AppInitRPC(int argc, char* argv[])
     // Check for chain settings (BaseParams() calls are only valid after this clause)
     try {
         SelectBaseParams(gArgs.GetChainName());
+        gArgs.SelectConfigNetwork(gArgs.GetChainName());
     } catch (const std::exception& e) {
         tfm::format(std::cerr, "Error: %s\n", e.what());
         return EXIT_FAILURE;

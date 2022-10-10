@@ -6,6 +6,7 @@
 #include <config/bitcoin-config.h>
 #endif
 
+#include <chainparamsbaseargs.h>
 #include <clientversion.h>
 #include <coins.h>
 #include <compat/compat.h>

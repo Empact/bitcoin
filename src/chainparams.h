@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+class ArgsManager;
 typedef std::map<int, uint256> MapCheckpoints;
 
 struct CCheckpointData {

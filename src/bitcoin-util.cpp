@@ -10,6 +10,7 @@
 #include <chain.h>
 #include <chainparams.h>
 #include <chainparamsbase.h>
+#include <chainparamsbaseargs.h>
 #include <clientversion.h>
 #include <compat/compat.h>
 #include <core_io.h>

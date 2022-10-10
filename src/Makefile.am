@@ -128,6 +128,7 @@ BITCOIN_CORE_H = \
   chain.h \
   chainparams.h \
   chainparamsbase.h \
+  chainparamsbaseargs.h \
   chainparamsseeds.h \
   checkqueue.h \
   clientversion.h \
@@ -666,6 +667,7 @@ libbitcoin_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_util_a_SOURCES = \
   support/lockedpool.cpp \
   chainparamsbase.cpp \
+  chainparamsbaseargs.cpp \
   clientversion.cpp \
   fs.cpp \
   interfaces/echo.cpp \
