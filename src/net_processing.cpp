@@ -16,6 +16,7 @@
 #include <hash.h>
 #include <headerssync.h>
 #include <index/blockfilterindex.h>
+#include <logging.h>
 #include <merkleblock.h>
 #include <netbase.h>
 #include <netmessagemaker.h>
@@ -38,7 +39,6 @@
 #include <util/args.h>
 #include <util/check.h> // For NDEBUG compile time check
 #include <util/strencodings.h>
-#include <util/system.h>
 #include <util/trace.h>
 #include <validation.h>
 

@@ -10,7 +10,6 @@
 #include <test/fuzz/util.h>
 #include <test/util/setup_common.h>
 #include <util/readwritefile.h>
-#include <util/system.h>
 
 #include <cassert>
 #include <cstdint>

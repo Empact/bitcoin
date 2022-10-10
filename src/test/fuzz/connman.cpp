@@ -12,7 +12,6 @@
 #include <test/fuzz/fuzz.h>
 #include <test/fuzz/util.h>
 #include <test/util/setup_common.h>
-#include <util/system.h>
 #include <util/translation.h>
 
 #include <cstdint>
