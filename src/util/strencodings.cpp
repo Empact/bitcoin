@@ -7,6 +7,7 @@
 #include <util/strencodings.h>
 
 #include <array>
+#include <compare>
 #include <cassert>
 #include <cstring>
 #include <limits>

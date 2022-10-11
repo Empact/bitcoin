@@ -12,6 +12,7 @@
 #include <serialize.h>
 #include <uint256.h>
 
+#include <compare>
 #include <cstddef>
 #include <cstdint>
 #include <ios>

@@ -4,8 +4,10 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <chain.h>
+#include <consensus/params.h>
 #include <tinyformat.h>
 #include <util/time.h>
+
 
 std::string CBlockFileInfo::ToString() const
 {
