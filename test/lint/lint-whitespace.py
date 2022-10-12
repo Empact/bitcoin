@@ -18,10 +18,7 @@ from subprocess import check_output
 
 EXCLUDED_DIRS = ["depends/patches/",
                  "contrib/guix/patches/",
-                 "src/leveldb/",
-                 "src/crc32c/",
-                 "src/secp256k1/",
-                 "src/minisketch/",
+                 "vendor/",
                  "doc/release-notes/",
                  "src/qt/locale"]
 

@@ -1145,25 +1145,25 @@ to check a subtree directory for consistency with its upstream repository.
 
 Current subtrees include:
 
-- src/leveldb
+- vendor/leveldb
   - Subtree at https://github.com/bitcoin-core/leveldb-subtree ; maintained by Core contributors.
   - Upstream at https://github.com/google/leveldb ; maintained by Google. Open
     important PRs to the subtree to avoid delay.
   - **Note**: Follow the instructions in [Upgrading LevelDB](#upgrading-leveldb) when
     merging upstream changes to the LevelDB subtree.
 
-- src/crc32c
+- vendor/crc32c
   - Used by leveldb for hardware acceleration of CRC32C checksums for data integrity.
   - Subtree at https://github.com/bitcoin-core/crc32c-subtree ; maintained by Core contributors.
   - Upstream at https://github.com/google/crc32c ; maintained by Google.
 
-- src/secp256k1
+- vendor/secp256k1
   - Upstream at https://github.com/bitcoin-core/secp256k1/ ; maintained by Core contributors.
 
-- src/crypto/ctaes
+- vendor/ctaes
   - Upstream at https://github.com/bitcoin-core/ctaes ; maintained by Core contributors.
 
-- src/minisketch
+- vendor/minisketch
   - Upstream at https://github.com/sipa/minisketch ; maintained by Core contributors.
 
 Upgrading LevelDB
