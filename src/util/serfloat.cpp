@@ -49,7 +49,7 @@ uint64_t EncodeDouble(double f) noexcept {
     if (cls == FP_NAN) return 0x7ff8000000000000;
     // Other numbers
     int exp;
-    uint64_t man = std::round(std::frexp(f, &exp) * 9007199254740992.0);
+    uint64_t man = std::llround(std::frexp(f, &exp) * 9007199254740992.0);
     if (exp < -1021) {
         // Too small to represent, encode 0
         if (exp < -1084) return sign;

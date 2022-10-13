@@ -5163,14 +5163,14 @@ void ChainstateManager::MaybeRebalanceCaches()
         // Note: shrink caches first so that we don't inadvertently overwhelm available memory.
         if (m_snapshot_chainstate->IsInitialBlockDownload()) {
             m_ibd_chainstate->ResizeCoinsCaches(
-                m_total_coinstip_cache * 0.05, m_total_coinsdb_cache * 0.05);
+                m_total_coinstip_cache / 20, m_total_coinsdb_cache / 20);
             m_snapshot_chainstate->ResizeCoinsCaches(
-                m_total_coinstip_cache * 0.95, m_total_coinsdb_cache * 0.95);
+                m_total_coinstip_cache * 19 / 20, m_total_coinsdb_cache * 19 / 20);
         } else {
             m_snapshot_chainstate->ResizeCoinsCaches(
-                m_total_coinstip_cache * 0.05, m_total_coinsdb_cache * 0.05);
+                m_total_coinstip_cache / 20, m_total_coinsdb_cache / 20);
             m_ibd_chainstate->ResizeCoinsCaches(
-                m_total_coinstip_cache * 0.95, m_total_coinsdb_cache * 0.95);
+                m_total_coinstip_cache * 19 / 20, m_total_coinsdb_cache * 19 / 20);
         }
     }
 }

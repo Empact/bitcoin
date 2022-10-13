@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     /////////////////////////
 
     // Empty utxo pool
-    BOOST_CHECK(!SelectCoinsBnB(GroupCoins(utxo_pool), 1 * CENT, 0.5 * CENT));
+    BOOST_CHECK(!SelectCoinsBnB(GroupCoins(utxo_pool), 1 * CENT, CENT / 2));
 
     // Add utxos
     add_coin(1 * CENT, 1, utxo_pool);
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
 
     // Select 1 Cent
     add_coin(1 * CENT, 1, expected_result);
-    const auto result1 = SelectCoinsBnB(GroupCoins(utxo_pool), 1 * CENT, 0.5 * CENT);
+    const auto result1 = SelectCoinsBnB(GroupCoins(utxo_pool), 1 * CENT, CENT / 2);
     BOOST_CHECK(result1);
     BOOST_CHECK(EquivalentResult(expected_result, *result1));
     BOOST_CHECK_EQUAL(result1->GetSelectedValue(), 1 * CENT);
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
 
     // Select 2 Cent
     add_coin(2 * CENT, 2, expected_result);
-    const auto result2 = SelectCoinsBnB(GroupCoins(utxo_pool), 2 * CENT, 0.5 * CENT);
+    const auto result2 = SelectCoinsBnB(GroupCoins(utxo_pool), 2 * CENT, CENT / 2);
     BOOST_CHECK(result2);
     BOOST_CHECK(EquivalentResult(expected_result, *result2));
     BOOST_CHECK_EQUAL(result2->GetSelectedValue(), 2 * CENT);
@@ -197,26 +197,26 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     // Select 5 Cent
     add_coin(3 * CENT, 3, expected_result);
     add_coin(2 * CENT, 2, expected_result);
-    const auto result3 = SelectCoinsBnB(GroupCoins(utxo_pool), 5 * CENT, 0.5 * CENT);
+    const auto result3 = SelectCoinsBnB(GroupCoins(utxo_pool), 5 * CENT, CENT / 2);
     BOOST_CHECK(result3);
     BOOST_CHECK(EquivalentResult(expected_result, *result3));
     BOOST_CHECK_EQUAL(result3->GetSelectedValue(), 5 * CENT);
     expected_result.Clear();
 
     // Select 11 Cent, not possible
-    BOOST_CHECK(!SelectCoinsBnB(GroupCoins(utxo_pool), 11 * CENT, 0.5 * CENT));
+    BOOST_CHECK(!SelectCoinsBnB(GroupCoins(utxo_pool), 11 * CENT, CENT / 2));
     expected_result.Clear();
 
     // Cost of change is greater than the difference between target value and utxo sum
     add_coin(1 * CENT, 1, expected_result);
-    const auto result4 = SelectCoinsBnB(GroupCoins(utxo_pool), 0.9 * CENT, 0.5 * CENT);
+    const auto result4 = SelectCoinsBnB(GroupCoins(utxo_pool), CENT * 9/10, CENT / 2);
     BOOST_CHECK(result4);
     BOOST_CHECK_EQUAL(result4->GetSelectedValue(), 1 * CENT);
     BOOST_CHECK(EquivalentResult(expected_result, *result4));
     expected_result.Clear();
 
     // Cost of change is less than the difference between target value and utxo sum
-    BOOST_CHECK(!SelectCoinsBnB(GroupCoins(utxo_pool), 0.9 * CENT, 0));
+    BOOST_CHECK(!SelectCoinsBnB(GroupCoins(utxo_pool), CENT * 9/10, 0));
     expected_result.Clear();
 
     // Select 10 Cent
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     add_coin(3 * CENT, 3, expected_result);
     add_coin(2 * CENT, 2, expected_result);
     add_coin(1 * CENT, 1, expected_result);
-    const auto result5 = SelectCoinsBnB(GroupCoins(utxo_pool), 10 * CENT, 0.5 * CENT);
+    const auto result5 = SelectCoinsBnB(GroupCoins(utxo_pool), 10 * CENT, CENT / 2);
     BOOST_CHECK(result5);
     BOOST_CHECK(EquivalentResult(expected_result, *result5));
     BOOST_CHECK_EQUAL(result5->GetSelectedValue(), 10 * CENT);
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     // BOOST_CHECK(EquivalentResult(expected_result, *result));
 
     // Select 0.25 Cent, not possible
-    BOOST_CHECK(!SelectCoinsBnB(GroupCoins(utxo_pool), 0.25 * CENT, 0.5 * CENT));
+    BOOST_CHECK(!SelectCoinsBnB(GroupCoins(utxo_pool), CENT / 4, CENT / 2));
     expected_result.Clear();
 
     // Iteration exhaustion test
@@ -642,7 +642,7 @@ BOOST_AUTO_TEST_CASE(knapsack_solver_test)
 
             if (amt - 2000 < CENT) {
                 // needs more than one input:
-                uint16_t returnSize = std::ceil((2000.0 + CENT)/amt);
+                uint16_t returnSize = std::lround(std::ceil((2000.0 + CENT)/amt));
                 CAmount returnValue = amt * returnSize;
                 BOOST_CHECK_EQUAL(result24->GetSelectedValue(), returnValue);
                 BOOST_CHECK_EQUAL(result24->GetInputSet().size(), returnSize);
@@ -757,7 +757,7 @@ BOOST_AUTO_TEST_CASE(SelectCoins_test)
         // Make a wallet with 1000 exponentially distributed random inputs
         for (int j = 0; j < 1000; ++j)
         {
-            CAmount val = distribution(generator)*10000000;
+            CAmount val = static_cast<CAmount>(distribution(generator) * COIN) / 10;
             add_coin(available_coins, *wallet, val);
             balance += val;
         }
