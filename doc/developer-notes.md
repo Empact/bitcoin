@@ -1152,7 +1152,7 @@ Current subtrees include:
   - **Note**: Follow the instructions in [Upgrading LevelDB](#upgrading-leveldb) when
     merging upstream changes to the LevelDB subtree.
 
-- src/crc32c
+- src/vendor/crc32c
   - Used by leveldb for hardware acceleration of CRC32C checksums for data integrity.
   - Subtree at https://github.com/bitcoin-core/crc32c-subtree ; maintained by Core contributors.
   - Upstream at https://github.com/google/crc32c ; maintained by Google.

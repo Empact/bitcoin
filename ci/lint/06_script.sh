@@ -19,7 +19,7 @@ test/lint/git-subtree-check.sh src/crypto/ctaes
 test/lint/git-subtree-check.sh src/secp256k1
 test/lint/git-subtree-check.sh src/minisketch
 test/lint/git-subtree-check.sh src/leveldb
-test/lint/git-subtree-check.sh src/crc32c
+test/lint/git-subtree-check.sh src/vendor/crc32c
 test/lint/check-doc.py
 test/lint/all-lint.py
 
