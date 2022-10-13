@@ -27,9 +27,9 @@ struct zero_after_free_allocator : public std::allocator<T> {
     {
     }
     ~zero_after_free_allocator() noexcept {}
-    template <typename _Other>
+    template <typename OtherT>
     struct rebind {
-        typedef zero_after_free_allocator<_Other> other;
+        typedef zero_after_free_allocator<OtherT> other;
     };
 
     void deallocate(T* p, std::size_t n)
