@@ -16,7 +16,9 @@
 
 #include <algorithm>
 #include <boost/test/unit_test.hpp>
+#include <iterator>
 #include <random>
+#include <sstream>
 
 namespace wallet {
 BOOST_FIXTURE_TEST_SUITE(coinselector_tests, WalletTestingSetup)
@@ -88,7 +90,7 @@ static void add_coin(CoinsResult& available_coins, CWallet& wallet, const CAmoun
 
 /** Check if SelectionResult a is equivalent to SelectionResult b.
  * Equivalent means same input values, but maybe different inputs (i.e. same value, different prevout) */
-static bool EquivalentResult(const SelectionResult& a, const SelectionResult& b)
+static void CheckEquivalentResult(const SelectionResult& a, const SelectionResult& b)
 {
     std::vector<CAmount> a_amts;
     std::vector<CAmount> b_amts;
@@ -101,8 +103,16 @@ static bool EquivalentResult(const SelectionResult& a, const SelectionResult& b)
     std::sort(a_amts.begin(), a_amts.end());
     std::sort(b_amts.begin(), b_amts.end());
 
+    std::ostringstream a_ostr;
+    std::ostringstream b_ostr;
+    std::copy(a_amts.begin(), a_amts.end(), std::ostream_iterator<CAmount>(a_ostr, ","));
+    std::copy(b_amts.begin(), b_amts.end(), std::ostream_iterator<CAmount>(b_ostr, ","));
+
     std::pair<std::vector<CAmount>::iterator, std::vector<CAmount>::iterator> ret = std::mismatch(a_amts.begin(), a_amts.end(), b_amts.begin());
-    return ret.first == a_amts.end() && ret.second == b_amts.end();
+    BOOST_CHECK_MESSAGE(
+        ret.first == a_amts.end() && ret.second == b_amts.end(),
+        strprintf("[%s] != [%s]", a_ostr.str(), b_ostr.str())
+    );
 }
 
 /** Check if this selection is equal to another one. Equal means same inputs (i.e same value and prevout) */
@@ -182,7 +192,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     add_coin(1 * CENT, 1, expected_result);
     const auto result1 = SelectCoinsBnB(GroupCoins(utxo_pool), 1 * CENT, 0.5 * CENT);
     BOOST_CHECK(result1);
-    BOOST_CHECK(EquivalentResult(expected_result, *result1));
+    CheckEquivalentResult(expected_result, *result1);
     BOOST_CHECK_EQUAL(result1->GetSelectedValue(), 1 * CENT);
     expected_result.Clear();
 
@@ -190,7 +200,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     add_coin(2 * CENT, 2, expected_result);
     const auto result2 = SelectCoinsBnB(GroupCoins(utxo_pool), 2 * CENT, 0.5 * CENT);
     BOOST_CHECK(result2);
-    BOOST_CHECK(EquivalentResult(expected_result, *result2));
+    CheckEquivalentResult(expected_result, *result2);
     BOOST_CHECK_EQUAL(result2->GetSelectedValue(), 2 * CENT);
     expected_result.Clear();
 
@@ -199,7 +209,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     add_coin(2 * CENT, 2, expected_result);
     const auto result3 = SelectCoinsBnB(GroupCoins(utxo_pool), 5 * CENT, 0.5 * CENT);
     BOOST_CHECK(result3);
-    BOOST_CHECK(EquivalentResult(expected_result, *result3));
+    CheckEquivalentResult(expected_result, *result3);
     BOOST_CHECK_EQUAL(result3->GetSelectedValue(), 5 * CENT);
     expected_result.Clear();
 
@@ -212,7 +222,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     const auto result4 = SelectCoinsBnB(GroupCoins(utxo_pool), 0.9 * CENT, 0.5 * CENT);
     BOOST_CHECK(result4);
     BOOST_CHECK_EQUAL(result4->GetSelectedValue(), 1 * CENT);
-    BOOST_CHECK(EquivalentResult(expected_result, *result4));
+    CheckEquivalentResult(expected_result, *result4);
     expected_result.Clear();
 
     // Cost of change is less than the difference between target value and utxo sum
@@ -227,7 +237,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     add_coin(1 * CENT, 1, expected_result);
     const auto result5 = SelectCoinsBnB(GroupCoins(utxo_pool), 10 * CENT, 0.5 * CENT);
     BOOST_CHECK(result5);
-    BOOST_CHECK(EquivalentResult(expected_result, *result5));
+    CheckEquivalentResult(expected_result, *result5);
     BOOST_CHECK_EQUAL(result5->GetSelectedValue(), 10 * CENT);
     expected_result.Clear();
 
@@ -236,11 +246,11 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     add_coin(5 * CENT, 5, expected_result);
     add_coin(3 * CENT, 3, expected_result);
     add_coin(2 * CENT, 2, expected_result);
-    const auto result6 = SelectCoinsBnB(GroupCoins(utxo_pool), 10 * CENT, 5000);
+    const auto result6 = SelectCoinsBnB(GroupCoins(utxo_pool), 10 * CENT, 0);
     BOOST_CHECK(result6);
     BOOST_CHECK_EQUAL(result6->GetSelectedValue(), 10 * CENT);
     // FIXME: this test is redundant with the above, because 1 Cent is selected, not "too small"
-    // BOOST_CHECK(EquivalentResult(expected_result, *result));
+    // CheckEquivalentResult(expected_result, *result6);
 
     // Select 0.25 Cent, not possible
     BOOST_CHECK(!SelectCoinsBnB(GroupCoins(utxo_pool), 0.25 * CENT, 0.5 * CENT));
@@ -271,7 +281,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     const auto result8 = SelectCoinsBnB(GroupCoins(utxo_pool), 30 * CENT, 5000);
     BOOST_CHECK(result8);
     BOOST_CHECK_EQUAL(result8->GetSelectedValue(), 30 * CENT);
-    BOOST_CHECK(EquivalentResult(expected_result, *result8));
+    CheckEquivalentResult(expected_result, *result8);
 
     ////////////////////
     // Behavior tests //
@@ -364,7 +374,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
         add_coin(10 * CENT, 2, expected_result);
         CCoinControl coin_control;
         const auto result11 = SelectCoins(*wallet, available_coins, 10 * CENT, coin_control, coin_selection_params_bnb);
-        BOOST_CHECK(EquivalentResult(expected_result, *result11));
+        CheckEquivalentResult(expected_result, *result11);
         available_coins.Clear();
 
         // more coins should be selected when effective fee < long term fee
@@ -379,7 +389,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
         add_coin(9 * CENT, 2, expected_result);
         add_coin(1 * CENT, 2, expected_result);
         const auto result12 = SelectCoins(*wallet, available_coins, 10 * CENT, coin_control, coin_selection_params_bnb);
-        BOOST_CHECK(EquivalentResult(expected_result, *result12));
+        CheckEquivalentResult(expected_result, *result12);
         available_coins.Clear();
 
         // pre selected coin should be selected even if disadvantageous
@@ -396,7 +406,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
         coin_control.m_allow_other_inputs = true;
         coin_control.Select(available_coins.All().at(1).outpoint); // pre select 9 coin
         const auto result13 = SelectCoins(*wallet, available_coins, 10 * CENT, coin_control, coin_selection_params_bnb);
-        BOOST_CHECK(EquivalentResult(expected_result, *result13));
+        CheckEquivalentResult(expected_result, *result13);
     }
 }
 
